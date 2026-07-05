@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Mode = "signin" | "signup" | "magic";
+type Mode = "signin" | "signup";
 
 export function AuthForm({ redirectTo = "/dashboard" }: { redirectTo?: string }) {
   const router = useRouter();
@@ -29,26 +29,28 @@ export function AuthForm({ redirectTo = "/dashboard" }: { redirectTo?: string })
     setLoading(true);
 
     try {
-      if (mode === "magic") {
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: `${window.location.origin}${redirectTo}` },
-        });
-        if (error) throw error;
-        setNotice("Check your email for a magic sign-in link.");
-      } else if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+      if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: { full_name: fullName },
-            emailRedirectTo: `${window.location.origin}${redirectTo}`,
-          },
+          options: { data: { full_name: fullName } },
         });
         if (error) throw error;
+
+        // With email confirmation turned off in Supabase, signUp returns a
+        // live session and the user is signed in immediately — no email sent.
+        if (data.session) {
+          router.push(redirectTo);
+          router.refresh();
+          return;
+        }
+
+        // Fallback: if confirmation is still enabled on the project, there's
+        // no session yet. Point them at sign-in rather than the inbox.
         setNotice(
-          "Account created. If email confirmation is on, check your inbox to confirm, then sign in."
+          "Account created. You can sign in now with your email and password."
         );
+        setPassword("");
         setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -91,8 +93,7 @@ export function AuthForm({ redirectTo = "/dashboard" }: { redirectTo?: string })
               setNotice(null);
             }}
             className={`flex-1 rounded-md px-3 py-2 font-medium transition-colors ${
-              (mode === t.id ||
-                (mode === "magic" && t.id === "signin"))
+              mode === t.id
                 ? "bg-brand-accent text-brand-bg"
                 : "text-brand-muted hover:text-brand-text"
             }`}
@@ -133,25 +134,23 @@ export function AuthForm({ redirectTo = "/dashboard" }: { redirectTo?: string })
           />
         </div>
 
-        {mode !== "magic" && (
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-brand-text">
-              Password
-            </label>
-            <input
-              className="input"
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete={
-                mode === "signup" ? "new-password" : "current-password"
-              }
-            />
-          </div>
-        )}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-brand-text">
+            Password
+          </label>
+          <input
+            className="input"
+            type="password"
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            autoComplete={
+              mode === "signup" ? "new-password" : "current-password"
+            }
+          />
+        </div>
 
         {error && (
           <p className="rounded-lg bg-brand-danger/10 px-3 py-2 text-sm text-brand-danger">
@@ -173,27 +172,15 @@ export function AuthForm({ redirectTo = "/dashboard" }: { redirectTo?: string })
             ? "Please wait…"
             : mode === "signup"
               ? "Create account"
-              : mode === "magic"
-                ? "Send magic link"
-                : "Sign in"}
+              : "Sign in"}
         </button>
       </form>
 
-      <div className="mt-4 text-center">
-        <button
-          type="button"
-          className="text-xs text-brand-muted underline-offset-2 hover:text-brand-text hover:underline"
-          onClick={() => {
-            setMode(mode === "magic" ? "signin" : "magic");
-            setError(null);
-            setNotice(null);
-          }}
-        >
-          {mode === "magic"
-            ? "← Use email and password instead"
-            : "Prefer a magic email link? →"}
-        </button>
-      </div>
+      <p className="mt-4 text-center text-xs text-brand-muted">
+        {mode === "signup"
+          ? "No email confirmation needed — your account works right away."
+          : "Use the email and password you signed up with."}
+      </p>
     </div>
   );
 }

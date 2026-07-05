@@ -30,9 +30,15 @@ Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
    security policies, and the trigger that auto-creates a profile on signup.
 3. In **Project Settings → API**, copy your **Project URL** and **anon public
    key**.
-4. (Optional) In **Authentication → Providers → Email**, decide whether to
-   require email confirmation. For a quick internal rollout you can turn
-   confirmation off so techs can sign in immediately.
+4. **Turn off email confirmation** (recommended). In **Authentication →
+   Providers → Email**, uncheck **"Confirm email"** and save. Volunteers then
+   sign in with just an email and password — Supabase never sends a
+   confirmation or magic-link email, so you never hit its 2-emails-per-hour
+   limit. Creating an account signs the person in immediately.
+
+   > Leaving confirmation **on** falls back to the old behavior: new sign-ups
+   > must click a link in their inbox, which is subject to that email rate
+   > limit. Turning it off is what keeps the login flow email-free.
 
 ### Make yourself an admin
 
@@ -66,9 +72,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
    **Settings → Environment Variables** (`NEXT_PUBLIC_SUPABASE_URL` and
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 4. Deploy. 🎉
-5. Back in Supabase, add your Vercel URL under
-   **Authentication → URL Configuration → Site URL / Redirect URLs** so email
-   magic links and confirmations redirect correctly.
+5. Back in Supabase, set your Vercel URL as the **Site URL** under
+   **Authentication → URL Configuration**. (With email confirmation off there
+   are no magic links to redirect, but this keeps the project pointed at the
+   right host.)
 
 ---
 
