@@ -9,9 +9,9 @@ export const metadata = { title: "Sign in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectedFrom?: string }>;
+  searchParams: Promise<{ redirectedFrom?: string; authError?: string }>;
 }) {
-  const { redirectedFrom } = await searchParams;
+  const { redirectedFrom, authError } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -45,7 +45,7 @@ export default async function LoginPage({
               Sign in to continue your SQ-6 training and track your progress.
             </p>
           </div>
-          <AuthForm redirectTo={redirectTo} />
+          <AuthForm redirectTo={redirectTo} authError={!!authError} />
         </div>
       </main>
     </div>

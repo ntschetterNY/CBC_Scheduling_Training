@@ -30,19 +30,54 @@ Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
    security policies, and the trigger that auto-creates a profile on signup.
 3. In **Project Settings → API**, copy your **Project URL** and **anon public
    key**.
-4. **Turn off email confirmation** (recommended). In **Authentication →
-   Providers → Email**, uncheck **"Confirm email"** and save. Volunteers then
-   sign in with just an email and password — Supabase never sends a
-   confirmation or magic-link email, so you never hit its 2-emails-per-hour
-   limit. Creating an account signs the person in immediately.
+4. **Set up "Continue with Microsoft"** (recommended login). This is the
+   primary, email-free way in — Microsoft handles identity **and** MFA, so
+   Supabase never sends an email and you never hit its 2-emails-per-hour
+   limit. See [Microsoft (Entra) sign-in](#microsoft-entra-sign-in) below for
+   the one-time setup. The email + password form remains as a fallback.
 
-   > Leaving confirmation **on** falls back to the old behavior: new sign-ups
-   > must click a link in their inbox, which is subject to that email rate
-   > limit. Turning it off is what keeps the login flow email-free.
+### Microsoft (Entra) sign-in
+
+"Continue with Microsoft" lets volunteers sign in with their Microsoft
+account. Microsoft verifies who they are and enforces any MFA your
+organization requires (Microsoft Authenticator, etc.). Supabase sends **no
+email**, so the 2-emails-per-hour limit never applies. Set it up once:
+
+1. **Register an app in Microsoft (Azure/Entra).** Go to the
+   [Entra admin center](https://entra.microsoft.com) → **App registrations**
+   → **New registration**.
+   - Name it e.g. `CrossBridge Sound Training`.
+   - **Supported account types:** pick who may sign in — "Accounts in this
+     organizational directory only" (just your church tenant) is the most
+     locked-down; a broader option lets any Microsoft account in.
+   - **Redirect URI:** platform **Web**, value:
+     `https://YOUR-PROJECT-ref.supabase.co/auth/v1/callback`
+     (this is your Supabase callback, shown on the Azure provider page in
+     step 3).
+2. **Create a client secret.** In the app → **Certificates & secrets** →
+   **New client secret**. Copy the secret **Value** (not the ID) now — it's
+   only shown once. Also copy the **Application (client) ID** from the app's
+   Overview page.
+3. **Enable the provider in Supabase.** In your Supabase project →
+   **Authentication → Providers → Azure**, toggle it on and paste:
+   - **Application (client) ID** from step 2
+   - **Secret Value** from step 2
+   - **Azure Tenant URL** — use
+     `https://login.microsoftonline.com/<TENANT_ID>` for a single tenant, or
+     `https://login.microsoftonline.com/common` to allow any Microsoft
+     account. Save.
+4. **Set the redirect URLs.** In Supabase → **Authentication → URL
+   Configuration**, set **Site URL** to your app's URL and add it (plus
+   `http://localhost:3000` for local dev) to **Redirect URLs**. The app sends
+   users to `/auth/callback` after Microsoft signs them in.
+
+That's it — the **Continue with Microsoft** button on the login page now
+works. New volunteers get a profile row created automatically on first
+sign-in (see [Make yourself an admin](#make-yourself-an-admin) to grant admin).
 
 ### Make yourself an admin
 
-After you sign up once, open **Table Editor → `profiles`**, find your row, and
+After you sign in once, open **Table Editor → `profiles`**, find your row, and
 change `role` from `trainee` to `admin`. You'll then see the **Team Progress**
 tab.
 
@@ -72,10 +107,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
    **Settings → Environment Variables** (`NEXT_PUBLIC_SUPABASE_URL` and
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 4. Deploy. 🎉
-5. Back in Supabase, set your Vercel URL as the **Site URL** under
-   **Authentication → URL Configuration**. (With email confirmation off there
-   are no magic links to redirect, but this keeps the project pointed at the
-   right host.)
+5. Back in Supabase, add your Vercel URL to **Authentication → URL
+   Configuration** (**Site URL** and **Redirect URLs**) so "Continue with
+   Microsoft" redirects back to the deployed app — see
+   [Microsoft (Entra) sign-in](#microsoft-entra-sign-in).
 
 ---
 

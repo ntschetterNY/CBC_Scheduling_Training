@@ -94,8 +94,18 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+  -- Password sign-ups send `full_name`; OAuth providers (e.g. Microsoft)
+  -- send `name`. Fall back through both, then to the email as a last resort.
   insert into public.profiles (id, full_name)
-  values (new.id, coalesce(new.raw_user_meta_data ->> 'full_name', ''))
+  values (
+    new.id,
+    coalesce(
+      new.raw_user_meta_data ->> 'full_name',
+      new.raw_user_meta_data ->> 'name',
+      new.email,
+      ''
+    )
+  )
   on conflict (id) do nothing;
   return new;
 end;
