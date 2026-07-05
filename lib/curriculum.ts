@@ -19,6 +19,13 @@ export type LessonSection = {
   tip?: string;
   /** Optional physical control this section refers to (shown as a chip). */
   control?: string;
+  /**
+   * Optional named visual rendered under the lesson body (for visual learners).
+   * Handled by components/LessonVisual.tsx. Current keys:
+   *   "eq-vocal" | "eq-bass" | "eq-hpf" | "signal-chain"
+   *   "comp-transfer" | "comp-controls" | "comp-limiter"
+   */
+  visual?: string;
 };
 
 export type QuizQuestion = {
@@ -62,7 +69,7 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Our system at a glance",
-        body: "The heart of our audio system is the Allen & Heath SQ-6 digital mixing console. Around it:\n\n- An AR2412 stage box carries the stage inputs to the console over a single SLink cable.\n- ME-500 personal mixers give musicians their own in-ear monitor mixes on stage.\n- The console feeds the house (main speakers), the hallway, and the live stream.\n- Wireless handheld mics are color-coded (Pastor, Blue, Yellow, Orange, Green, White) so we can find a channel fast.\n\nUnlike an analog board, the SQ-6 is a digital console: it shows one channel's controls on a touchscreen at a time, and it remembers complete setups called Scenes — so every service can start from the same trusted baseline.",
+        body: "The heart of our audio system is the Allen & Heath SQ-6 digital mixing console. Around it:\n\n- An AR2412 stage box carries the stage inputs to the console over a single SLink cable.\n- ME-500 personal mixers give musicians their own in-ear monitor mixes on stage.\n- The console feeds the house (main speakers), the hallway, and the live stream.\n- Wireless handheld mics are color-coded (Pastor, Blue, Yellow, Orange, Green, White) so we can find a channel fast.\n\nUnlike an analog board, the SQ-6 is a digital console: it shows one channel's controls on a touchscreen at a time, and it remembers complete setups called Scenes — so every service can start from the same trusted baseline.\n\nThat baseline is a Scene called 'Singing R1'. When the system turns on it asks whether to recall the baseline — you select YES to load it. 'Singing R1' is never overwritten, so it's always there as a clean, known-good starting point for the next service. You'll do this hands-on in the Powering Up module.",
         tip: "\"Digital\" just means the board is a computer for sound. The concepts — gain, EQ, faders, groups, mixes — are universal. Learn the concepts and our specific buttons follow.",
       },
       {
@@ -219,7 +226,7 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Mute-group and scene buttons",
-        body: "Two sets of buttons do a lot of the work on a Sunday:\n\n- The MUTE-GROUP buttons at the top-right of the board mute or unmute a whole group of inputs at once. RED means muted. You'll unmute groups as the band comes in and mute the ones not in use.\n- The SCENE-RECALL buttons (soft keys) load saved setups. Buttons 1–6 recall scenes — and importantly they control MUTES only, not levels. Button 7 STORES the current setup back to the scene.\n\nWe recall the 'Singing R1' scene to start each service, and re-store it with Button 7 once the mix is dialed in.",
+        body: "Two sets of buttons do a lot of the work on a Sunday:\n\n- The MUTE-GROUP buttons at the top-right of the board mute or unmute a whole group of inputs at once. RED means muted. You'll unmute groups as the band comes in and mute the ones not in use.\n- The SCENE-RECALL buttons (soft keys) load saved setups. Buttons 1–6 recall scenes — and importantly they control MUTES only, not levels. Button 7 STORES the current setup back to the scene.\n\nWe recall the 'Singing R1' scene to start each service (selecting YES when the console asks). 'Singing R1' is our permanent baseline — we recall it but never overwrite it, so Button 7 is reserved for rare, deliberate changes a lead has approved.",
         tip: "Red = muted. A glance at the top-right mute buttons tells you what's live and what's silenced.",
         control: "Mute-group / Scene keys",
       },
@@ -290,13 +297,13 @@ export const curriculum: Module[] = [
     sections: [
       {
         heading: "The startup sequence",
-        body: "Follow this order every service — it's our 'Operator's Guide to the Universe':\n\n1. Turn on the BREAKERS (the labeled breakers in the left two panels — this also powers the lighting).\n2. Turn on the KEY SWITCH (on the wall, to the right of the sound board).\n3. Bring up LIGHTING — go to lighting scene 19, then raise the master fader on the lighting control panel.\n4. Check MIC BATTERIES — if a mic shows only 1 bar (of 3), change the batteries (2 AA).\n5. Recall the 'Singing R1' SCENE on the SQ-6.\n6. Unmute GROUPS as required once practice starts.\n7. Unmute the SPECIFIC channels being used — mute the others.\n8. STORE 'Singing R1' by pressing Button #7.\n9. Walk the auditorium and listen for balanced levels.\n10. If Peter or Rob are preaching, prep Pastor 2.",
-        tip: "The Blue mic is tied to the computer — 'Blue on' means the computer/announcements path is live. Confirm it when you start.",
+        body: "Follow this order every service — it's our 'Operator's Guide to the Universe':\n\n1. Turn on the BREAKERS (the labeled breakers in the left two panels — this also powers the lighting).\n2. Turn on the KEY SWITCH (on the wall, to the right of the sound board).\n3. Bring up LIGHTING — go to lighting scene 19, then raise the master fader on the lighting control panel.\n4. Check MIC BATTERIES — if a mic shows only 1 bar (of 3), change the batteries (2 AA).\n5. Recall the 'Singing R1' SCENE on the SQ-6. When the console powers up it asks whether to recall the baseline — select YES to load 'Singing R1'.\n6. Unmute GROUPS as required once rehearsal starts.\n7. Unmute the SPECIFIC channels being used — mute the others.\n8. Walk the auditorium and listen for balanced levels.\n9. If Peter, Rob, or Jonathan are preaching, prep Pastor 2.\n\nNote: 'Singing R1' is our permanent baseline — we recall it, but we never overwrite it. It stays intact so every service (and next week's tech) starts from the same trusted setup.",
+        tip: "The Blue mic is the announcement mic and creates static if the mic is unmuted without being on — be sure to turn the mic on before unmuting it.",
         control: "Key switch / Scenes",
       },
       {
         heading: "The service-morning timeline",
-        body: "Timing keeps the morning calm. Aim to be set up and running by 8:20 AM (practice starts at 8:30):\n\n- By 8:20 — breakers on, key switch on, lighting up, console booted and 'Singing R1' recalled.\n- 8:25 — check the Scheduling App to see who's singing (which color mic each vocalist gets). Bring out the mics and turn each on with the red button on the bottom; check the battery bars.\n- 8:30 — be ready to unmute instruments as they're plugged in. Unmute the Vocal, Instrument, Drum, and Keys groups as applicable.\n- 8:35 — walk out to the auditorium and listen; it should be level across the board.\n- 8:40 — save the current setup back to 'Singing R1' (Scenes → select Singing R1 → Store).",
+        body: "Timing keeps the morning calm. Aim to be set up and running by 8:20 AM (rehearsal starts at 8:30):\n\n- By 8:20 — breakers on, key switch on, lighting up, console booted and 'Singing R1' recalled (select YES when it asks to recall the baseline).\n- 8:25 — check the Scheduling App to see who's singing (which color mic each vocalist gets). Bring out the mics and turn each on with the red button on the bottom; check the battery bars.\n- 8:30 — be ready to unmute instruments as they're plugged in. Unmute the Vocal, Instrument, Drum, and Keys groups as applicable.\n- 8:35 — walk out to the auditorium and listen; it should be level across the board.\n- 8:40 — do a final line check. Leave the 'Singing R1' baseline as it is — recall it, don't overwrite it.",
         tip: "Arrive early. Your goal before rehearsal: every input verified and every performer able to hear themselves. Solve problems now, not during the first song.",
       },
       {
@@ -331,23 +338,35 @@ export const curriculum: Module[] = [
           "Our mics show 3 bars full; at 1 bar you change the batteries (2 AA) so it doesn't die mid-service.",
       },
       {
-        question: "Which scene do we recall to start the service, and how do we save it back?",
+        question: "Which scene do we recall to start the service, and what do we do with it?",
         options: [
-          "'Sunday Default' — saved automatically",
-          "'Singing R1' — stored by pressing Button #7",
-          "Lighting scene 19 — stored with Select",
-          "'Pastor 2' — stored from the stream computer",
+          "'Sunday Default' — overwrite it every week",
+          "'Singing R1' — recall it (select YES when the console asks) and leave the baseline intact; never overwrite it",
+          "Lighting scene 19 — store it with Select",
+          "'Pastor 2' — recall it from the stream computer",
         ],
         answer: 1,
         explanation:
-          "We recall 'Singing R1' to begin, and after the mix is set we store it back by pressing Button #7 (Scenes → Singing R1 → Store).",
+          "We recall 'Singing R1' to begin — when the console powers up it asks whether to recall the baseline, so select YES. 'Singing R1' is our permanent baseline; we never overwrite it.",
+      },
+      {
+        question: "The Blue mic is picking up static as soon as you unmute it. What went wrong?",
+        options: [
+          "The battery is dead",
+          "The mic was unmuted before it was turned on — the Blue announcement mic creates static if unmuted while off",
+          "The Singing R1 scene is corrupted",
+          "The stream is down",
+        ],
+        answer: 1,
+        explanation:
+          "The Blue mic is the announcement mic and creates static if it's unmuted without being on. Always turn the mic on first, then unmute it.",
       },
       {
         question: "By what time should the system be set up and running?",
         options: ["8:00 AM", "8:20 AM", "9:00 AM", "10:30 AM"],
         answer: 1,
         explanation:
-          "Practice starts at 8:30; be set up and running by 8:20 so musicians have monitors and you've verified inputs before rehearsal.",
+          "Rehearsal starts at 8:30; be set up and running by 8:20 so musicians have monitors and you've verified inputs before rehearsal.",
       },
     ],
   },
@@ -366,15 +385,21 @@ export const curriculum: Module[] = [
     sections: [
       {
         heading: "The color system",
-        body: "Our wireless handheld mics are color-coded so you can find any channel instantly under service pressure. The colors and their roles:\n\n- PASTOR 1 and PASTOR 2 — the preaching mics (their own group and DCA).\n- BLUE — announcements; also tied to the computer path ('Blue on' = computer/announcements live).\n- YELLOW, ORANGE, GREEN, WHITE — worship vocalists.\n\nEach color maps to a fixed mute group and DCA on the board, so muting or leveling 'the vocals' is one move. Learn the colors cold — during a service you'll reach for 'Orange' faster than for a channel number.",
-        tip: "Blue is special: it's announcements and the computer feed, not a worship vocal. Treat it differently from the colored worship mics.",
+        body: "Our wireless handheld mics are color-coded so you can find any channel instantly under service pressure. The colors and their roles:\n\n- PASTOR 1 and PASTOR 2 — the preaching mics (their own group and DCA).\n- BLUE — the ANNOUNCEMENT mic. It is its own wireless handheld, separate from the computer input (the computer audio is a different channel entirely). Blue also creates static if it's unmuted while still turned off, so always turn the mic on before you unmute it.\n- YELLOW, ORANGE, GREEN, WHITE — worship vocalists.\n\nEach color maps to a fixed mute group and DCA on the board, so muting or leveling 'the vocals' is one move. Learn the colors cold — during a service you'll reach for 'Orange' faster than for a channel number.",
+        tip: "The Blue mic is the announcement mic and creates static if the mic is unmuted without being on — be sure to turn the mic on before unmuting it. It is separate from the computer input.",
         control: "Wireless handhelds",
       },
       {
         heading: "Who sings which color — the Scheduling App",
-        body: "Before the service, check the Scheduling App to see who is singing and which color mic each vocalist gets. For example, our matrix has included assignments like Erin → Yellow, Val → Orange, Elfa → Yellow. Assignments change week to week, so always check the app rather than assuming.\n\nOnce you know the assignments, bring out exactly those mics and hand them to the right people. This is why the color system works: the singer changes, but 'Yellow' is always the same channel, group, and DCA on the board.",
+        body: "Before the service, check the Scheduling App to see who is singing and which color mic each vocalist gets. Assignments change week to week, so always check the app rather than assuming.\n\nOur current standing mic assignments are:\n\n- Erin — Yellow\n- Sarah — Piano Mic\n- Val — Orange\n- William — White Mic\n- New Female Vocalist — Orange\n- New Male Vocalist — White\n\nOnce you know the assignments, bring out exactly those mics and hand them to the right people. This is why the color system works: the singer changes, but 'Yellow' is always the same channel, group, and DCA on the board.",
         tip: "Match the app to the mic to the person before rehearsal. A mislabeled mic is the most common cause of 'why is the wrong person's fader doing nothing?'",
         control: "Scheduling App",
+      },
+      {
+        heading: "Why the mics are tuned by voice",
+        body: "The mics aren't interchangeable — each one is EQ'd (tuned) for the kind of voice that uses it, so the singer sounds natural without a lot of channel EQ:\n\n- The WHITE mic is tuned for a MALE vocalist — its curve suits a lower, fuller voice.\n- The ORANGE and YELLOW mics are tuned for FEMALE vocalists — their curves suit a higher voice.\n\nThat's why our defaults line up the way they do: a new male vocalist takes White (already tuned for him), and a new female vocalist takes Orange (already tuned for her). Handing a male singer a mic tuned for a female voice (or vice-versa) means fighting the tuning with EQ all morning. Match the voice to the mic that's tuned for it first.",
+        tip: "White = tuned for a male voice; Orange and Yellow = tuned for female voices. Match the voice to the mic and you'll barely need to touch the EQ.",
+        control: "Mic tuning",
       },
       {
         heading: "Powering and checking mics",
@@ -384,16 +409,28 @@ export const curriculum: Module[] = [
     ],
     quiz: [
       {
-        question: "What is the BLUE mic used for?",
+        question: "What is the BLUE mic, and how is it related to the computer input?",
         options: [
-          "The lead worship vocal",
-          "Announcements and the computer path",
-          "The drums",
-          "The pastor's sermon",
+          "It's the lead worship vocal, routed through the computer",
+          "It's the announcement mic — its own wireless handheld, separate from the computer input",
+          "It's the drum mic",
+          "It's the same channel as the computer audio",
         ],
         answer: 1,
         explanation:
-          "Blue is announcements and is tied to the computer feed ('Blue on' = computer/announcements live) — it's not a worship vocal channel.",
+          "Blue is the announcement mic — a wireless handheld on its own channel, separate from the computer input. Turn it on before unmuting it, or it creates static.",
+      },
+      {
+        question: "A new male vocalist arrives. Which mic should he get, and why?",
+        options: [
+          "Yellow — it's tuned for a female voice",
+          "White — it's tuned for a male vocalist",
+          "Blue — it's the announcement mic",
+          "Any mic; the tuning is identical",
+        ],
+        answer: 1,
+        explanation:
+          "The White mic is tuned for a male voice, while Orange and Yellow are tuned for female voices. Matching the voice to the mic that's tuned for it avoids fighting the tuning with EQ.",
       },
       {
         question: "How do you know which vocalist gets which color mic?",
@@ -460,8 +497,8 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Focus on the essentials first — the Blue mic",
-        body: "When the service starts, get the essentials up before anything else: the Pastor mic and the Blue (announcements) mic. Those carry the spoken word, and a missed unmute there is the most noticeable mistake we can make.\n\nRemember Blue is the announcements/computer path — unmute it when announcements are happening and mute it when they're done. Prioritize spoken-word channels being live and clean over fine-tuning the band.",
-        tip: "Unmute first, fine-tune second. Pastor and Blue live and clear is the top priority every service.",
+        body: "When the service starts, get the essentials up before anything else: the Pastor mic and the Blue (announcement) mic. Those carry the spoken word, and a missed unmute there is the most noticeable mistake we can make.\n\nBlue is the announcement mic — its own wireless handheld, separate from the computer input. Turn the mic ON before you unmute it (unmuting it while it's off creates static), then unmute it when announcements are happening and mute it when they're done. Prioritize spoken-word channels being live and clean over fine-tuning the band.",
+        tip: "Unmute first, fine-tune second. Pastor and Blue live and clear is the top priority every service — and turn Blue on before unmuting it so it doesn't static.",
       },
     ],
     quiz: [
@@ -578,19 +615,19 @@ export const curriculum: Module[] = [
     slug: "monitors-aux",
     order: 8,
     title: "Monitors: AUX Sends & ME-500s",
-    subtitle: "Building what the stage hears — and why vocals are routed twice.",
+    subtitle: "Building what the stage hears — and how each vocalist mixes their own in-ears.",
     icon: "🎧",
     estMinutes: 14,
     objectives: [
       "Explain the difference between the house mix and monitor mixes",
       "Recognize our AUX assignments and the ME-500 system",
-      "Understand how one vocal channel feeds both the house and the in-ears",
+      "Understand how vocalists adjust their own levels on the ME-500",
     ],
     sections: [
       {
         heading: "House vs. monitors, and our AUX map",
-        body: "The main L/R is what the congregation hears. The musicians need their own separate blends — MONITOR mixes — delivered to their ME-500 personal mixers as in-ears on stage. Each monitor mix is independent and built on an AUX bus.\n\nOur AUX assignments:\n- AUX 1 — Stream\n- AUX 2 — Drums\n- AUX 3 — Comms (talkback between team)\n- AUX 4 — FX Return\n- AUX 5 — Yellow\n- AUX 6 — Orange\n- AUX 7 — Pastor\n\nSo when 'Orange' needs more of themselves in their ears, you adjust their send on AUX 6 — not the house fader.",
-        tip: "The AUX buses aren't all monitors — AUX 1 is the stream feed and AUX 3 is comms. Know which AUX does what before you change one.",
+        body: "The main L/R is what the congregation hears. The musicians need their own separate blends — MONITOR mixes — delivered to their ME-500 personal mixers as in-ears on stage.\n\nOur AUX assignments:\n- AUX 1 — Stream\n- AUX 2 — Drums\n- AUX 3 — Comms (talkback between team)\n- AUX 4 — FX Return\n- AUX 7 — Pastor\n\nNote what changed: the vocalists no longer have their own AUX monitor sends (we removed the old AUX 5 = Yellow and AUX 6 = Orange). The colored vocal mics now feed the ME-500s as straight mic inputs on the personal-mixer network, and each singer dials in how much of themselves they want in their ears right on their own ME-500. That takes the vocal-monitor level off your plate at the console — you're no longer riding an AUX send for each singer.",
+        tip: "The AUX buses aren't all monitors — AUX 1 is the stream feed and AUX 3 is comms. Vocal monitors are no longer AUX sends: each vocalist adjusts their own level on their ME-500.",
         control: "AUX (Layer C)",
       },
       {
@@ -601,18 +638,23 @@ export const curriculum: Module[] = [
       },
       {
         heading: "One vocal channel, two destinations",
-        body: "Each vocal is a SINGLE channel on the board — the colored mic itself (Yellow, Orange, etc.). That one channel feeds two different places at once:\n\n- To the HOUSE — through the Vocal Group → main L/R, so the congregation hears the singer.\n- To the singer's IN-EARS — through that vocal's AUX send to their ME-500 (for example, Orange goes out on AUX 6).\n\nBecause the monitor is a separate AUX SEND (taken pre-fade), you can give a singer plenty of themselves in their ears without making them loud in the room — and change the house level without disturbing their in-ear blend. One channel, two independent outputs.\n\n(Note: we used to split each vocalist onto two separate channels — that 'double routing' has been removed. Everyone now simply runs through their color channel.)",
-        tip: "The house vocal and the in-ear feed come from the same channel but through different paths — the Vocal Group for the house, the AUX send for the in-ears. Adjust the path that matches the problem.",
-        control: "Vocal AUX sends",
+        body: "Each vocal is a SINGLE channel on the board — the colored mic itself (Yellow, Orange, etc.). That one channel feeds two different places at once:\n\n- To the HOUSE — through the Vocal Group → main L/R, so the congregation hears the singer. This is the level you mix at the console.\n- To the STAGE — the same mic input is available on the ME-500 personal-mixer network, so each singer can put as much of themselves in their own in-ears as they want.\n\nThe key idea still holds: the singer's in-ear level and the house level are independent. But the responsibility split is simpler now — you own the house level; the vocalist owns their own monitor level on the ME-500. If a singer wants more of themselves in their ears, they turn themselves up on their ME-500; you don't touch the house fader for that.",
+        tip: "You own the house level; the vocalist owns their own in-ear level on the ME-500. If they want more of themselves, that's a move on their personal mixer — not the house fader.",
+        control: "ME-500 personal mix",
       },
     ],
     quiz: [
       {
-        question: "In our AUX map, what is AUX 6?",
-        options: ["Stream", "Drums", "Orange", "Pastor"],
-        answer: 2,
+        question: "How do vocalists now get more of themselves in their in-ears?",
+        options: [
+          "You turn up their AUX 5 or AUX 6 send at the console",
+          "They adjust their own level on their ME-500 personal mixer",
+          "You raise the house fader",
+          "They can't — the level is fixed",
+        ],
+        answer: 1,
         explanation:
-          "Our AUX map: 1 Stream, 2 Drums, 3 Comms, 4 FX Return, 5 Yellow, 6 Orange, 7 Pastor.",
+          "We removed the vocal AUX sends (the old AUX 5 = Yellow, AUX 6 = Orange). The vocal mics feed the ME-500s as straight mic inputs, so each singer dials in their own level on their personal mixer.",
       },
       {
         question: "Why are monitor sends taken pre-fader?",
@@ -630,13 +672,13 @@ export const curriculum: Module[] = [
         question: "How does a single vocal channel reach both the house and the singer's in-ears?",
         options: [
           "It doesn't — you need two separate channels per singer",
-          "The one channel feeds the house via the Vocal Group → L/R, and the in-ears via its AUX send (pre-fade)",
+          "The one channel feeds the house via the Vocal Group → L/R, and the same mic input is available on the ME-500 for the singer to mix themselves",
           "By turning the vocal up twice as loud",
           "Through the lighting board",
         ],
         answer: 1,
         explanation:
-          "Each vocal is one channel with two paths: the Vocal Group → L/R for the house, and a pre-fade AUX send to the ME-500 in-ears — so the two levels are independent.",
+          "Each vocal is one channel: you mix it to the house through the Vocal Group → L/R, and the same mic input feeds the ME-500 network so the singer sets their own in-ear level. The two levels stay independent.",
       },
       {
         question: "Where do the musicians' monitor mixes actually come out?",
@@ -669,18 +711,21 @@ export const curriculum: Module[] = [
         heading: "Check the source first",
         body: "Before touching EQ, check the incoming signal. The first question for any vocal mic: is the mic close to their mouth? Position fixes more tone problems than EQ ever will.\n\nEveryone's voice is unique. The goal of EQ isn't to make everyone sound the same — it's to make the mic accurately output their voice the way they sound in person. Start from a good, close capture, then shape gently.",
         tip: "If a voice sounds thin or distant, check mic technique first. EQ can't rescue a mic held six inches away.",
+        visual: "signal-chain",
       },
       {
         heading: "HPF + typical vocalist EQ",
         body: "For vocals we shape a fairly consistent curve:\n\n- HIGH-PASS FILTER (HPF) — cut the low end. Stages are full of low rumble (foot stomps, handling, HVAC) that adds nothing to a voice. We use the HPF often on vocalists.\n- A gentle BOOST in the mid range for presence and body.\n- A small REDUCTION in the high-mids to add clarity and reduce harshness.\n- A BOOST at the higher end for air and sparkle.\n\nSmall, purposeful moves. If you find yourself making huge boosts, go back and check the mic and its position.",
         tip: "Roll in the HPF on almost every vocal — it cleans up the whole mix instantly without making the voice thin.",
         control: "HPF / PEQ",
+        visual: "eq-vocal",
       },
       {
         heading: "Typical bass EQ",
         body: "Bass is shaped almost oppositely to vocals:\n\n- A BOOST in the low end for weight — especially where the bass mostly sits.\n- A REDUCTION in the mid range for a clearer, crisper sound that doesn't muddy the mix.\n- A BOOST at the high end to bring out the upper notes and definition.\n\nUnlike vocals, bass lives down low, so we don't high-pass it away. The goal is a bass that's felt underneath the mix but still articulate.",
         tip: "Vocals get an HPF; bass and kick generally don't — their sound lives in the low end you'd be cutting.",
         control: "PEQ",
+        visual: "eq-bass",
       },
     ],
     quiz: [
@@ -752,17 +797,20 @@ export const curriculum: Module[] = [
         body: "A compressor automatically turns DOWN a signal when it gets too loud, evening out the level so quiet and loud passages sit closer together. The result is a more CONSISTENT sound — a vocal stays present without you riding the fader every second.\n\nThe key controls:\n- THRESHOLD — the level where the compressor starts to engage. Only signal above it gets turned down.\n- RATIO — how much compression to apply once over the threshold. For speech, around 2:1 is a good general starting point.\n- OUTPUT GAIN — makes up level after compression; generally left around 0.",
         tip: "Set the threshold while the source is at real performance level. Set it during a soft check and it'll clamp far too hard when they open up.",
         control: "Compressor",
+        visual: "comp-transfer",
       },
       {
         heading: "Tasteful, transparent control",
         body: "For worship, aim for GENTLE compression — a few dB of reduction on the loudest peaks, not obvious squashing. Watch the gain-reduction meter: if it's slamming down constantly, back off the threshold or ratio.\n\nFor a spoken voice, a modest ratio (around 2:1) with the threshold set so it only engages on louder phrases keeps the pastor even and intelligible without sounding processed. The goal is 'I can always hear the words clearly,' not 'wow, that's compressed.'",
         tip: "2:1 and a few dB of gain reduction is a safe home base for speech. Make it audible only as consistency, not as an effect.",
+        visual: "comp-controls",
       },
       {
         heading: "The limiter and group compression",
         body: "A LIMITER is compression's stricter cousin — a very high ratio that acts as a ceiling, stopping a signal from exceeding a set level. We use limiting to catch sudden peaks and protect against spikes.\n\nWe also compress whole GROUPS (see the Groups & DCAs module) to glue a family of channels — like the vocals or drums — into a consistent, blended sound. Group compression is what makes riding DCAs feel smooth and dynamic.",
         tip: "Compressor = gentle, ongoing consistency. Limiter = a hard ceiling for safety. Use both for their own jobs.",
         control: "Limiter",
+        visual: "comp-limiter",
       },
     ],
     quiz: [
@@ -826,15 +874,15 @@ export const curriculum: Module[] = [
         control: "Scene keys 1–6",
       },
       {
-        heading: "Storing with Button 7",
-        body: "Button 7 STORES the current setup back into the scene. After you've dialed in the mix during rehearsal, you press Button 7 to save it — the standard flow is: open Scenes → select 'Singing R1' → press Store.\n\nWe re-store because the setup changes week to week: for example, whether Randy is on electric guitar this week or not. Storing captures today's working setup so a recall brings it right back if something gets bumped.",
-        tip: "Store 'Singing R1' (Button 7) once the mix is set at ~8:40. Then a stray bump is one recall away from fixed.",
+        heading: "The baseline is protected — Button 7",
+        body: "Button 7 STORES the current setup into a scene. It exists for deliberate, team-approved permanent changes to the console — and those are rare.\n\nImportantly, we do NOT store over 'Singing R1' during a normal service. 'Singing R1' is our permanent baseline: we recall it, we never overwrite it. That's what keeps it a trustworthy starting point week after week. If something gets bumped mid-service, you don't re-store — you re-recall the baseline (select YES when prompted) to snap the mutes back where they belong.\n\nSo the everyday flow is recall-only: select YES on power-up to load 'Singing R1', and leave it untouched. Reach for Button 7 only when a lead has decided on a lasting change and asks you to save it.",
+        tip: "Everyday rule: recall 'Singing R1', never overwrite it. Button 7 is only for a deliberate, team-approved permanent change — not for saving today's one-off tweaks.",
         control: "Store (Button 7)",
       },
       {
-        heading: "Recall safely",
-        body: "A recall can change mutes (and, for full recalls, more) instantly. Do it when the room is quiet — before the service or between sets — not in the middle of a loud moment. After a recall, do a quick line check to confirm the right channels are live.\n\nBecause our recall buttons touch mutes and not levels, they're safe to use during a service to jump between mute states — but always know which scene you're recalling before you press it.",
-        tip: "Recall between sets, not mid-song. Then glance at the top-right mute buttons to confirm the right things are live.",
+        heading: "Recall safely — and time the singing recall",
+        body: "A recall can change mutes (and, for full recalls, more) instantly. Do it when the room is quiet — not in the middle of a loud moment. After a recall, do a quick line check to confirm the right channels are live.\n\nTiming matters because recalling 'Singing R1' un-mutes the singing mics. Call the recall JUST BEFORE the singing starts — not way ahead of time. If you recall it too early, you leave hot (live) vocal mics open on stage during the count-in, prayer, or announcements, which invites bumps, handling noise, and feedback. Bring the singing scene up right as the band is ready to sing, so no mic is hot on stage before it's needed.\n\nBecause our recall buttons touch mutes and not levels, they're safe to use during a service to jump between mute states — but always know which scene you're recalling before you press it.",
+        tip: "Recall 'Singing R1' just before singing starts — not early. Recalling it too soon leaves hot mics open on stage before anyone is singing.",
       },
     ],
     quiz: [
@@ -858,28 +906,28 @@ export const curriculum: Module[] = [
           "Buttons 1–6 recall scenes but control mutes only, so your fader levels aren't disturbed by a recall.",
       },
       {
-        question: "How do you save the current setup back into the scene?",
+        question: "What do we do with the 'Singing R1' baseline, and what is Button 7 for?",
         options: [
-          "It saves automatically",
-          "Press Button 7 (Scenes → Singing R1 → Store)",
-          "Turn off the key switch",
-          "Recall the scene again",
+          "Overwrite 'Singing R1' every service with Button 7",
+          "Recall 'Singing R1' but never overwrite it; Button 7 is only for deliberate, team-approved permanent changes",
+          "Delete it after each service",
+          "Store it automatically at shutdown",
         ],
         answer: 1,
         explanation:
-          "Button 7 stores the current setup. The flow is Scenes → select Singing R1 → Store, done around 8:40 once the mix is set.",
+          "'Singing R1' is our permanent baseline — we recall it (select YES on power-up) and never overwrite it. Button 7 stores a scene, but it's reserved for rare, deliberate, team-approved permanent changes.",
       },
       {
-        question: "When is the best time to recall a scene?",
+        question: "When should you recall 'Singing R1' relative to the singing, and why?",
         options: [
-          "During the loudest moment of a song",
-          "While the room is quiet — before the service or between sets",
-          "Only after everyone leaves",
-          "It never matters",
+          "As early as possible, well before the service starts",
+          "Just before the singing starts, so you don't leave hot vocal mics open on stage",
+          "In the middle of the loudest song",
+          "Only after the singing has finished",
         ],
         answer: 1,
         explanation:
-          "Recall when it's quiet, then line-check. Our recalls touch mutes (not levels), but you should still know which scene you're loading.",
+          "Recalling 'Singing R1' un-mutes the singing mics, so call it just before singing starts. Recall it too early and you leave hot mics open on stage during the count-in, prayer, or announcements.",
       },
     ],
   },
@@ -898,7 +946,7 @@ export const curriculum: Module[] = [
     sections: [
       {
         heading: "During the service",
-        body: "Once rehearsal is done and the room fills, your job is attentive, gentle mixing:\n\n- Follow the order of service. Know what's next — song, sermon, announcements, video — and have the right channels up and unused ones muted.\n- Unmute groups and channels as they're needed; focus on unmuting the essentials FIRST (Pastor and Blue).\n- Make scene/mute changes at natural breaks, not mid-phrase.\n- Ride the mix so the sound is even — no one element buried or blasting.\n- If Peter or Rob are preaching, prep Pastor 2 ahead of time.",
+        body: "Once rehearsal is done and the room fills, your job is attentive, gentle mixing:\n\n- Follow the order of service. Know what's next — song, sermon, announcements, video — and have the right channels up and unused ones muted.\n- Unmute groups and channels as they're needed; focus on unmuting the essentials FIRST (Pastor and Blue).\n- Make scene/mute changes at natural breaks, not mid-phrase.\n- Ride the mix so the sound is even — no one element buried or blasting.\n- If Peter, Rob, or Jonathan are preaching, prep Pastor 2 ahead of time.",
         tip: "Be proactive: stay one step ahead of the platform. Keep the run sheet in front of you so nothing surprises you.",
         control: "Mutes / Scenes",
       },
@@ -911,6 +959,11 @@ export const curriculum: Module[] = [
         heading: "Serve the moment",
         body: "Great mixing serves what's happening on the platform. Pull the band back under a prayer or a soft verse; support the build of a chorus. Keep the lead vocal clear and present so the congregation can follow the words.\n\nSmall, smooth moves — not jumps. When you're using groups and DCAs, one gentle move can shape a whole section. Stay calm, stay ahead, and keep the focus on worship rather than on the mix.",
         tip: "The best service mixing is felt, not noticed. Anticipate the dynamics of each song and move with them.",
+      },
+      {
+        heading: "Stay present — put the phone away",
+        body: "The booth is a visible position. During the service, keep your phone put away and your attention on the platform and the mix. It's easy to glance down at a notification and miss an unmute, a cue, or a level that's drifting — and just as importantly, a tech scrolling a phone in the booth becomes a distraction to the people around and behind us.\n\nWe are here to serve worship, not to become a distraction within the service. Anything you genuinely need for the job — the run sheet, the Scheduling App, this guide — is fine to have open, but treat the service like the focused, active work it is. Personal texting, social media, and browsing wait until after.",
+        tip: "Phone away, eyes up. We never want to be the distraction in the room — stay present and on the mix through the whole service.",
       },
     ],
     quiz: [
@@ -951,7 +1004,7 @@ export const curriculum: Module[] = [
           "The booth can sound different from the seats. Walk the room and listen for a balanced, level mix with the lead vocal clear.",
       },
       {
-        question: "If Peter or Rob are preaching, what should you do ahead of time?",
+        question: "If Peter, Rob, or Jonathan are preaching, what should you do ahead of time?",
         options: [
           "Mute all vocals permanently",
           "Prep Pastor 2",
@@ -960,7 +1013,19 @@ export const curriculum: Module[] = [
         ],
         answer: 1,
         explanation:
-          "Our workflow calls for prepping Pastor 2 when Peter or Rob are preaching, so the sermon mic is ready.",
+          "Our workflow calls for prepping Pastor 2 when Peter, Rob, or Jonathan are preaching, so the sermon mic is ready.",
+      },
+      {
+        question: "What's our expectation around phone use in the booth during the service?",
+        options: [
+          "Scroll freely between cues",
+          "Keep your phone put away and stay present — we don't want to miss a cue or become a distraction",
+          "Take calls as long as they're quiet",
+          "Phones are required for mixing",
+        ],
+        answer: 1,
+        explanation:
+          "Personal phone use waits until after the service. Glancing at a phone risks missing an unmute or cue, and a tech on their phone becomes a distraction. Job tools (run sheet, Scheduling App) are fine.",
       },
     ],
   },
@@ -979,14 +1044,14 @@ export const curriculum: Module[] = [
     sections: [
       {
         heading: "The shutdown sequence",
-        body: "After the service and teardown, power down in order:\n\n1. Ensure all MICS are turned OFF.\n2. MUTE ALL groups.\n3. Turn the Blue (computer/announcements) path OFF.\n4. LIGHTS off.\n5. BREAKERS off.\n6. SYSTEM off (console and stage boxes).\n7. Put the COVER on the board.\n8. Turn the KEY SWITCH off.\n\nThis reverses the startup and leaves everything safe and protected until next week.",
+        body: "After the service and teardown, power down in order:\n\n1. Ensure all MICS are turned OFF (including the Blue announcement mic).\n2. MUTE ALL groups.\n3. Turn the COMPUTER audio path OFF.\n4. LIGHTS off.\n5. BREAKERS off.\n6. SYSTEM off (console and stage boxes).\n7. Put the COVER on the board.\n8. Turn the KEY SWITCH off.\n\nThis reverses the startup and leaves everything safe and protected until next week. You never store or overwrite the 'Singing R1' baseline at shutdown — leave it exactly as it is.",
         tip: "Mics off and all groups muted BEFORE you start switching things off — that prevents any pops or noise as the system powers down.",
         control: "Key switch",
       },
       {
         heading: "Scenes and mics",
-        body: "Handle scenes responsibly at the end. If you made only one-off tweaks for today, you don't need to overwrite the baseline — but if the team agreed on a lasting change, store it deliberately (per our scene practice) so next week starts from it.\n\nCollect the wireless mics, turn each OFF, and return them and their batteries to the booth standard. Note any low batteries or gear issues for the next tech.",
-        tip: "Leave 'Singing R1' in a state you'd trust next Sunday. If in doubt about overwriting the baseline, check with a lead.",
+        body: "Handle scenes responsibly at the end — which mostly means leaving them alone. The 'Singing R1' baseline is NEVER overwritten. It stays exactly as it is so it provides a clean, trusted baseline for the next service: next week's tech powers up, selects YES to recall it, and starts from the same known-good setup you did. Any one-off tweaks you made for today simply disappear when the system is powered down — that's by design, and it's a good thing.\n\nCollect the wireless mics, turn each OFF, and return them and their batteries to the booth standard. Note any low batteries or gear issues for the next tech.",
+        tip: "Never overwrite 'Singing R1' at shutdown. Leaving the baseline untouched is what makes it a reliable starting point every single week.",
       },
       {
         heading: "Leave it better than you found it",
@@ -1020,16 +1085,16 @@ export const curriculum: Module[] = [
           "After mics off and groups muted, it's lights → breakers → system off → cover on → key switch off, reversing the startup.",
       },
       {
-        question: "What should you do about one-off tweaks you made just for today?",
+        question: "What happens to the 'Singing R1' baseline at shutdown?",
         options: [
-          "Always overwrite the 'Singing R1' baseline with them",
-          "Leave the baseline unless the team agreed on a lasting change — then store deliberately",
-          "Delete every scene on the board",
-          "Email them to the congregation",
+          "You overwrite it with today's mix every week",
+          "It is never overwritten — you leave it untouched so it's a clean baseline for the next service",
+          "You delete it and rebuild it next week",
+          "It saves your one-off tweaks automatically",
         ],
         answer: 1,
         explanation:
-          "Don't clobber the shared baseline with one-offs. Only store deliberate, agreed changes so next week starts from a trusted 'Singing R1.'",
+          "The baseline is never overwritten. Leaving 'Singing R1' exactly as it is means next week's tech recalls it (select YES) and starts from the same trusted setup. Today's one-off tweaks simply clear on power-down.",
       },
     ],
   },
@@ -1058,7 +1123,7 @@ export const curriculum: Module[] = [
       },
       {
         heading: "When to escalate",
-        body: "If a problem is beyond a quick fix and it's disrupting the service — the stream is down, a whole stage box dropped, the console is misbehaving — get a lead tech. Protecting the service matters more than solving it solo.\n\nFor streaming issues specifically, remember the stream is a separate output path (and the Blue/computer path feeds it): if the room is fine but the stream isn't, the problem is downstream of L/R. Note what happened so the team can trace it afterward.",
+        body: "If a problem is beyond a quick fix and it's disrupting the service — the stream is down, a whole stage box dropped, the console is misbehaving — get a lead tech. Protecting the service matters more than solving it solo.\n\nFor streaming issues specifically, remember the stream is a separate output path (its own AUX/output feed): if the room is fine but the stream isn't, the problem is downstream of L/R. Note what happened so the team can trace it afterward.",
         tip: "Serving the service comes before solo heroics. Escalate early, document what you saw, and keep the room covered.",
       },
     ],
@@ -1103,7 +1168,7 @@ export const curriculum: Module[] = [
         question: "The room sounds fine but the live stream has no audio. What do you conclude?",
         options: [
           "Every channel is broken",
-          "The problem is downstream of the L/R mix — on the separate streaming feed (and Blue/computer path), not the channels",
+          "The problem is downstream of the L/R mix — on the separate streaming feed, not the channels",
           "The stage box SLink failed",
           "The mics need new batteries",
         ],
@@ -1134,8 +1199,8 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Local inputs (at the console)",
-        body: "The wireless handhelds and the computer feed come in locally at the board:\n\n| Local in | Channel | Family |\n| --- | --- | --- |\n| 01 | Pstr 1 | Pastor (green) |\n| 02 | Pstr 2 | Pastor (green) |\n| 03 | Blue | Announcements (blue) |\n| 04 | Yellow | Vocal (red) |\n| 05 | Orange | Vocal (red) |\n| 06 | Green | Vocal |\n| 07 | White | Vocal (red) |\n| St 1 R | Comput | Computer audio |\n| St 3 L/R | ST3 / BgTrx | Backing tracks |\n\nVocals now run through their single color channel — Yellow, Orange, and so on. (The old per-singer duplicate channels, and the Local St2 L/R return, have been removed.)",
-        tip: "Local 04 = Yellow, Local 05 = Orange. The color mic IS the channel — no separate per-singer channel anymore.",
+        body: "The wireless handhelds and the computer feed come in locally at the board:\n\n| Local in | Channel | Family |\n| --- | --- | --- |\n| 01 | Pstr 1 | Pastor (green) |\n| 02 | Pstr 2 | Pastor (green) |\n| 03 | Blue | Announcements (blue) |\n| 04 | Yellow | Vocal (red) |\n| 05 | Orange | Vocal (red) |\n| 06 | Green | Vocal |\n| 07 | White | Vocal (red) |\n| St 1 R | Comput | Computer audio |\n| St 3 L/R | ST3 / BgTrx | Backing tracks |\n\nEach vocal runs through its single color channel — Yellow, Orange, and so on. The color mic is the channel.",
+        tip: "Local 04 = Yellow, Local 05 = Orange. The color mic IS the channel — one channel per color.",
         control: "Local inputs",
       },
       {
@@ -1178,12 +1243,12 @@ export const curriculum: Module[] = [
         options: [
           "SLink 04",
           "Local 04 → the 'Yellow' channel",
-          "A separate per-singer channel like 'Erin'",
           "The hallway output",
+          "The stream feed",
         ],
         answer: 1,
         explanation:
-          "Yellow comes in on Local 04 and feeds the single 'Yellow' vocal channel — the old per-singer duplicate channels were removed.",
+          "Yellow comes in on Local 04 and feeds the single 'Yellow' vocal channel. The color mic is the channel.",
       },
       {
         question: "Most stage instruments (drums, guitars, keys) arrive at the console how?",

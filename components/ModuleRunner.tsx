@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Module } from "@/lib/curriculum";
 import { createClient } from "@/lib/supabase/client";
 import { RichText } from "./RichText";
 import { BoardExplorer } from "./BoardExplorer";
+import { LessonVisual } from "./LessonVisual";
 
 type Phase = "lesson" | "quiz" | "result";
 
@@ -45,6 +46,61 @@ export function ModuleRunner({
       .then(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ---- TIME-ON-TASK TRACKING -------------------------------------------
+  // Accrue seconds spent in the lesson vs. quiz phases and flush them to the
+  // server via the add_module_time RPC. Powers the admin analytics view.
+  const phaseRef = useRef<Phase>(phase);
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    let last = Date.now();
+    let lessonDelta = 0;
+    let quizDelta = 0;
+
+    const accumulate = () => {
+      const now = Date.now();
+      // Clamp each interval so a backgrounded/slept tab can't over-count.
+      const secs = Math.min(90, Math.max(0, Math.round((now - last) / 1000)));
+      last = now;
+      const p = phaseRef.current;
+      if (p === "lesson") lessonDelta += secs;
+      else if (p === "quiz") quizDelta += secs;
+      // "result" phase is not counted.
+    };
+
+    const flush = () => {
+      accumulate();
+      if (lessonDelta === 0 && quizDelta === 0) return;
+      const l = lessonDelta;
+      const q = quizDelta;
+      lessonDelta = 0;
+      quizDelta = 0;
+      supabase
+        .rpc("add_module_time", {
+          p_module_slug: module.slug,
+          p_lesson: l,
+          p_quiz: q,
+        })
+        .then(() => {});
+    };
+
+    const interval = setInterval(flush, 20000);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+      else last = Date.now(); // resume without counting the away time
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+      flush();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [module.slug]);
 
   const score = module.quiz.reduce(
     (acc, q, i) => acc + (answers[i] === q.answer ? 1 : 0),
@@ -97,6 +153,12 @@ export function ModuleRunner({
             <RichText text={section.body} />
           </div>
 
+          {section.visual && (
+            <div className="mt-6">
+              <LessonVisual name={section.visual} />
+            </div>
+          )}
+
           {section.tip && (
             <div className="mt-5 rounded-xl border border-brand-accent2/30 bg-brand-accent2/10 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-brand-accent2">
@@ -108,7 +170,7 @@ export function ModuleRunner({
         </div>
 
         {/* Show the board explorer on the board-layout module */}
-        {module.slug === "board-layout" && <BoardExplorer />}
+        {module.slug === "board-layout" && <BoardExplorer showModuleLinks={false} />}
 
         <div className="flex items-center justify-between">
           <button

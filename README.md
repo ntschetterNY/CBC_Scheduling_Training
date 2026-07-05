@@ -4,11 +4,16 @@ An interactive training program that takes CrossBridge volunteers from their
 first look at the board to confidently mixing a Sunday service on the
 **Allen & Heath SQ-6** digital console.
 
-- **Interactive lessons** — step-by-step walkthroughs for every core skill
-- **Clickable Board Explorer** — learn the SQ-6 surface region by region
+- **Interactive lessons** — step-by-step walkthroughs for every core skill,
+  with EQ/compression charts and diagrams for visual learners
+- **Interactive SQ-6 Guide** — learn the console surface region by region, with
+  a jump straight to the module that covers each part
+- **Searchable knowledge base** — type a live problem ("blue mic static", "no
+  sound") and jump to the module that answers it
 - **Knowledge-check quizzes** — 70% to complete each module
 - **Accounts & progress tracking** — sign in and pick up where you left off
-- **Admin view** — leads can see the whole team's progress
+- **Admin view** — leads see the whole team's progress; the super admin also
+  sees time-on-task analytics and manages admins from the app
 
 Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
 **Vercel**.
@@ -24,10 +29,15 @@ Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
 ## 2. Set up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run the migration in
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql).
-   This creates the `profiles` and `module_progress` tables, row-level
-   security policies, and the trigger that auto-creates a profile on signup.
+2. Open **SQL Editor** and run the migrations in order:
+   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
+   (creates the `profiles` and `module_progress` tables, row-level security
+   policies, and the profile-on-signup trigger), then
+   [`supabase/migrations/0002_admin_analytics.sql`](supabase/migrations/0002_admin_analytics.sql)
+   (adds time-on-task tracking columns, the `add_module_time` RPC, and the
+   super-admin policies). If you want to be the super admin, edit the email in
+   both `0002_admin_analytics.sql` (`is_super_admin()`) and
+   [`lib/access.ts`](lib/access.ts) (`SUPER_ADMIN_EMAILS`) before running.
 3. In **Project Settings → API**, copy your **Project URL** and **anon public
    key**.
 4. **Enable authenticator-app MFA.** In **Authentication → Providers**, make
@@ -64,9 +74,18 @@ user **→ remove the MFA factor**) so they can set up a new one on next login.
 
 ### Make yourself an admin
 
-After you sign in once, open **Table Editor → `profiles`**, find your row, and
-change `role` from `trainee` to `admin`. You'll then see the **Team Progress**
-tab.
+There are two levels:
+
+- **Super admin** — that's you, the person whose email is listed in
+  `SUPER_ADMIN_EMAILS` (`lib/access.ts`) and `is_super_admin()`
+  (`0002_admin_analytics.sql`). No table edit needed — it's email-based, so you
+  get it automatically on your first sign-in. The super admin sees **Time
+  Analytics** (time spent per person on each module and each test) and the
+  **Users** directory.
+- **Admins** — everyone else you promote. Once you're the super admin, open the
+  **Users** page in the app and click **Make admin** next to anyone. They then
+  get the **Team Progress** view. No Supabase editing required — it's all in the
+  UI. (You can still promote via **Table Editor → `profiles`** if you prefer.)
 
 ## 3. Run locally
 
@@ -138,13 +157,17 @@ app/
   learn/                Module list
   learn/[slug]/         A single module (lessons + quiz)
   admin/                Team progress (admins only)
+  admin/analytics/      Time-on-task analytics (super admin only)
+  admin/users/          User directory + admin seeding (super admin only)
   auth/signout/         Sign-out route handler
-components/             UI: header, board explorer, module runner, quiz, auth form
+components/             UI: header, board explorer, module runner, quiz, auth form,
+                        lesson visuals, knowledge search, user directory
 lib/
   curriculum.ts         ← All training content lives here
+  access.ts             Super-admin list + time formatting helpers
   progress.ts           Progress fetch helpers
   supabase/             Browser / server / middleware Supabase clients
-supabase/migrations/    Database schema + RLS
+supabase/migrations/    Database schema + RLS (0001 base, 0002 analytics)
 middleware.ts           Refreshes auth session, guards protected routes
 ```
 

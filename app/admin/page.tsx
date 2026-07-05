@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { curriculum } from "@/lib/curriculum";
+import { isSuperAdmin } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Team Progress" };
@@ -26,7 +28,8 @@ export default async function AdminPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (me?.role !== "admin") redirect("/dashboard");
+  const superAdmin = isSuperAdmin(user.email);
+  if (me?.role !== "admin" && !superAdmin) redirect("/dashboard");
 
   const [{ data: profiles }, { data: progress }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, role"),
@@ -59,6 +62,45 @@ export default async function AdminPage() {
           Completion across all {curriculum.length} modules. A checkmark shows a
           completed module and its quiz score.
         </p>
+
+        {superAdmin && (
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <Link
+              href="/admin/analytics"
+              className="card group flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-surface text-xl">
+                ⏱️
+              </span>
+              <div>
+                <p className="font-semibold text-brand-text">Time Analytics</p>
+                <p className="text-xs text-brand-muted">
+                  See time spent per person on each module and each test.
+                </p>
+              </div>
+              <span className="ml-auto text-brand-muted group-hover:text-brand-accent">
+                →
+              </span>
+            </Link>
+            <Link
+              href="/admin/users"
+              className="card group flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-surface text-xl">
+                👥
+              </span>
+              <div>
+                <p className="font-semibold text-brand-text">Users &amp; Admins</p>
+                <p className="text-xs text-brand-muted">
+                  Manage the team and grant admin access from here.
+                </p>
+              </div>
+              <span className="ml-auto text-brand-muted group-hover:text-brand-accent">
+                →
+              </span>
+            </Link>
+          </div>
+        )}
 
         <div className="mt-6 overflow-x-auto">
           <div className="card min-w-[720px] overflow-hidden">

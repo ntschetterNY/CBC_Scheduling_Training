@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { isSuperAdmin } from "@/lib/access";
 
 /**
  * Header for authenticated app pages. Shows primary nav plus a sign-out form.
@@ -11,6 +12,7 @@ export function AppHeader({
   email?: string | null;
   isAdmin?: boolean;
 }) {
+  const superAdmin = isSuperAdmin(email);
   return (
     <header className="sticky top-0 z-30 border-b border-brand-border bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -32,10 +34,20 @@ export function AppHeader({
             <Link href="/learn" className="btn-ghost">
               Modules
             </Link>
-            {isAdmin && (
+            {(isAdmin || superAdmin) && (
               <Link href="/admin" className="btn-ghost">
                 Team Progress
               </Link>
+            )}
+            {superAdmin && (
+              <>
+                <Link href="/admin/analytics" className="btn-ghost">
+                  Time Analytics
+                </Link>
+                <Link href="/admin/users" className="btn-ghost">
+                  Users
+                </Link>
+              </>
             )}
           </nav>
         </div>

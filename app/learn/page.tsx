@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { BoardExplorer } from "@/components/BoardExplorer";
+import { KnowledgeSearch } from "@/components/KnowledgeSearch";
 import { curriculum } from "@/lib/curriculum";
 import { getMyProgress } from "@/lib/progress";
 import { createClient } from "@/lib/supabase/server";
@@ -32,7 +34,18 @@ export default async function LearnIndexPage() {
           Work through them in order — each module builds on the one before it.
         </p>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {/* Searchable knowledge base — find the module for a live problem fast */}
+        <div className="mt-6">
+          <KnowledgeSearch />
+        </div>
+
+        {/* Interactive SQ-6 guide */}
+        <div className="mt-6">
+          <BoardExplorer />
+        </div>
+
+        <h2 className="mb-3 mt-10 text-lg font-bold">All modules</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
           {curriculum.map((m) => {
             const p = progress[m.slug];
             const done = p?.status === "completed";
