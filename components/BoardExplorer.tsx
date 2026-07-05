@@ -93,7 +93,7 @@ export function BoardExplorer() {
 
       <div className="grid gap-0 lg:grid-cols-[1.6fr_1fr]">
         {/* Diagram */}
-        <div className="bg-gradient-to-b from-brand-surface to-brand-bg p-4">
+        <div className="bg-brand-surface p-4">
           <svg
             viewBox="0 0 1000 560"
             className="h-auto w-full select-none"
@@ -101,7 +101,7 @@ export function BoardExplorer() {
             aria-label="Allen & Heath SQ-6 console diagram"
           >
             {/* chassis */}
-            <rect x="10" y="20" width="980" height="520" rx="22" fill="#0e1626" stroke="#243350" strokeWidth="2" />
+            <rect x="10" y="20" width="980" height="520" rx="22" fill="#1b2c32" stroke="#33505a" strokeWidth="2" />
 
             {HOTSPOTS.map((h) => {
               const isActive = h.id === active;
@@ -113,17 +113,17 @@ export function BoardExplorer() {
                     width={h.w}
                     height={h.h}
                     rx="12"
-                    fill={isActive ? "rgba(245,166,35,0.16)" : "rgba(22,34,60,0.9)"}
-                    stroke={isActive ? "#f5a623" : "#2c3d5e"}
+                    fill={isActive ? "rgba(216,162,60,0.20)" : "#26414a"}
+                    stroke={isActive ? "#d8a23c" : "#3a5c66"}
                     strokeWidth={isActive ? 3 : 1.5}
                   />
                   <text
                     x={h.x + 14}
                     y={h.y + 26}
-                    fill={isActive ? "#f5a623" : "#8ea0c0"}
+                    fill={isActive ? "#d8a23c" : "#9fb4bb"}
                     fontSize="18"
                     fontWeight="700"
-                    fontFamily="ui-sans-serif, system-ui"
+                    fontFamily="Helvetica Neue, system-ui, sans-serif"
                   >
                     {h.label}
                   </text>
@@ -139,7 +139,7 @@ export function BoardExplorer() {
                   y1={210}
                   x2={80 + i * 66}
                   y2={480}
-                  stroke="#33456b"
+                  stroke="#3a5c66"
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
@@ -149,7 +149,7 @@ export function BoardExplorer() {
                   width="16"
                   height="26"
                   rx="4"
-                  fill={active === "faders" ? "#f5a623" : "#4b6199"}
+                  fill={active === "faders" ? "#d8a23c" : "#5b7d88"}
                 />
               </g>
             ))}

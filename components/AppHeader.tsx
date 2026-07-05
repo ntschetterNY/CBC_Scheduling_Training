@@ -12,11 +12,18 @@ export function AppHeader({
   isAdmin?: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-border/70 bg-brand-bg/80 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-brand-border bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" aria-label="CrossBridge Sound Training home">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard"
+            aria-label="CrossBridge Sound Training home"
+            className="flex items-center gap-3"
+          >
             <Logo />
+            <span className="hidden border-l border-brand-border pl-3 font-sans text-xs font-semibold uppercase tracking-[0.18em] text-brand-accentDark sm:inline">
+              Sound Training
+            </span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             <Link href="/dashboard" className="btn-ghost">

@@ -1,21 +1,57 @@
-export function Logo({ className = "" }: { className?: string }) {
+/**
+ * CrossBridge Church wordmark — a circular badge with a stylized "C / bridge"
+ * glyph next to the two-line wordmark. `tone="light"` is for dark (teal)
+ * backgrounds like the footer; the default suits light backgrounds.
+ */
+export function Logo({
+  className = "",
+  tone = "dark",
+}: {
+  className?: string;
+  tone?: "dark" | "light";
+}) {
+  const isLight = tone === "light";
+  const badgeBg = isLight ? "#ffffff" : "#1e5162";
+  const glyph = isLight ? "#1e5162" : "#ffffff";
+  const primary = isLight ? "#ffffff" : "#1e5162";
+  const secondary = isLight ? "rgba(255,255,255,0.75)" : "#5d6b70";
+
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-accent to-amber-500 text-brand-bg shadow-lg shadow-amber-500/20">
-        {/* simple mixer-fader glyph */}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d="M6 3v18M12 3v18M18 3v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <rect x="3.5" y="7" width="5" height="3.2" rx="1.2" fill="#0b1120" />
-          <rect x="9.5" y="12" width="5" height="3.2" rx="1.2" fill="#0b1120" />
-          <rect x="15.5" y="9" width="5" height="3.2" rx="1.2" fill="#0b1120" />
+      <span
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-full"
+        style={{ backgroundColor: badgeBg }}
+        aria-hidden
+      >
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          {/* stylized C */}
+          <path
+            d="M35 15.5a14 14 0 1 0 0 17"
+            stroke={glyph}
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          {/* bridge / cross stroke sweeping through the C */}
+          <path
+            d="M20 24c4-6 11-8 17-4"
+            stroke={glyph}
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
         </svg>
       </span>
       <span className="flex flex-col leading-none">
-        <span className="text-sm font-bold tracking-tight text-brand-text">
+        <span
+          className="font-sans text-[15px] font-extrabold uppercase tracking-[0.12em]"
+          style={{ color: primary }}
+        >
           CrossBridge
         </span>
-        <span className="text-[11px] font-medium uppercase tracking-widest text-brand-muted">
-          Sound Training
+        <span
+          className="font-sans text-[9px] font-semibold uppercase tracking-[0.42em]"
+          style={{ color: secondary }}
+        >
+          Church
         </span>
       </span>
     </span>
