@@ -21,6 +21,26 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+-- Is the current user an admin? Checked through a SECURITY DEFINER function so
+-- it bypasses RLS on `profiles`. Querying `profiles` directly from a policy
+-- attached to `profiles` causes "infinite recursion detected in policy" — this
+-- function is how the admin policies avoid that loop.
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+revoke all on function public.is_admin() from public;
+grant execute on function public.is_admin() to authenticated;
+
 -- A user can read their own profile.
 drop policy if exists "profiles_select_own" on public.profiles;
 create policy "profiles_select_own"
@@ -31,12 +51,7 @@ create policy "profiles_select_own"
 drop policy if exists "profiles_select_admin" on public.profiles;
 create policy "profiles_select_admin"
   on public.profiles for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 -- A user can update their own profile (but not escalate role via the app;
 -- role changes should be done by an admin in the Supabase dashboard).
@@ -78,12 +93,7 @@ create policy "progress_all_own"
 drop policy if exists "progress_select_admin" on public.module_progress;
 create policy "progress_select_admin"
   on public.module_progress for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Auto-create a profile row when a new auth user signs up

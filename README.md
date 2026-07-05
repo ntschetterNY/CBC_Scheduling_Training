@@ -24,10 +24,14 @@ Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
 ## 2. Set up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run the migration in
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql).
-   This creates the `profiles` and `module_progress` tables, row-level
-   security policies, and the trigger that auto-creates a profile on signup.
+2. Open **SQL Editor** and run the migrations in
+   [`supabase/migrations/`](supabase/migrations/) in filename order
+   (`0001_init.sql`, then `0002_...`). `0001` creates the `profiles` and
+   `module_progress` tables, row-level security policies, and the trigger that
+   auto-creates a profile on signup. `0002` fixes an RLS recursion in the admin
+   policies. **Already have a project running `0001`?** Just run the newer
+   migration(s) — running `0002` alone repairs the "infinite recursion detected
+   in policy" error that blocked saving progress.
 3. In **Project Settings → API**, copy your **Project URL** and **anon public
    key**.
 4. **Enable authenticator-app MFA.** In **Authentication → Providers**, make
