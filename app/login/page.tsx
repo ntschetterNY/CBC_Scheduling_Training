@@ -9,15 +9,32 @@ export const metadata = { title: "Sign in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectedFrom?: string; authError?: string }>;
+  searchParams: Promise<{ redirectedFrom?: string }>;
 }) {
-  const { redirectedFrom, authError } = await searchParams;
+  const { redirectedFrom } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) redirect(redirectedFrom || "/dashboard");
+  // A signed-in user might still owe a second factor (enroll a new
+  // authenticator or enter a code). Only send them onward once they've
+  // reached AAL2; otherwise render the form so it can finish MFA.
+  let mfaPending = false;
+  if (user) {
+    let currentLevel: string | null | undefined;
+    try {
+      const { data: aal } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      currentLevel = aal?.currentLevel;
+    } catch {
+      // Fail open — don't trap the user on the login page if the check errors.
+      currentLevel = "aal2";
+    }
+    // redirect() throws its own control-flow signal, so keep it out of try.
+    if (currentLevel === "aal2") redirect(redirectedFrom || "/dashboard");
+    mfaPending = true;
+  }
 
   const redirectTo =
     redirectedFrom && redirectedFrom.startsWith("/")
@@ -45,7 +62,7 @@ export default async function LoginPage({
               Sign in to continue your SQ-6 training and track your progress.
             </p>
           </div>
-          <AuthForm redirectTo={redirectTo} authError={!!authError} />
+          <AuthForm redirectTo={redirectTo} mfaPending={mfaPending} />
         </div>
       </main>
     </div>

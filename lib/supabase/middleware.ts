@@ -52,5 +52,22 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Require the second factor: a signed-in user who hasn't reached AAL2 still
+  // owes an authenticator setup or code, so bounce them to /login to finish.
+  if (isProtected && user) {
+    try {
+      const { data: aal } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal && aal.currentLevel !== "aal2") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        url.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+        return NextResponse.redirect(url);
+      }
+    } catch {
+      // If the check fails, don't hard-block access on it.
+    }
+  }
+
   return supabaseResponse;
 }
