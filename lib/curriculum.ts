@@ -1,18 +1,19 @@
 /**
- * CrossBridge SQ-6 Training Curriculum
- * ------------------------------------
- * Content is instructionally accurate for the Allen & Heath SQ-6 digital
- * mixer. Items marked with a [CrossBridge] note are configuration-specific
- * and should be confirmed against your house system outline / PDFs.
+ * CrossBridge Church (CBC) — SQ-6 Sound Tech Training Curriculum
+ * -------------------------------------------------------------
+ * Content is specific to the CrossBridge system as documented in the house
+ * Sound Manuals (Allen & Heath SQ-6 + AR2412 stage box + ME-500 personal
+ * monitors). Where the source notes were ambiguous, a section says
+ * "confirm on the board" — verify against the physical console and update.
  *
  * To edit a lesson: change the `sections` text. To add a module: append a
- * new object to the exported `curriculum` array — the rest of the app
- * (dashboard, progress, quizzes) picks it up automatically.
+ * new object to the exported `curriculum` array — the dashboard, module
+ * list, quizzes, and admin grid pick it up automatically.
  */
 
 export type LessonSection = {
   heading: string;
-  /** Plain paragraphs; blank line separates paragraphs. Use "- " for bullets. */
+  /** Plain paragraphs; blank line separates paragraphs. "- " = bullets, "1. " = numbered. */
   body: string;
   /** Optional operator tip highlighted in the UI. */
   tip?: string;
@@ -45,978 +46,1070 @@ export const curriculum: Module[] = [
   {
     slug: "welcome",
     order: 1,
-    title: "Welcome & Program Overview",
-    subtitle: "What this training covers and how the SQ-6 fits our worship service.",
+    title: "Welcome to the CBC Sound Team",
+    subtitle: "What this training covers and how our SQ-6 serves the service.",
     icon: "👋",
     estMinutes: 8,
     objectives: [
-      "Understand the goal of the CrossBridge sound tech program",
+      "Understand the goal of the CrossBridge sound team",
       "Know what the Allen & Heath SQ-6 is and why we use it",
       "Learn how to move through this interactive guide",
     ],
     sections: [
       {
-        heading: "Why we train",
-        body: "Great sound is invisible. When it's done well, nobody thinks about the mix — they're free to worship. Our job as sound techs is to serve the congregation and the platform team by delivering clear, consistent, distraction-free audio every service.\n\nThis program takes you from \"I've never touched the board\" to confidently running a Sunday service on the SQ-6. Work through the modules in order. Each one builds on the last, ends with a short knowledge check, and tracks your progress automatically.",
+        heading: "Why we serve",
+        body: "Great sound is invisible. When it's done well, nobody thinks about the mix — they're free to worship. Our job on the CrossBridge sound team is to serve the congregation and the platform team with clear, consistent, distraction-free audio, every service.\n\nThis program takes you from your first look at the board to confidently running a Sunday on our system. Work through the modules in order — each builds on the last — and it tracks your progress automatically.",
       },
       {
-        heading: "Meet the SQ-6",
-        body: "The Allen & Heath SQ-6 is a digital mixing console. Unlike an old analog board where every knob does one fixed thing, a digital mixer shows you one channel's controls at a time on a touchscreen, and remembers complete setups called Scenes.\n\nKey facts about our console:\n- 7-inch color capacitive touchscreen for detailed control\n- 24 physical fader strips, arranged in switchable Layers\n- 96kHz processing with extremely low latency (about 0.7 ms) — no audible delay\n- Full processing on every channel: preamp, high-pass filter, gate, 4-band EQ, compressor, and delay\n- Scene memory so we can recall a complete service setup in one press",
-        tip: "\"Digital\" just means the board is a computer for sound. The concepts — gain, EQ, faders, mixes — are the same as any mixer. Learn the concepts and the buttons follow.",
+        heading: "Our system at a glance",
+        body: "The heart of our audio system is the Allen & Heath SQ-6 digital mixing console. Around it:\n\n- An AR2412 stage box carries the stage inputs to the console over a single SLink cable.\n- ME-500 personal mixers give musicians their own in-ear monitor mixes on stage.\n- The console feeds the house (main speakers), the hallway, and the live stream.\n- Wireless handheld mics are color-coded (Pastor, Blue, Yellow, Orange, Green, White) so we can find a channel fast.\n\nUnlike an analog board, the SQ-6 is a digital console: it shows one channel's controls on a touchscreen at a time, and it remembers complete setups called Scenes — so every service can start from the same trusted baseline.",
+        tip: "\"Digital\" just means the board is a computer for sound. The concepts — gain, EQ, faders, groups, mixes — are universal. Learn the concepts and our specific buttons follow.",
       },
       {
         heading: "How to use this guide",
-        body: "Each module is a set of short lessons followed by a quiz. Read a lesson, then when you're next in the booth, find the control on the real board and try it during a rehearsal or an empty room — hands-on repetition is how this sticks.\n\n- Use Next / Previous to move through a module's lessons.\n- Finish the quiz to mark a module complete.\n- Your dashboard shows overall progress and what's next.\n- Nothing you do in this guide touches the real console. Practice fearlessly here.",
-        tip: "Pair this guide with real board time. Ask a lead tech to shadow you for your first two or three services before you fly solo.",
+        body: "Each module is a set of short lessons followed by a quiz. Read a lesson, then when you're next in the booth, find the control on the real board and try it during rehearsal — hands-on repetition is how this sticks.\n\n- Use Next / Previous to move through a module's lessons.\n- Pass the quiz (70%) to mark a module complete.\n- Your dashboard shows overall progress and what's next.\n- Nothing you do in this guide touches the real console. Practice fearlessly here.",
+        tip: "Pair this guide with real board time. Shadow a lead tech for your first couple of services before you fly solo.",
       },
     ],
     quiz: [
       {
-        question: "What is the main difference between the SQ-6 and an old analog mixer?",
+        question: "What carries the stage inputs to our SQ-6 console?",
         options: [
-          "The SQ-6 has more physical knobs, one per function",
-          "The SQ-6 is digital — it shows one channel's controls on a touchscreen and can recall full setups as Scenes",
-          "The SQ-6 cannot process EQ or dynamics",
-          "The SQ-6 only works for recorded music, not live",
+          "A separate laptop for each instrument",
+          "An AR2412 stage box over a single SLink cable",
+          "Bluetooth from each microphone",
+          "The ME-500 personal mixers",
         ],
         answer: 1,
         explanation:
-          "A digital console shows the selected channel's processing on the touchscreen and stores complete setups as Scenes, instead of a dedicated physical knob for every parameter.",
+          "The AR2412 stage box collects the stage inputs and sends them to the SQ-6 over one SLink cable. ME-500s are the musicians' personal in-ear mixers.",
       },
       {
         question: "What is our core job as CrossBridge sound techs?",
         options: [
           "To make the mix as loud and impressive as possible",
-          "To show off the capabilities of the SQ-6",
           "To deliver clear, consistent, distraction-free audio that serves worship",
-          "To keep the platform team from touching anything",
+          "To show off everything the SQ-6 can do",
+          "To keep the platform team from touching the stage",
         ],
-        answer: 2,
+        answer: 1,
         explanation:
           "Good sound is invisible. We serve the congregation and platform by keeping audio clear and consistent so people can focus on worship.",
       },
       {
-        question: "Roughly how much latency (delay) does the SQ-6 add to the signal?",
+        question: "What is a Scene on the SQ-6?",
         options: [
-          "About half a second — very noticeable",
-          "About 0.7 milliseconds — inaudible",
-          "Exactly 2 seconds",
-          "It varies wildly and can't be predicted",
+          "A lighting cue",
+          "A saved snapshot of a complete console setup we can recall each service",
+          "A single microphone",
+          "The live video feed",
         ],
         answer: 1,
         explanation:
-          "The SQ-6 processes at 96kHz with about 0.7 ms of latency, which is far too short for anyone to hear as delay.",
+          "A Scene stores a full console setup so every service can start from the same trusted baseline — we recall 'Singing R1' to begin.",
       },
     ],
   },
   {
     slug: "signal-flow",
     order: 2,
-    title: "Signal Flow: From Voice to Speaker",
-    subtitle: "The single most important concept in audio — how sound travels through the system.",
+    title: "How Our System Is Wired",
+    subtitle: "Signal flow at CrossBridge — from stage box to house, monitors, and stream.",
     icon: "🔀",
-    estMinutes: 12,
+    estMinutes: 14,
     objectives: [
-      "Trace a signal from microphone to loudspeaker",
-      "Explain what a preamp, channel, and mix do",
-      "Use signal flow to troubleshoot 'why is there no sound?'",
+      "Trace a signal from the stage through the SQ-6 to every output",
+      "Explain physical vs. digital routing at CBC",
+      "Name our outputs: house LR, streaming, and hallway",
     ],
     sections: [
       {
-        heading: "The path of sound",
-        body: "Every audio problem is easier to solve when you can picture the path a signal takes. For a single vocal mic, the journey is:\n\n1. Sound source — someone sings or speaks.\n2. Microphone — converts sound into a tiny electrical signal.\n3. Stage box / wall input — the mic plugs in here and the signal travels to the console.\n4. Preamp (gain) — boosts that tiny signal up to a healthy working level. This is the first thing the console does.\n5. Channel processing — HPF, gate, EQ, compressor shape the sound.\n6. Fader — sets how much of that channel goes into the mix.\n7. Mix bus — the channel is blended with everything else (the main Left/Right mix, and monitor mixes).\n8. Output & amplifier — the finished mix leaves the console.\n9. Loudspeakers — convert the signal back into sound the room hears.",
-        tip: "Memorize this order. When something isn't working, walk the path from source to speaker and find the first point where the signal disappears.",
+        heading: "Physical routing: stage to console",
+        body: "Every audio problem is easier to solve when you can picture the path a signal takes. At CBC the physical path is:\n\n1. Sound source — someone sings, speaks, or plays.\n2. Microphone / DI on stage — plugs into a stage box (the stage boxes are labeled by area, e.g. RFS, LRS, BCK for the drums).\n3. Stage box → back panel → SLink → the SQ-6 console.\n4. Our main mic inputs come in this way; the wireless handhelds are local inputs at the console.\n\nSo when a stage source is dead, the first question is: is it plugged into the right stage box socket, and is that socket patched to the channel you expect?",
+        tip: "Most stage inputs reach the board through the AR2412 stage box over SLink. If a whole stage box goes quiet, suspect the SLink connection before any single channel.",
+        control: "SLink / AR2412",
       },
       {
-        heading: "Preamp vs. fader — two different volume controls",
-        body: "New techs often confuse these. They are both 'volume,' but they live in different places and do different jobs.\n\n- The PREAMP (gain / trim) sets the signal's level as it ENTERS the console. Set it once during soundcheck so the signal is strong but not distorting. You rarely touch it again mid-service.\n- The FADER sets how much of that channel goes into the mix. This is your live, hands-on control during the service.\n\nThink of the preamp as filling a cup to the right level, and the fader as deciding how much you pour into the final mix.",
+        heading: "Digital routing: inside the console",
+        body: "Once a signal is inside the SQ-6, it flows: Input → processing → out to the mixes.\n\n- Every INPUT channel can be sent to a GROUP (which adds shared processing) and is controlled by a DCA (which sets mute and level, with no processing).\n- From there it reaches the outputs: the main L/R (house), the AUX mixes (monitors and stream feeds), and the streaming/hallway outputs.\n\nThe short version we teach: Board → Input → Group → L/R. Groups and DCAs each do a specific job — you'll learn both in their own module.",
+        control: "Groups / DCAs",
       },
       {
-        heading: "Buses and mixes",
-        body: "A 'bus' is just a destination that many channels can be sent to and mixed together.\n\n- The Main LR (Left/Right) bus is the mix the congregation hears through the main speakers.\n- Aux / Mix buses are separate blends we build for monitors — what the musicians and vocalists hear on stage (wedges or in-ear monitors).\n- FX buses send channels to effects like reverb, then return the wet effect back into the mix.\n\nThe same vocal can go to the main mix AND several monitor mixes at once, each at a different level. That's the power of a mixer: many independent blends from the same sources.",
-        control: "Main LR / Mix keys",
+        heading: "Our outputs",
+        body: "The SQ-6 feeds several destinations at once:\n\n- MAIN L/R → out through the AR2412 (outputs 1 & 2) to the house speakers. This is what the congregation hears.\n- STREAMING → local outputs 11 & 12, feeding the live stream (YouTube / Facebook).\n- HALLWAY → local outputs 13 & 14, a duplicate of the L/R mix for the lobby/hallway.\n- MONITOR MIXES (AUX) → the ME-500 personal mixers so musicians hear themselves on stage.\n\nThe same channels feed all of these at different levels — that's the power of the console: many independent mixes from the same sources.",
+        tip: "House, hallway, and stream are three different outputs. If the room sounds fine but the stream doesn't, the problem is downstream of the L/R mix — check the streaming feed, not the channel.",
+        control: "Main LR / Outputs",
       },
     ],
     quiz: [
       {
-        question: "Put these in the correct signal-flow order: fader, preamp, microphone, loudspeaker.",
+        question: "At CBC, how do most stage inputs get from the stage to the SQ-6?",
         options: [
-          "Fader → preamp → microphone → loudspeaker",
-          "Microphone → preamp → fader → loudspeaker",
-          "Preamp → microphone → loudspeaker → fader",
-          "Microphone → fader → loudspeaker → preamp",
+          "Each runs a long XLR straight to the console",
+          "Through a stage box, then back panel → SLink → SQ-6",
+          "Over WiFi",
+          "Through the ME-500 mixers",
         ],
         answer: 1,
         explanation:
-          "Signal starts at the mic, gets boosted by the preamp, is blended by the fader into a mix, and finally reaches the loudspeaker.",
+          "Stage sources plug into a stage box, which sends everything to the console over SLink. The wireless handhelds are the local inputs at the board.",
       },
       {
-        question: "Which control sets a channel's level as it ENTERS the console and is normally set once at soundcheck?",
-        options: ["The fader", "The preamp / gain (trim)", "The pan control", "The mute button"],
-        answer: 1,
-        explanation:
-          "The preamp (gain/trim) sets input level and is set during soundcheck. The fader is what you ride live during the service.",
-      },
-      {
-        question: "What is a 'bus' in a mixing console?",
+        question: "Which outputs carry the streaming and hallway feeds?",
         options: [
-          "A physical cable that carries power",
-          "A destination that many channels can be mixed into together (e.g., Main LR or a monitor mix)",
-          "Another word for a microphone",
-          "The console's power supply",
+          "AR2412 outputs 1 & 2",
+          "Local outputs 11 & 12 (streaming) and 13 & 14 (hallway)",
+          "The ME-500 outputs",
+          "There is no separate stream or hallway feed",
         ],
         answer: 1,
         explanation:
-          "A bus is a shared mix destination. The Main LR bus feeds the house; aux buses feed monitors; FX buses feed effects.",
+          "Main L/R goes out the AR2412 (1 & 2) to the house; local outputs 11/12 feed the stream and 13/14 feed the hallway (a duplicate of L/R).",
       },
       {
-        question: "A vocal mic is completely silent in the house. What's the best first troubleshooting step?",
+        question: "Inside the console, what's the difference between a Group and a DCA?",
         options: [
-          "Immediately reboot the entire console",
-          "Turn every fader all the way up",
-          "Walk the signal path from source to speaker and find the first point where signal disappears",
-          "Replace the loudspeakers",
+          "They are the same thing",
+          "A Group adds shared processing; a DCA controls mute and level with no processing",
+          "A Group only mutes; a DCA only adds reverb",
+          "A DCA feeds the stream; a Group feeds the house",
         ],
-        answer: 2,
+        answer: 1,
         explanation:
-          "Signal-flow thinking is the fastest troubleshooter: check mic → cable/input → gain → channel not muted → fader up → assigned to LR → LR up.",
+          "Groups add processing to a set of channels; DCAs are just a convenient master for mute and level and do no processing.",
+      },
+      {
+        question: "The house sounds fine but the live stream has no audio. Where should you look first?",
+        options: [
+          "The individual channel gains",
+          "The streaming feed (local outputs 11 & 12), since it's a separate output from the house L/R",
+          "The stage box SLink cable",
+          "The ME-500 mixers",
+        ],
+        answer: 1,
+        explanation:
+          "House and stream are separate outputs. If the room is fine, the L/R mix is fine — the issue is downstream on the streaming feed.",
       },
     ],
   },
   {
-    slug: "board-tour",
+    slug: "board-layout",
     order: 3,
-    title: "Board Tour: The SQ-6 Surface",
-    subtitle: "Get oriented — where everything lives on the physical console.",
+    title: "Board Layout, Layers & Soft Keys",
+    subtitle: "Getting oriented on our SQ-6 — layers, the touchscreen, and the key buttons.",
     icon: "🎛️",
-    estMinutes: 12,
+    estMinutes: 13,
     objectives: [
-      "Identify the main regions of the SQ-6 surface",
-      "Understand the touchscreen + physical control relationship",
-      "Know what SoftKeys and SoftRotaries are for",
+      "Switch between our four fader layers (A/B/C/D)",
+      "Use the touchscreen and select keys to focus a channel",
+      "Find the mute-group and scene-recall buttons",
     ],
     sections: [
       {
-        heading: "The four regions",
-        body: "Stand in front of the SQ-6 and you can divide it into four areas:\n\n1. The FADER BAYS (left/center) — banks of motorized fader strips. Each strip has a fader, a mute, a PAFL (solo/listen) key, and a color-coded Select key.\n2. The TOUCHSCREEN (upper right) — a 7-inch color screen showing the selected channel's processing, meters, routing, Scenes, and setup menus.\n3. The PROCESSING / SOFT ROTARY controls (right of screen) — rotary encoders that adjust whatever is shown on screen (gain, EQ, etc.).\n4. The SOFTKEYS and master area — assignable buttons and the master controls, including PAFL level and the main mix.",
-        tip: "Use the interactive Board Explorer (in the sidebar of this module) to click each region and see what it does.",
+        heading: "Our four layers",
+        body: "The SQ-6 has more channels than physical faders, so it uses LAYERS — think of them as pages of faders. The Layer buttons on the bottom-left of the board cycle through them. At CrossBridge our layers are:\n\n- LAYER A — all inputs\n- LAYER B — DCAs, Groups, and FX Sends/Returns\n- LAYER C — AUX (monitor) controls\n- LAYER D — vocal inputs\n\nLearn where each thing lives so you're not hunting during a song. Press a Layer button and the same faders instantly become that page's controls.",
+        tip: "During a service you'll spend most of your time on Layer A (inputs) and Layer D (vocals). Know how to jump to Layer C (AUX) when a musician needs a monitor tweak.",
+        control: "Layer buttons (A/B/C/D)",
       },
       {
-        heading: "Touchscreen + physical controls work together",
-        body: "The SQ-6 combines a touchscreen with real knobs. You touch the screen to SELECT what you want to adjust — say, the compressor threshold — and then turn a physical rotary or drag on screen to change it.\n\nThis is why one console can control dozens of channels: instead of thousands of knobs, you pick a channel with its Select key, and the screen and rotaries instantly become that channel's controls. Select a different channel and the same knobs now control the new channel.",
+        heading: "Touchscreen + select keys",
+        body: "The SQ-6 pairs a color touchscreen with physical knobs. You press a channel's SELECT key (or touch it on screen) to FOCUS it — the screen and rotaries then show that channel's processing (gain, HPF, EQ, compressor). Select a different channel and the same knobs now control the new one.\n\nSelecting a channel changes nothing about what's heard — it just decides which channel you're editing. That's how one board controls dozens of channels without thousands of knobs.",
+        tip: "Use the interactive Board Explorer below to click each region of the SQ-6 and see what it does.",
         control: "Select keys",
       },
       {
-        heading: "SoftKeys and the Select key color",
-        body: "SOFTKEYS are assignable buttons you can program to jump to common tasks — recall a Scene, tap tempo for a delay, mute a group, and more. [CrossBridge] Our SoftKey layout is set in our house Scene; a lead tech will walk you through what each one does on our board.\n\nEach channel's SELECT key has an RGB color and a name on the screen strip above it. We color-code by instrument family (for example, vocals one color, band another) so you can find a channel fast under service pressure. [CrossBridge] Confirm our exact color scheme with your lead.",
-        control: "SoftKeys",
+        heading: "Mute-group and scene buttons",
+        body: "Two sets of buttons do a lot of the work on a Sunday:\n\n- The MUTE-GROUP buttons at the top-right of the board mute or unmute a whole group of inputs at once. RED means muted. You'll unmute groups as the band comes in and mute the ones not in use.\n- The SCENE-RECALL buttons (soft keys) load saved setups. Buttons 1–6 recall scenes — and importantly they control MUTES only, not levels. Button 7 STORES the current setup back to the scene.\n\nWe recall the 'Singing R1' scene to start each service, and re-store it with Button 7 once the mix is dialed in.",
+        tip: "Red = muted. A glance at the top-right mute buttons tells you what's live and what's silenced.",
+        control: "Mute-group / Scene keys",
       },
     ],
     quiz: [
       {
-        question: "On the SQ-6, how do you change the compressor threshold for a specific channel?",
+        question: "On our SQ-6, what does Layer B hold?",
         options: [
-          "There is a dedicated physical knob for every channel's threshold",
-          "Select the channel, open its processing on the touchscreen, then adjust with the on-screen control or a rotary",
-          "You can only set it from a laptop",
-          "Threshold cannot be changed on the SQ-6",
+          "All inputs",
+          "DCAs, Groups, and FX Sends/Returns",
+          "AUX (monitor) controls",
+          "Only the vocals",
         ],
         answer: 1,
         explanation:
-          "You select a channel, the screen shows its processing, and the physical rotaries/on-screen controls adjust that channel's parameters.",
+          "Our layers are A = all inputs, B = DCAs/Groups/FX, C = AUX controls, D = vocal inputs.",
       },
       {
-        question: "What is the purpose of a SoftKey?",
+        question: "On the top-right mute-group buttons, what does RED indicate?",
         options: [
-          "It's a spare fader",
-          "It's an assignable button programmed to a common task like recalling a Scene or tapping tempo",
-          "It controls phantom power only",
-          "It is the power switch",
+          "The group is soloed",
+          "The group is muted",
+          "The group is recording",
+          "Phantom power is on",
         ],
         answer: 1,
         explanation:
-          "SoftKeys are user-assignable shortcuts. Our house Scene defines what each does on the CrossBridge board.",
+          "Red means muted. The top-right buttons mute/unmute whole groups of inputs at once.",
       },
       {
-        question: "Why do the physical rotary knobs seem to 'change jobs' as you work?",
+        question: "What do scene-recall buttons 1–6 control when you recall a scene?",
         options: [
-          "They are broken",
-          "They follow whatever channel/parameter is currently selected on the touchscreen",
-          "They only work during soundcheck",
-          "They control the lighting rig",
-        ],
-        answer: 1,
-        explanation:
-          "The rotaries adjust whatever is selected on screen. Select a new channel and the same knobs now control that channel — that's how a digital board avoids thousands of knobs.",
-      },
-    ],
-  },
-  {
-    slug: "powering-on",
-    order: 4,
-    title: "Powering On & Shutting Down",
-    subtitle: "The safe startup and shutdown sequence that protects the gear and the congregation's ears.",
-    icon: "🔌",
-    estMinutes: 10,
-    objectives: [
-      "Perform a safe power-on sequence",
-      "Recall the correct starting Scene",
-      "Shut down safely so nothing is damaged and nobody gets a loud pop",
-    ],
-    sections: [
-      {
-        heading: "The golden rule of power order",
-        body: "Amplifiers and powered speakers go ON LAST and OFF FIRST. Always.\n\nWhen you power a mixer or source on/off it can send a loud 'thump' down the line. If the amps/speakers are already on, that thump blasts the room and can damage drivers and ears. So:\n\n- Powering UP: sources and console first → then the amps/speakers.\n- Powering DOWN: amps/speakers first → then the console and sources.\n\n[CrossBridge] Our specific power sequence and which switches to use are posted in the booth — follow that checklist exactly.",
-        tip: "Speakers ON last, OFF first. If you remember nothing else about power, remember this.",
-      },
-      {
-        heading: "Startup checklist",
-        body: "A typical Sunday power-up:\n\n1. Confirm the main speaker/amp power is OFF.\n2. Power on the SQ-6 (and any stage boxes / snake units). Wait for it to fully boot to the mixing screen.\n3. Recall the house starting Scene so all channels, gains, EQ, and routing load to our known-good baseline.\n4. Check that stage boxes show connected (the console reports I/O status).\n5. Bring up the main speakers/amps last.\n6. Do a quick line check — talk into a mic, tap a DI — confirm signal reaches the house and monitors.",
-        control: "Scenes",
-      },
-      {
-        heading: "Shutting down",
-        body: "After the service and teardown:\n\n1. Pull the main mix down / mute the house.\n2. Power OFF the amps/powered speakers first.\n3. [CrossBridge] Save or store the Scene if you made changes worth keeping — check with your lead before overwriting the house Scene.\n4. Power off the console and stage boxes.\n5. Cap and coil mics/cables per our booth standards, and secure the booth.",
-        tip: "Never yank the console's power while it's writing a Scene or a USB recording — let operations finish first.",
-      },
-    ],
-    quiz: [
-      {
-        question: "In what order should you power the system UP?",
-        options: [
-          "Speakers/amps first, then the console",
-          "Console and sources first, then the speakers/amps last",
-          "Everything at exactly the same time",
-          "Order doesn't matter on a digital board",
-        ],
-        answer: 1,
-        explanation:
-          "Powering the console/sources first and the amps/speakers LAST prevents the startup 'thump' from blasting the room.",
-      },
-      {
-        question: "When shutting down, what goes OFF first?",
-        options: [
-          "The console",
-          "The stage boxes",
-          "The amplifiers / powered speakers",
+          "All fader levels and processing",
+          "Mutes only — not levels",
           "The lighting board",
-        ],
-        answer: 2,
-        explanation:
-          "Amps/speakers off FIRST, console off after. This is the reverse of power-up and protects drivers and ears.",
-      },
-      {
-        question: "Why do we recall the house starting Scene right after boot?",
-        options: [
-          "To erase all our settings randomly",
-          "To load a known-good baseline of channels, gains, EQ, and routing before the service",
-          "It is not necessary and can be skipped",
-          "To increase the latency",
+          "The streaming feed",
         ],
         answer: 1,
         explanation:
-          "Recalling the starting Scene loads our trusted baseline setup so every service starts consistent instead of from whatever the last person left behind.",
-      },
-    ],
-  },
-  {
-    slug: "channels-layers",
-    order: 5,
-    title: "Channels, Layers, Mute & PAFL",
-    subtitle: "Navigating the fader strips and finding the channel you need — fast.",
-    icon: "🎚️",
-    estMinutes: 12,
-    objectives: [
-      "Switch between fader Layers to reach any channel",
-      "Use Select, Mute, and PAFL correctly",
-      "Explain what PAFL (solo) does and does NOT do to the house mix",
-    ],
-    sections: [
-      {
-        heading: "Layers: more channels than faders",
-        body: "The SQ-6 has 24 fader strips but can mix far more than 24 channels. It solves this with LAYERS — think of them as pages of faders.\n\nPress a Layer key and the same 24 physical faders instantly become a different set of channels. For example: Layer A might be your vocals and key inputs, Layer B your band and playback, and another layer your DAW/FX returns. [CrossBridge] Our exact layer layout is defined in the house Scene — learn where each instrument lives so you're not hunting during a song.",
-        tip: "Spend rehearsal time memorizing which layer holds which channels. Fast, confident navigation is what separates a calm mix from a stressful one.",
-        control: "Layer keys",
+          "Buttons 1–6 recall scenes but control mutes only, not levels. Button 7 stores the current setup back to the scene.",
       },
       {
-        heading: "Select, Mute, and the fader",
-        body: "Each strip has three key controls plus the fader:\n\n- SELECT — makes this the 'focused' channel so the touchscreen and rotaries show its processing. Selecting does NOT change any levels; it's just 'show me this channel.'\n- MUTE — silences that channel everywhere it's routed. Muting an unused mic (e.g., a wireless handheld between songs) is the #1 tool for a clean mix and preventing feedback.\n- FADER — the channel's level into the currently active mix (the main LR, or a monitor mix when you're in sends-on-faders mode — covered later).",
-        control: "Select / Mute",
-      },
-      {
-        heading: "PAFL — listening without affecting the house",
-        body: "PAFL stands for Pre/After-Fade Listen — most people just call it 'solo' or 'listen.' Pressing a channel's PAFL key routes THAT channel to your headphones (and the booth monitor / meters) so you can check it in isolation.\n\nCrucial point: PAFL is for YOUR ears only. It does not change what the congregation hears and does not mute other channels in the house. Use it to hunt down a buzz, check a mic before you push it up, or find which channel a noise is coming from.\n\nAlways clear PAFL when you're done so your meters and headphones return to the main mix.",
-        tip: "If your meters or headphones seem 'stuck' on one channel, you probably left a PAFL engaged. Clear it.",
-        control: "PAFL",
-      },
-    ],
-    quiz: [
-      {
-        question: "The SQ-6 has 24 faders but needs to mix more channels. How does it handle that?",
-        options: [
-          "It can only ever mix 24 channels",
-          "Layers — pressing a Layer key reassigns the same faders to a different set of channels",
-          "You must plug in a second console",
-          "It randomly rotates channels every minute",
-        ],
-        answer: 1,
-        explanation:
-          "Layers turn the 24 physical strips into multiple 'pages' of channels. Our house Scene defines which channels live on each layer.",
-      },
-      {
-        question: "What does pressing a channel's Select key do?",
+        question: "What does pressing a channel's SELECT key do?",
         options: [
           "Mutes the channel",
           "Sends it to the congregation",
-          "Focuses it so the touchscreen and rotaries show that channel's processing — without changing any levels",
-          "Deletes the channel",
+          "Focuses it so the touchscreen and rotaries show that channel's processing, without changing levels",
+          "Stores a scene",
         ],
         answer: 2,
         explanation:
-          "Select just focuses a channel for editing. It changes nothing about what's heard; it only decides which channel the screen/knobs control.",
-      },
-      {
-        question: "You press PAFL (solo) on the pastor's mic. What happens in the house?",
-        options: [
-          "The congregation now only hears the pastor's mic",
-          "Nothing changes in the house — PAFL only affects your headphones/booth monitor and meters",
-          "All other channels are muted for everyone",
-          "The main speakers turn off",
-        ],
-        answer: 1,
-        explanation:
-          "PAFL is a listen/solo for the operator only. It never changes the house mix — it just lets you audition a channel in your headphones.",
-      },
-      {
-        question: "Which control is your best friend for preventing feedback from an unused wireless mic?",
-        options: ["The Select key", "The Mute key", "The Layer key", "The PAFL key"],
-        answer: 1,
-        explanation:
-          "Muting channels that aren't in use (open mics on stage) is a primary defense against feedback and stray noise.",
+          "Select focuses a channel for editing only. It changes nothing about what's heard.",
       },
     ],
   },
   {
-    slug: "gain-preamp",
-    order: 6,
-    title: "Gain & the Preamp",
-    subtitle: "Setting a strong, clean input level — the foundation every good mix is built on.",
-    icon: "📶",
-    estMinutes: 14,
+    slug: "startup",
+    order: 4,
+    title: "Powering Up: The Startup Sequence",
+    subtitle: "The exact CrossBridge power-on steps, in order, every service.",
+    icon: "🔌",
+    estMinutes: 12,
     objectives: [
-      "Set gain so the signal is healthy but never clipping",
-      "Know when 48V phantom power is required",
-      "Understand good gain structure and why it matters",
+      "Perform the CBC startup sequence in the correct order",
+      "Recall the 'Singing R1' scene and check mic batteries",
+      "Follow the service-morning timeline",
     ],
     sections: [
       {
-        heading: "What gain does",
-        body: "Gain (also called Trim) is the very first control in the channel. It sets how much the preamp boosts the weak signal coming from a mic or DI up to a strong, usable level.\n\nSet it too LOW and the signal is weak; you'll have to push everything else hard, which adds hiss and noise. Set it too HIGH and the signal CLIPS — it distorts, sounds harsh and crackly, and can't be fixed later. The goal is a healthy level with headroom to spare.",
-        control: "Gain / Trim",
+        heading: "The startup sequence",
+        body: "Follow this order every service — it's our 'Operator's Guide to the Universe':\n\n1. Turn on the BREAKERS (the labeled breakers in the left two panels — this also powers the lighting).\n2. Turn on the KEY SWITCH (on the wall, to the right of the sound board).\n3. Bring up LIGHTING — go to lighting scene 19, then raise the master fader on the lighting control panel.\n4. Check MIC BATTERIES — if a mic shows only 1 bar (of 3), change the batteries (2 AA).\n5. Recall the 'Singing R1' SCENE on the SQ-6.\n6. Unmute GROUPS as required once practice starts.\n7. Unmute the SPECIFIC channels being used — mute the others.\n8. STORE 'Singing R1' by pressing Button #7.\n9. Walk the auditorium and listen for balanced levels.\n10. If Peter or Rob are preaching, prep Pastor 2.",
+        tip: "The Blue mic is tied to the computer — 'Blue on' means the computer/announcements path is live. Confirm it when you start.",
+        control: "Key switch / Scenes",
       },
       {
-        heading: "Setting gain by the meters",
-        body: "On the SQ-6, select the channel and watch its input meter on the touchscreen while the source is at a realistic performance level (have the vocalist sing as loud as they will in the service, not a timid 'check one').\n\n- Aim for the meter to average in the healthy range, with the loudest peaks staying below the top.\n- The signal should never light the clip/peak indicator. If it does, back the gain down.\n- Leave headroom — worship gets louder at the climax than at soundcheck, so don't max out the meter during a quiet verse.",
-        tip: "Set gain with the fader at its nominal '0 / unity' position. That way the meter reflects the real preamp level, not a fader that's been pulled way down to compensate.",
+        heading: "The service-morning timeline",
+        body: "Timing keeps the morning calm. Aim to be set up and running by 8:20 AM (practice starts at 8:30):\n\n- By 8:20 — breakers on, key switch on, lighting up, console booted and 'Singing R1' recalled.\n- 8:25 — check the Scheduling App to see who's singing (which color mic each vocalist gets). Bring out the mics and turn each on with the red button on the bottom; check the battery bars.\n- 8:30 — be ready to unmute instruments as they're plugged in. Unmute the Vocal, Instrument, Drum, and Keys groups as applicable.\n- 8:35 — walk out to the auditorium and listen; it should be level across the board.\n- 8:40 — save the current setup back to 'Singing R1' (Scenes → select Singing R1 → Store).",
+        tip: "Arrive early. Your goal before rehearsal: every input verified and every performer able to hear themselves. Solve problems now, not during the first song.",
       },
       {
-        heading: "Phantom power (48V)",
-        body: "Condenser microphones and many active DI boxes need power to work, supplied by the console as '48V phantom power' down the same mic cable.\n\n- Turn 48V ON for: condenser mics (many vocal/choir/overhead mics) and active DIs that require it.\n- Leave 48V OFF for: dynamic mics (like a handheld SM58-style vocal mic) — they don't need it. Passive DIs don't need it either.\n\nImportant safety habit: MUTE the channel (or pull the fader) BEFORE toggling 48V, and don't plug/unplug a cable while phantom is live — switching it under load causes a loud pop and can stress equipment. [CrossBridge] If you're unsure whether a mic needs 48V, check our input list or ask a lead before enabling it.",
-        control: "48V",
-      },
-      {
-        heading: "Gain structure across the whole path",
-        body: "Gain structure means keeping a strong, clean level at every stage — not too weak, not clipping — from the preamp all the way to the output. Good gain structure gives you a quiet, punchy mix with plenty of room to make moves.\n\nThe habit: get the gain right FIRST at soundcheck, then mix with the faders. If you find yourself running a fader almost all the way down to control a channel, its gain is probably set too high — fix the gain instead of fighting it with the fader.",
-        tip: "Fix problems as far upstream as possible. A level set right at the preamp saves you from chasing it everywhere downstream.",
+        heading: "Why order matters",
+        body: "Powering up in the right order protects the gear and the room. The key switch brings the system up cleanly; recalling 'Singing R1' loads our known-good baseline (channel names, groups, routing, and starting mutes) so every service begins consistent instead of from whatever the last person left behind.\n\nChecking batteries early avoids a dead mic mid-song. And unmuting only what's in use keeps the stage clean and prevents feedback and buzz from open channels.",
+        tip: "If you skip the 'Singing R1' recall, you're mixing on top of last week's leftovers. Always recall it first.",
       },
     ],
     quiz: [
       {
-        question: "What happens if you set the input gain too HIGH?",
+        question: "What are the first two steps of the CBC startup sequence?",
         options: [
-          "The signal is weak and hissy",
-          "The signal clips and distorts — harsh, crackly, and unfixable later",
-          "Nothing, gain has no effect",
-          "The channel mutes automatically",
+          "Recall Singing R1, then check batteries",
+          "Turn on the breakers, then the key switch",
+          "Bring up lighting, then unmute groups",
+          "Turn on the mics, then the stream",
         ],
         answer: 1,
         explanation:
-          "Too much gain clips the input, causing distortion you can't remove downstream. Too little gain gives a weak, noisy signal. Aim for healthy with headroom.",
+          "Startup begins with the breakers (left two panels, also powers lighting), then the key switch on the wall to the right of the board.",
       },
       {
-        question: "Which of these needs 48V phantom power?",
+        question: "A wireless mic shows only 1 battery bar. What do you do?",
         options: [
-          "A dynamic handheld vocal mic",
-          "A passive DI box",
-          "A condenser microphone",
-          "A pair of headphones",
-        ],
-        answer: 2,
-        explanation:
-          "Condenser mics (and active DIs) need 48V phantom power. Dynamic mics and passive DIs do not.",
-      },
-      {
-        question: "What should you do just before toggling 48V phantom power on a channel?",
-        options: [
-          "Turn the house speakers all the way up",
-          "Mute the channel (or pull the fader) to avoid a loud pop",
-          "Unplug the console",
-          "Recall a new Scene",
+          "Use it anyway — 1 bar is fine",
+          "Change the batteries (2 AA)",
+          "Mute it for the whole service",
+          "Recall a new scene",
         ],
         answer: 1,
         explanation:
-          "Muting first prevents the pop that occurs when phantom power switches, protecting speakers and ears.",
+          "Our mics show 3 bars full; at 1 bar you change the batteries (2 AA) so it doesn't die mid-service.",
       },
       {
-        question: "You're running a channel's fader almost all the way down to keep it from being too loud. What does that usually mean?",
+        question: "Which scene do we recall to start the service, and how do we save it back?",
         options: [
-          "The fader is broken",
-          "The gain is set too high and should be reduced at the preamp",
-          "You need a bigger console",
-          "The channel needs more phantom power",
+          "'Sunday Default' — saved automatically",
+          "'Singing R1' — stored by pressing Button #7",
+          "Lighting scene 19 — stored with Select",
+          "'Pastor 2' — stored from the stream computer",
         ],
         answer: 1,
         explanation:
-          "Fighting a channel with a very low fader is a sign of bad gain structure. Fix it upstream by lowering the gain so the fader can sit near unity.",
+          "We recall 'Singing R1' to begin, and after the mix is set we store it back by pressing Button #7 (Scenes → Singing R1 → Store).",
+      },
+      {
+        question: "By what time should the system be set up and running?",
+        options: ["8:00 AM", "8:20 AM", "9:00 AM", "10:30 AM"],
+        answer: 1,
+        explanation:
+          "Practice starts at 8:30; be set up and running by 8:20 so musicians have monitors and you've verified inputs before rehearsal.",
       },
     ],
   },
   {
-    slug: "eq-hpf",
-    order: 7,
-    title: "High-Pass Filter & EQ",
-    subtitle: "Shaping tone and cleaning up mud with the HPF and 4-band parametric EQ.",
-    icon: "🎚️",
-    estMinutes: 14,
+    slug: "mics-colors",
+    order: 5,
+    title: "Mics & the Color System",
+    subtitle: "Our color-coded wireless mics and how singers are assigned in the Scheduling App.",
+    icon: "🎤",
+    estMinutes: 12,
     objectives: [
-      "Use the high-pass filter to remove low-end rumble",
-      "Understand the three EQ controls: frequency, gain, and Q",
-      "Make small, purposeful EQ moves instead of over-tweaking",
+      "Identify our color-coded wireless mics and what each is for",
+      "Use the Scheduling App to assign the right mic to each singer",
+      "Power mics on/off and check batteries correctly",
     ],
     sections: [
       {
-        heading: "Start with the High-Pass Filter (HPF)",
-        body: "The high-pass filter lets HIGH frequencies pass and cuts away the LOWs below a chosen point. It's the first cleanup tool on most channels.\n\nStages are full of low-frequency energy you don't want in vocal and instrument channels — foot stomps, mic handling, HVAC rumble, stage vibration. Rolling in an HPF on those channels (commonly somewhere around 80–120 Hz for vocals) removes that mud without making the voice sound thin. Bass guitar and kick drum are usually left with little or no HPF because their sound lives down low.",
-        tip: "A little HPF on almost every vocal and instrument mic cleans up the whole mix instantly. Bass and kick are the main exceptions.",
-        control: "HPF",
+        heading: "The color system",
+        body: "Our wireless handheld mics are color-coded so you can find any channel instantly under service pressure. The colors and their roles:\n\n- PASTOR 1 and PASTOR 2 — the preaching mics (their own group and DCA).\n- BLUE — announcements; also tied to the computer path ('Blue on' = computer/announcements live).\n- YELLOW, ORANGE, GREEN, WHITE — worship vocalists.\n\nEach color maps to a fixed mute group and DCA on the board, so muting or leveling 'the vocals' is one move. Learn the colors cold — during a service you'll reach for 'Orange' faster than for a channel number.",
+        tip: "Blue is special: it's announcements and the computer feed, not a worship vocal. Treat it differently from the colored worship mics.",
+        control: "Wireless handhelds",
       },
       {
-        heading: "The three EQ controls",
-        body: "The SQ-6 gives each channel a 4-band parametric EQ. Every band has three controls:\n\n- FREQUENCY — WHICH pitch range you're adjusting (from lows to highs).\n- GAIN — how much you BOOST (turn up) or CUT (turn down) that range, in dB.\n- Q (width) — how WIDE or NARROW a range around that frequency is affected. A wide Q is gentle and musical; a narrow Q is surgical, for zapping one problem tone.\n\nTogether: pick the frequency, decide boost or cut, and set how wide the move is.",
-        control: "PEQ",
+        heading: "Who sings which color — the Scheduling App",
+        body: "Before the service, check the Scheduling App to see who is singing and which color mic each vocalist gets. For example, our matrix has included assignments like Erin → Yellow, Val → Orange, Elfa → Yellow. Assignments change week to week, so always check the app rather than assuming.\n\nOnce you know the assignments, bring out exactly those mics and hand them to the right people. This is why the color system works: the singer changes, but 'Yellow' is always the same channel, group, and DCA on the board.",
+        tip: "Match the app to the mic to the person before rehearsal. A mislabeled mic is the most common cause of 'why is the wrong person's fader doing nothing?'",
+        control: "Scheduling App",
       },
       {
-        heading: "Cut first, boost gently",
-        body: "The pro habit is to solve problems by CUTTING the offending frequency rather than boosting everything around it. Cutting is cleaner, adds less energy to the mix, and reduces feedback risk.\n\nA practical method to find a problem tone: temporarily BOOST a narrow band and sweep the frequency until the annoying/harsh/boomy quality jumps out, then turn that band into a CUT and dial the amount back to just enough. Then leave it alone.\n\nGo easy. Big EQ moves (many dB) usually mean the real fix is elsewhere — mic choice, mic position, or gain. Small, purposeful moves keep things natural.",
-        tip: "If you catch yourself making huge EQ boosts, stop and check the mic and its placement first. EQ can't fix a badly captured source.",
-      },
-      {
-        heading: "EQ and feedback",
-        body: "Feedback (that squeal/howl) happens at specific frequencies where a mic and speaker form a loop. A narrow EQ CUT at the offending frequency can tame it, but EQ is a supporting fix — the primary tools are mic placement, gain discipline, and muting unused mics.\n\nNever try to 'EQ your way out' of a badly positioned monitor pointed at an open mic. Fix the physical setup first, then use a gentle cut to buy margin.",
+        heading: "Powering and checking mics",
+        body: "For each mic in use:\n\n1. Turn it ON with the red button on the bottom of the handheld.\n2. Check the battery — full is 3 bars; if it's at 1 bar, change the batteries (2 AA).\n3. Confirm it shows up and passes signal at the board on the matching color channel.\n\nAt the end of the service, ensure every mic is turned OFF, then mute all groups. (Our wireless system includes Shure ULX and Sennheiser EW/XSW units — a lead can show you which receiver belongs to which color.)",
+        tip: "Turn mics on with the red button on the bottom and always verify signal at the board before rehearsal — don't assume 'on' means 'working.'",
       },
     ],
     quiz: [
       {
-        question: "What does a high-pass filter (HPF) do?",
+        question: "What is the BLUE mic used for?",
         options: [
-          "Cuts the high frequencies and keeps the lows",
-          "Lets the highs pass and cuts the low frequencies below a set point",
-          "Boosts all frequencies equally",
-          "Adds reverb",
+          "The lead worship vocal",
+          "Announcements and the computer path",
+          "The drums",
+          "The pastor's sermon",
         ],
         answer: 1,
         explanation:
-          "A high-pass filter passes highs and removes lows below the chosen frequency — great for cutting rumble on vocal and instrument channels.",
+          "Blue is announcements and is tied to the computer feed ('Blue on' = computer/announcements live) — it's not a worship vocal channel.",
       },
       {
-        question: "The 'Q' control on an EQ band sets what?",
+        question: "How do you know which vocalist gets which color mic?",
         options: [
-          "How loud the channel is overall",
-          "Which frequency is affected",
-          "How wide or narrow a range around the chosen frequency is affected",
-          "The phantom power voltage",
-        ],
-        answer: 2,
-        explanation:
-          "Q is bandwidth: wide Q affects a broad, gentle range; narrow Q is surgical for targeting one specific problem tone.",
-      },
-      {
-        question: "What's the preferred approach to fixing a harsh or boomy frequency?",
-        options: [
-          "Boost everything around it",
-          "Cut the offending frequency rather than boosting around it",
-          "Turn the gain all the way up",
-          "Add a second microphone",
+          "It's always the same people every week",
+          "Check the Scheduling App before the service",
+          "Whoever grabs a mic first",
+          "The mic colors are random",
         ],
         answer: 1,
         explanation:
-          "Cutting the problem is cleaner and safer than boosting everything else. Find it by sweeping a narrow boost, then turn it into a modest cut.",
+          "Assignments change weekly. The Scheduling App shows who's singing and which color mic each gets (e.g., Erin → Yellow, Val → Orange).",
       },
       {
-        question: "Which channels typically get little or no high-pass filtering?",
+        question: "Why does the color system work even though singers change each week?",
         options: [
-          "Lead and background vocals",
-          "Bass guitar and kick drum",
-          "Acoustic guitar",
-          "Spoken-word lapel mics",
-        ],
-        answer: 1,
-        explanation:
-          "Bass and kick live in the low frequencies, so we usually leave them with little or no HPF. Vocals and most instruments benefit from a modest HPF.",
-      },
-    ],
-  },
-  {
-    slug: "dynamics",
-    order: 8,
-    title: "Dynamics: Gate & Compressor",
-    subtitle: "Controlling loud and quiet — keeping vocals consistent and stages clean.",
-    icon: "📉",
-    estMinutes: 14,
-    objectives: [
-      "Explain what a compressor does and its key controls",
-      "Explain what a noise gate does and when to use one",
-      "Apply gentle, transparent dynamics rather than crushing the sound",
-    ],
-    sections: [
-      {
-        heading: "The compressor — evening out level",
-        body: "A compressor automatically turns DOWN a signal when it gets too loud, then you make up the level. The result is a more CONSISTENT sound — the quiet words and the belted notes sit closer together, so a vocal stays present without you riding the fader every second.\n\nKey controls:\n- THRESHOLD — the level above which the compressor starts working. Only signal louder than this gets turned down.\n- RATIO — how firmly it turns down what's over the threshold (a gentle 2:1 vs. a firm 4:1+).\n- ATTACK / RELEASE — how fast it clamps down and how fast it lets go.\n- MAKEUP GAIN — brings the overall level back up after compression.",
-        control: "Compressor",
-      },
-      {
-        heading: "Using compression tastefully",
-        body: "For worship vocals, aim for GENTLE, transparent control — a few dB of gain reduction on the loudest peaks, not obvious 'squashing.' Watch the gain-reduction meter: if it's slamming down 10+ dB constantly, you're overdoing it.\n\nGood starting instinct for a lead vocal: a moderate ratio, threshold set so the compressor only engages on the louder phrases, and just enough makeup gain to match the pre-compression level. The goal is 'I can always hear the words clearly,' not 'wow, that's compressed.'",
-        tip: "Set threshold while the singer performs at full intensity. If you set it during a soft check, it'll clamp far too hard when they open up.",
-      },
-      {
-        heading: "The noise gate — silencing the gaps",
-        body: "A gate does the opposite of a compressor: it turns a channel DOWN (or off) when the signal falls BELOW a threshold, and opens it up when a real signal arrives.\n\nUse it to clean up channels that pick up unwanted noise in the gaps — for example a drum mic catching bleed from the rest of the kit, or a mic that hisses when nobody's talking. Set the threshold just above the noise floor so real playing/singing opens the gate but the background junk stays shut out.\n\nBe careful: too aggressive a gate 'chops' the start or end of soft notes. On lead vocals we often use little or no gating so quiet phrases aren't cut off.",
-        control: "Gate",
-      },
-    ],
-    quiz: [
-      {
-        question: "What does a compressor do?",
-        options: [
-          "Turns a signal UP when it gets quiet",
-          "Turns a signal DOWN when it exceeds a threshold, making the level more consistent",
-          "Removes low frequencies",
-          "Adds echo",
-        ],
-        answer: 1,
-        explanation:
-          "A compressor reduces the loudest parts above the threshold, evening out the dynamics so a vocal stays consistent.",
-      },
-      {
-        question: "The compressor's THRESHOLD control sets what?",
-        options: [
-          "The level above which compression starts working",
-          "The overall channel color",
-          "The phantom power",
-          "Which layer the channel is on",
+          "Because each color is always the same channel, group, and DCA on the board",
+          "Because the mics rename themselves automatically",
+          "Because there's only ever one singer",
+          "Because colors don't actually matter",
         ],
         answer: 0,
         explanation:
-          "Threshold is the level above which the compressor acts. Only signal louder than the threshold gets turned down.",
+          "A color maps to a fixed channel/group/DCA. The person holding 'Yellow' changes, but the board handling of Yellow stays constant.",
       },
       {
-        question: "How does a noise gate behave?",
+        question: "A wireless handheld shows 1 battery bar during setup. The correct action is:",
         options: [
-          "It boosts signals below the threshold",
-          "It turns the channel down/off when signal falls below the threshold, and opens when real signal arrives",
-          "It is identical to a compressor",
-          "It only works on the main LR bus",
+          "Leave it — it will last",
+          "Swap in fresh batteries (2 AA)",
+          "Turn the gain up to compensate",
+          "Reassign the singer to a wired mic only",
         ],
         answer: 1,
         explanation:
-          "A gate silences a channel when the signal is below threshold and opens it for real signal — useful for cutting noise and bleed in the gaps.",
-      },
-      {
-        question: "What's the right amount of compression for a worship lead vocal?",
-        options: [
-          "As much as possible — slam it 15+ dB constantly",
-          "None ever",
-          "Gentle and transparent — a few dB of reduction on the loudest peaks",
-          "Only during the sermon",
-        ],
-        answer: 2,
-        explanation:
-          "Tasteful, gentle compression keeps the vocal consistent without an obvious 'squashed' sound. Watch the gain-reduction meter and keep it modest.",
+          "Full is 3 bars; at 1 bar change the batteries (2 AA) during setup so it doesn't fail mid-service.",
       },
     ],
   },
   {
-    slug: "mixes-monitors",
-    order: 9,
-    title: "Monitor Mixes & Sends on Faders",
-    subtitle: "Building what the stage hears using aux mixes and the SQ-6's sends-on-faders workflow.",
-    icon: "🔊",
+    slug: "mutes-blue",
+    order: 6,
+    title: "Mute Groups, Channels & the Blue Mic",
+    subtitle: "Keeping the stage clean — unmute what's in use, mute what isn't.",
+    icon: "🔇",
+    estMinutes: 11,
+    objectives: [
+      "Use the top-right mute-group buttons correctly",
+      "Unmute channels as instruments plug in and mute unused ones",
+      "Handle the Blue mic and open-channel buzz",
+    ],
+    sections: [
+      {
+        heading: "Mute groups as the band comes in",
+        body: "The top-right buttons mute or unmute a whole GROUP of inputs at once (red = muted). As rehearsal starts and instruments get plugged in and turned on, you unmute the groups that are in use — Vocals, Instruments, Drums, Keys — and leave the rest muted.\n\nThis keeps the stage clean: only what's actually being played is open. Muting groups you don't need is one of the simplest, most powerful tools for a distraction-free mix.",
+        tip: "Work the groups first, then fine-tune individual channels. A quick glance at the top-right buttons tells you what's live.",
+        control: "Top-right mute buttons",
+      },
+      {
+        heading: "Mute the unused — watch for buzz",
+        body: "Some inputs BUZZ or hum when they're plugged in but not in use — the electric guitar and the piano mic are known culprits on our stage. If an instrument isn't being played, keep its channel muted so that buzz never reaches the mix.\n\nThe habit: unmute the SPECIFIC channels being used, mute the others. Then unmute a channel a beat before it's needed and re-mute it when it goes quiet. Open, unused mics and DIs are the #1 source of noise and feedback.",
+        tip: "If you hear a mystery buzz, look for an open channel that isn't being played — especially electric guitar or the piano mic — and mute it.",
+        control: "Channel mutes",
+      },
+      {
+        heading: "Focus on the essentials first — the Blue mic",
+        body: "When the service starts, get the essentials up before anything else: the Pastor mic and the Blue (announcements) mic. Those carry the spoken word, and a missed unmute there is the most noticeable mistake we can make.\n\nRemember Blue is the announcements/computer path — unmute it when announcements are happening and mute it when they're done. Prioritize spoken-word channels being live and clean over fine-tuning the band.",
+        tip: "Unmute first, fine-tune second. Pastor and Blue live and clear is the top priority every service.",
+      },
+    ],
+    quiz: [
+      {
+        question: "As the band plugs in during rehearsal, what do you do with the mute groups?",
+        options: [
+          "Leave every group muted the whole time",
+          "Unmute the groups in use (Vocals, Instruments, Drums, Keys) and leave the rest muted",
+          "Unmute every group immediately",
+          "Only unmute the drum group",
+        ],
+        answer: 1,
+        explanation:
+          "Unmute the groups that are actually in use and keep the rest muted — that keeps the stage clean and prevents stray noise.",
+      },
+      {
+        question: "You hear a buzz on stage during a quiet moment. What's the likely cause?",
+        options: [
+          "The house speakers are broken",
+          "An open, unused channel — often electric guitar or the piano mic — that should be muted",
+          "The Singing R1 scene is corrupted",
+          "The stream computer is off",
+        ],
+        answer: 1,
+        explanation:
+          "Some inputs buzz when plugged in but not played. Keep unused channels (notably electric guitar and the piano mic) muted.",
+      },
+      {
+        question: "When the service starts, which channels should you prioritize getting live?",
+        options: [
+          "The drum overheads",
+          "The Pastor mic and the Blue (announcements) mic",
+          "The FX returns",
+          "The hallway feed",
+        ],
+        answer: 1,
+        explanation:
+          "Spoken word matters most — get Pastor and Blue up and clean first, then fine-tune the band.",
+      },
+    ],
+  },
+  {
+    slug: "groups-dcas",
+    order: 7,
+    title: "Groups & DCAs",
+    subtitle: "Two ways to control many channels at once — and how they differ.",
+    icon: "🎚️",
+    estMinutes: 13,
+    objectives: [
+      "Explain the difference between a Group and a DCA",
+      "Recognize our group and DCA assignments",
+      "Use DCAs and group compression to shape the mix",
+    ],
+    sections: [
+      {
+        heading: "Group vs. DCA",
+        body: "Both let you control many channels together, but they do different jobs:\n\n- A GROUP is an actual audio bus: the channels are summed into it, and you can add PROCESSING (like compression) to the whole group at once. Our groups feed the L/R and are set PRE-FADER for their monitor sends.\n- A DCA (Digitally Controlled Amplifier) is NOT an audio bus — it's a remote master for the faders and mutes of its assigned channels. It controls MUTE and LEVEL only and does NO processing.\n\nRule of thumb: reach for a GROUP when you want shared processing; reach for a DCA when you just want one fader/mute to ride a set of channels.",
+        tip: "Group = processing + audio bus. DCA = convenient master for level and mute, no processing. The audio still flows through the channels and groups; a DCA just rides them.",
+        control: "Groups / DCAs",
+      },
+      {
+        heading: "Our assignments",
+        body: "Our setup groups things logically (confirm exact numbers on the board, as they've evolved):\n\n- GROUPS — roughly: 1 Pastor, 2 Vocals (Yellow/Orange/etc.), 3 Instruments, 4 Piano/Keys, plus a drums group. Groups add processing.\n- DCAs — roughly: 1 Pastor, 2 Vocals Main, 3 Vocals Second, 4 Electric Guitar, 5 Analog Guitar, 6 Synth L/R, 7 Piano L/R, 8 Drums.\n\nSo the pastor's mics ride together on Group 1 / DCA 1, the vocals ride on the vocal group and vocal DCAs, and so on. This is why one move can raise 'the vocals' or mute 'the drums.'",
+        tip: "When someone says 'bring up the vocals,' you're moving a group/DCA — not chasing four individual faders. Learn which master controls which family.",
+      },
+      {
+        heading: "Group compression, used musically",
+        body: "Because a group can carry processing, we can compress a whole family of channels together (e.g., group compression on the vocals or drums) for a glued, consistent sound.\n\nA useful trick this enables: with a compressed group, raising one DCA while simultaneously lowering another (for example DCA 1 up as DCA 2 comes down) produces a more dynamic response than either move alone — because the group compression reacts to the changing balance. Small, purposeful moves; let the group processing do the smoothing.",
+        tip: "Let group compression glue a section together, then ride DCAs for balance. You're shaping families of sound, not fighting individual channels.",
+      },
+    ],
+    quiz: [
+      {
+        question: "What is the key difference between a Group and a DCA?",
+        options: [
+          "A Group controls only mute; a DCA adds reverb",
+          "A Group is an audio bus that can add processing; a DCA is a level/mute master with no processing",
+          "They are identical",
+          "A DCA feeds the house; a Group feeds the stream",
+        ],
+        answer: 1,
+        explanation:
+          "Channels sum into a Group, which can carry processing. A DCA is just a remote master for level and mute and does no processing.",
+      },
+      {
+        question: "You want to apply compression across all the vocals at once. Which do you use?",
+        options: ["A DCA", "A Group", "The main L/R fader", "A scene recall"],
+        answer: 1,
+        explanation:
+          "Processing (like compression) lives on Groups. A DCA only rides level and mute; it can't add processing.",
+      },
+      {
+        question: "Roughly which family rides on DCA 1 in our setup?",
+        options: ["Drums", "Pastor", "Synth", "The stream"],
+        answer: 1,
+        explanation:
+          "Our DCAs run roughly 1 Pastor, 2 Vocals Main, 3 Vocals Second, 4 Electric Guitar, 5 Analog Guitar, 6 Synth, 7 Piano, 8 Drums.",
+      },
+      {
+        question: "Why can raising one DCA while lowering another create a more dynamic response?",
+        options: [
+          "Because DCAs add reverb",
+          "Because the group's compression reacts to the changing balance between the channels",
+          "Because it mutes the house",
+          "It doesn't — DCAs have no effect",
+        ],
+        answer: 1,
+        explanation:
+          "With group compression in place, shifting the balance between DCAs changes how the compressor responds, giving a more dynamic result.",
+      },
+    ],
+  },
+  {
+    slug: "monitors-aux",
+    order: 8,
+    title: "Monitors: AUX Sends & ME-500s",
+    subtitle: "Building what the stage hears — and why vocals are routed twice.",
+    icon: "🎧",
     estMinutes: 14,
     objectives: [
       "Explain the difference between the house mix and monitor mixes",
-      "Use 'sends on faders' to build a monitor mix quickly",
-      "Understand pre-fade vs. post-fade sends for monitors",
+      "Recognize our AUX assignments and the ME-500 system",
+      "Understand pre-fade sends and double-routed vocals",
     ],
     sections: [
       {
-        heading: "House mix vs. monitor mixes",
-        body: "The MAIN LR mix is what the congregation hears. But the musicians and vocalists on stage need their own separate blends — the MONITOR mixes — so they can hear themselves and each other. These come out of stage wedges or in-ear monitors (IEMs).\n\nEach monitor mix is independent. The drummer might want lots of click and bass; the worship leader wants mostly their own vocal and a little acoustic. You build each of these on its own aux/mix bus, drawing from the same channels but at completely different levels than the house.",
-        control: "Mix / Aux",
+        heading: "House vs. monitors, and our AUX map",
+        body: "The main L/R is what the congregation hears. The musicians need their own separate blends — MONITOR mixes — delivered to their ME-500 personal mixers as in-ears on stage. Each monitor mix is independent and built on an AUX bus.\n\nOur AUX assignments:\n- AUX 1 — Stream\n- AUX 2 — Drums\n- AUX 3 — Comms (talkback between team)\n- AUX 4 — FX Return\n- AUX 5 — Yellow\n- AUX 6 — Orange\n- AUX 7 — Pastor\n\nSo when 'Orange' needs more of themselves in their ears, you adjust their send on AUX 6 — not the house fader.",
+        tip: "The AUX buses aren't all monitors — AUX 1 is the stream feed and AUX 3 is comms. Know which AUX does what before you change one.",
+        control: "AUX (Layer C)",
       },
       {
-        heading: "Sends on faders — the fast way to mix monitors",
-        body: "Instead of tiny send knobs, the SQ-6 lets you build a monitor mix using the big physical faders. This is called SENDS ON FADERS.\n\nHow it works: press the Mix (aux) master for the monitor you want to build — say 'IEM 1: Worship Leader.' The console flips the fader strips so that each fader now sets how much of that channel is SENT to that one monitor mix. Move the acoustic guitar fader and you're setting how much guitar the worship leader hears in their ears — not the house level.\n\nWhen you're done, return to the LR/main mix and the faders go back to controlling the house. [CrossBridge] Confirm exactly how our Mix masters are labeled and which output feeds which performer.",
-        tip: "Watch the screen/indicators to confirm which mix you're sending to. Changing a fader in the wrong mix is the classic monitor mistake — always verify you're on the intended aux before making moves.",
-        control: "Sends on Faders",
+        heading: "Pre-fade: monitors stay stable",
+        body: "Monitor sends are taken PRE-FADER — before the channel's main fader. That means when you change the house level, the performer's monitor level does NOT change. Their in-ear blend stays rock-steady no matter what you do out front.\n\n(Effects, by contrast, are usually POST-fade so the wet effect follows the vocal. Rule of thumb here: monitors = pre-fade, effects = post-fade.)",
+        tip: "If a musician says their in-ears jump around whenever you mix the house, a send that should be pre-fade is set post-fade.",
+        control: "Pre-fade sends",
       },
       {
-        heading: "Pre-fade vs. post-fade",
-        body: "A send to a mix can be PRE-fade or POST-fade, and it matters for monitors:\n\n- PRE-FADE sends take the signal BEFORE the channel's main fader. So when you change the house level, the monitor level does NOT change. Monitor mixes are almost always fed pre-fade, so a performer's in-ear blend stays stable no matter what you do to the house.\n- POST-FADE sends take the signal AFTER the fader, so they follow house fader moves. This is what we use for effects like reverb, so the wet effect rises and falls with the vocal.\n\nRule of thumb: monitors = pre-fade, effects = post-fade.",
-        tip: "If a performer complains their monitor level jumps around when you mix the house, a send that should be pre-fade is probably set post-fade.",
+        heading: "Why vocals are routed twice",
+        body: "Here's a CBC-specific concept: our vocal mics are DOUBLE-ROUTED. A colored mic (say Orange) is patched to two input channels:\n\n- One instance feeds the ORANGE AUX → the singer's ME-500 in-ears (their monitor).\n- The other instance (the 'individual vocal input') feeds the VOCAL GROUP → the main L/R (the house).\n\nThis lets us handle the in-ear feed and the house feed separately — the singer can have plenty of themselves in their ears without pushing them loud in the room, and vice versa. It's more setup, but it gives each vocalist independent control of monitor vs. house.",
+        tip: "Because vocals are double-routed, changing the house vocal doesn't touch the in-ear feed — they're literally different channels. Adjust the one that matches the problem.",
+        control: "Double routing",
       },
     ],
     quiz: [
       {
-        question: "What is a monitor mix?",
+        question: "In our AUX map, what is AUX 6?",
+        options: ["Stream", "Drums", "Orange", "Pastor"],
+        answer: 2,
+        explanation:
+          "Our AUX map: 1 Stream, 2 Drums, 3 Comms, 4 FX Return, 5 Yellow, 6 Orange, 7 Pastor.",
+      },
+      {
+        question: "Why are monitor sends taken pre-fader?",
         options: [
-          "The mix the congregation hears from the main speakers",
-          "A separate blend sent to stage wedges or in-ears so performers can hear themselves",
-          "The recording sent to the lobby",
-          "The lighting cue list",
+          "So they follow every house fader move",
+          "So the performer's monitor level stays stable no matter what you do to the house mix",
+          "To mute the monitors automatically",
+          "To add reverb to the in-ears",
         ],
         answer: 1,
         explanation:
-          "Monitor mixes are independent blends for the stage. Each performer can have a different mix from the same channels.",
+          "Pre-fade sends come before the channel fader, so house moves don't disturb the stage monitor blend.",
       },
       {
-        question: "What does the SQ-6 'sends on faders' feature let you do?",
+        question: "What does 'double-routing' our vocals accomplish?",
         options: [
-          "Use the large faders to set how much of each channel goes to a selected monitor mix",
-          "Automatically mix the whole service with no input",
-          "Turn all faders into mute buttons",
-          "Record to USB",
-        ],
-        answer: 0,
-        explanation:
-          "Pressing a Mix master flips the faders so they set that channel's send level to the selected monitor mix — a fast, tactile way to build monitors.",
-      },
-      {
-        question: "Monitor mixes are almost always fed how, and why?",
-        options: [
-          "Post-fade, so they follow the house fader",
-          "Pre-fade, so the performer's monitor level stays stable no matter what you do to the house",
-          "Muted, so nobody hears them",
-          "It doesn't matter",
+          "It makes the vocals twice as loud",
+          "It sends each vocal to two channels — one to the singer's in-ears (AUX), one to the house (Vocal Group/LR) — so they're controlled independently",
+          "It records the vocals twice",
+          "It's a mistake we're trying to fix",
         ],
         answer: 1,
         explanation:
-          "Pre-fade sends are taken before the channel fader, so house mix moves don't disturb the stage monitor blend. Effects, by contrast, are usually post-fade.",
+          "Each vocal mic goes to two channels: one feeds the ME-500 in-ears via its AUX, the other feeds the Vocal Group → L/R for the house — independent control of monitor vs. house.",
       },
       {
-        question: "A performer says their in-ear vocal jumps up and down whenever you adjust the house. What's the likely cause?",
+        question: "Where do the musicians' monitor mixes actually come out?",
         options: [
-          "The console is broken",
-          "Their monitor send is set post-fade when it should be pre-fade",
-          "The phantom power is off",
-          "They need a new microphone",
+          "The house speakers",
+          "The ME-500 personal mixers (in-ears) on stage",
+          "The hallway speakers",
+          "The stream",
         ],
         answer: 1,
         explanation:
-          "A post-fade monitor send follows your house fader moves. Switching that send to pre-fade keeps their monitor level independent of the house.",
+          "Monitor mixes are built on AUX buses and delivered to the ME-500 personal mixers as in-ears for the musicians on stage.",
       },
     ],
   },
   {
-    slug: "fx",
-    order: 10,
-    title: "Effects: Reverb & Delay",
-    subtitle: "Adding space and polish with the SQ-6's onboard FX engines and returns.",
-    icon: "✨",
-    estMinutes: 12,
+    slug: "eq",
+    order: 9,
+    title: "EQ at CrossBridge",
+    subtitle: "Shaping tone the CBC way — check the source first, then HPF and EQ.",
+    icon: "🎚️",
+    estMinutes: 13,
     objectives: [
-      "Understand how FX sends and returns work",
-      "Use reverb and delay tastefully on vocals",
-      "Keep effects from washing out clarity",
+      "Check the source before reaching for EQ",
+      "Apply the high-pass filter and a typical vocalist EQ",
+      "Apply a typical bass EQ",
     ],
     sections: [
       {
-        heading: "How effects are wired",
-        body: "The SQ-6 has built-in FX engines (reverb, delay, and more). Effects use a SEND and RETURN loop:\n\n- You SEND some of a channel (like a lead vocal) to an FX engine — usually a POST-fade send so the effect follows the vocal's level.\n- The FX engine produces the 'wet' effect (the reverb tail, the echo).\n- That wet signal RETURNS on its own channel/return and is blended into the main mix.\n\nSo the vocal you hear is the DRY channel plus a little of the WET return. Turning up the send adds more effect; the return level sets how loud the effect sits in the mix.",
-        control: "FX Sends",
+        heading: "Check the source first",
+        body: "Before touching EQ, check the incoming signal. The first question for any vocal mic: is the mic close to their mouth? Position fixes more tone problems than EQ ever will.\n\nEveryone's voice is unique. The goal of EQ isn't to make everyone sound the same — it's to make the mic accurately output their voice the way they sound in person. Start from a good, close capture, then shape gently.",
+        tip: "If a voice sounds thin or distant, check mic technique first. EQ can't rescue a mic held six inches away.",
       },
       {
-        heading: "Reverb and delay in worship",
-        body: "- REVERB adds a sense of space, as if the voice is in a larger room. A touch of reverb on vocals makes them feel polished and blended. Too much and lyrics turn to mush and the mix sounds distant.\n- DELAY (echo) repeats the signal. A subtle delay can add depth to a lead vocal or create a rhythmic effect on a specific line. Tempo-synced delays should match the song's tempo (some SoftKeys can 'tap tempo').\n\nLess is more. The congregation should feel the effect more than notice it. [CrossBridge] We typically keep a light, consistent vocal reverb — check our house Scene for the preset we use.",
-        tip: "Solo (PAFL) the FX return by itself and you'll hear how much effect you're really adding — it's usually more than you think in the full mix.",
+        heading: "HPF + typical vocalist EQ",
+        body: "For vocals we shape a fairly consistent curve:\n\n- HIGH-PASS FILTER (HPF) — cut the low end. Stages are full of low rumble (foot stomps, handling, HVAC) that adds nothing to a voice. We use the HPF often on vocalists.\n- A gentle BOOST in the mid range for presence and body.\n- A small REDUCTION in the high-mids to add clarity and reduce harshness.\n- A BOOST at the higher end for air and sparkle.\n\nSmall, purposeful moves. If you find yourself making huge boosts, go back and check the mic and its position.",
+        tip: "Roll in the HPF on almost every vocal — it cleans up the whole mix instantly without making the voice thin.",
+        control: "HPF / PEQ",
       },
       {
-        heading: "Keep clarity first",
-        body: "Effects are seasoning, not the meal. Spoken word (sermon, announcements, prayer) usually gets little to no reverb — intelligibility is everything. Save the space and shine for sung worship.\n\nWhen in doubt, pull effects back. A clear, present, slightly dry mix always beats a washed-out, echoey one where nobody can understand the words.",
+        heading: "Typical bass EQ",
+        body: "Bass is shaped almost oppositely to vocals:\n\n- A BOOST in the low end for weight — especially where the bass mostly sits.\n- A REDUCTION in the mid range for a clearer, crisper sound that doesn't muddy the mix.\n- A BOOST at the high end to bring out the upper notes and definition.\n\nUnlike vocals, bass lives down low, so we don't high-pass it away. The goal is a bass that's felt underneath the mix but still articulate.",
+        tip: "Vocals get an HPF; bass and kick generally don't — their sound lives in the low end you'd be cutting.",
+        control: "PEQ",
       },
     ],
     quiz: [
       {
-        question: "How do effects like reverb get into the mix on the SQ-6?",
+        question: "Before reaching for EQ on a vocal, what should you check first?",
         options: [
-          "Every channel has a permanent built-in reverb that can't be changed",
-          "You SEND a channel to an FX engine, and its 'wet' output RETURNS and is blended into the mix",
-          "Effects only work on recordings",
-          "You must use an external rack unit",
+          "The lighting scene",
+          "Whether the mic is close to the singer's mouth",
+          "The streaming feed",
+          "The battery color",
         ],
         answer: 1,
         explanation:
-          "FX use a send/return loop: send part of a channel to the FX engine, and the wet result returns to be blended with the dry channel.",
+          "Mic position fixes more tone problems than EQ. Start from a good, close capture, then shape gently.",
       },
       {
-        question: "Sends to a reverb are usually set to what, so the effect follows the vocal's level?",
-        options: ["Pre-fade", "Post-fade", "Muted", "Phantom-powered"],
-        answer: 1,
-        explanation:
-          "Effects sends are typically post-fade so the wet effect rises and falls with the channel fader. (Monitors, by contrast, are pre-fade.)",
-      },
-      {
-        question: "How much reverb belongs on the spoken sermon?",
+        question: "What does the high-pass filter (HPF) do, and where do we use it?",
         options: [
-          "As much as possible for drama",
-          "Little to none — intelligibility of the words comes first",
-          "The same heavy amount as sung worship",
-          "Only delay, never reverb",
+          "Cuts the highs; used on the bass",
+          "Cuts the low end; used often on vocalists",
+          "Boosts everything; used on drums",
+          "Adds reverb; used on the pastor",
         ],
         answer: 1,
         explanation:
-          "Spoken word needs clarity, so we keep it dry. Reverb and delay are reserved mostly for sung worship, and even then used tastefully.",
+          "The HPF removes low-end rumble and is used often on vocalists to clean up the sound without thinning the voice.",
+      },
+      {
+        question: "In a typical CBC vocalist EQ, what do we do in the high-mids?",
+        options: [
+          "A large boost for loudness",
+          "A small reduction to add clarity and reduce harshness",
+          "Nothing ever",
+          "A high-pass filter",
+        ],
+        answer: 1,
+        explanation:
+          "Our vocal curve boosts the mids and highs but reduces the high-mids slightly to add clarity and cut harshness.",
+      },
+      {
+        question: "How does a typical bass EQ differ from a vocal EQ?",
+        options: [
+          "Bass gets a heavy HPF like vocals",
+          "Bass boosts the low end and cuts the mids (for clarity), rather than high-passing the lows away",
+          "Bass and vocals get the exact same EQ",
+          "Bass only gets treble boost",
+        ],
+        answer: 1,
+        explanation:
+          "Bass lives low, so we boost the lows, cut the mids for crispness, and lift the highs for definition — we don't high-pass it like a vocal.",
+      },
+    ],
+  },
+  {
+    slug: "compression",
+    order: 10,
+    title: "Compression",
+    subtitle: "Keeping levels consistent — threshold, ratio, output gain, and the limiter.",
+    icon: "📉",
+    estMinutes: 11,
+    objectives: [
+      "Explain what a compressor does and its key controls",
+      "Use sensible starting settings for speech",
+      "Understand the limiter and group compression",
+    ],
+    sections: [
+      {
+        heading: "What a compressor does",
+        body: "A compressor automatically turns DOWN a signal when it gets too loud, evening out the level so quiet and loud passages sit closer together. The result is a more CONSISTENT sound — a vocal stays present without you riding the fader every second.\n\nThe key controls:\n- THRESHOLD — the level where the compressor starts to engage. Only signal above it gets turned down.\n- RATIO — how much compression to apply once over the threshold. For speech, around 2:1 is a good general starting point.\n- OUTPUT GAIN — makes up level after compression; generally left around 0.",
+        tip: "Set the threshold while the source is at real performance level. Set it during a soft check and it'll clamp far too hard when they open up.",
+        control: "Compressor",
+      },
+      {
+        heading: "Tasteful, transparent control",
+        body: "For worship, aim for GENTLE compression — a few dB of reduction on the loudest peaks, not obvious squashing. Watch the gain-reduction meter: if it's slamming down constantly, back off the threshold or ratio.\n\nFor a spoken voice, a modest ratio (around 2:1) with the threshold set so it only engages on louder phrases keeps the pastor even and intelligible without sounding processed. The goal is 'I can always hear the words clearly,' not 'wow, that's compressed.'",
+        tip: "2:1 and a few dB of gain reduction is a safe home base for speech. Make it audible only as consistency, not as an effect.",
+      },
+      {
+        heading: "The limiter and group compression",
+        body: "A LIMITER is compression's stricter cousin — a very high ratio that acts as a ceiling, stopping a signal from exceeding a set level. We use limiting to catch sudden peaks and protect against spikes.\n\nWe also compress whole GROUPS (see the Groups & DCAs module) to glue a family of channels — like the vocals or drums — into a consistent, blended sound. Group compression is what makes riding DCAs feel smooth and dynamic.",
+        tip: "Compressor = gentle, ongoing consistency. Limiter = a hard ceiling for safety. Use both for their own jobs.",
+        control: "Limiter",
+      },
+    ],
+    quiz: [
+      {
+        question: "What does the THRESHOLD control set on a compressor?",
+        options: [
+          "The overall channel color",
+          "The level where the compressor starts to engage",
+          "The amount of reverb",
+          "Which layer the channel is on",
+        ],
+        answer: 1,
+        explanation:
+          "Threshold is where compression begins — only signal above it gets turned down.",
+      },
+      {
+        question: "What's a good general ratio starting point for speech?",
+        options: ["20:1", "2:1", "0:1", "It doesn't matter"],
+        answer: 1,
+        explanation:
+          "Around 2:1 is a good general ratio for speech — enough to even it out without sounding processed.",
+      },
+      {
+        question: "Where is output gain generally set?",
+        options: ["Maxed out", "Around 0", "Fully down", "At the threshold"],
+        answer: 1,
+        explanation:
+          "Output gain makes up level after compression and is generally left around 0.",
+      },
+      {
+        question: "How does a limiter differ from a compressor?",
+        options: [
+          "A limiter adds reverb",
+          "A limiter is a very high-ratio ceiling that stops a signal from exceeding a set level, for safety",
+          "They are identical",
+          "A limiter only works on the stream",
+        ],
+        answer: 1,
+        explanation:
+          "A limiter is compression with a very high ratio acting as a hard ceiling — great for catching sudden peaks and protecting the system.",
       },
     ],
   },
   {
     slug: "scenes",
     order: 11,
-    title: "Scenes: Save & Recall",
-    subtitle: "Storing complete console setups so every service starts consistent.",
+    title: "Scenes: Recall & Store",
+    subtitle: "Using 'Singing R1' and the scene buttons the CrossBridge way.",
     icon: "💾",
     estMinutes: 10,
     objectives: [
-      "Explain what a Scene stores",
-      "Recall the house Scene safely",
-      "Understand when (and when not) to overwrite a Scene",
+      "Recall the 'Singing R1' scene safely",
+      "Understand that recall buttons control mutes, not levels",
+      "Store the current setup with Button 7",
     ],
     sections: [
       {
-        heading: "What a Scene is",
-        body: "A SCENE is a saved snapshot of the console's settings — channel names, gains, EQ, dynamics, routing, fader levels, mix setups, and more. Recall a Scene and the board instantly reconfigures to that saved state.\n\nThis is a superpower for a church. Instead of rebuilding the whole board every week, we keep a trusted 'house' starting Scene and recall it each service so everything begins from the same known-good baseline.",
-        control: "Scenes",
+        heading: "What our scenes do",
+        body: "A SCENE is a saved snapshot of the console — channel names, groups, routing, and starting mutes. We keep a trusted 'Singing R1' scene and recall it each service so everything begins from the same known-good baseline instead of last week's leftovers.\n\nOn our board the scene-recall soft keys are set up so that buttons 1–6 recall scenes and control MUTES only — not levels. That's deliberate: recalling a scene mid-service rearranges what's muted without yanking your carefully set fader levels around.",
+        tip: "Recalling 'Singing R1' at the start of every service is the single best habit for week-to-week consistency.",
+        control: "Scene keys 1–6",
       },
       {
-        heading: "Recalling safely",
-        body: "Recalling a Scene can change fader levels and routing instantly. To avoid a sudden jump in the room:\n\n- Recall Scenes when the house is quiet — before the service or between sets — not in the middle of a loud moment.\n- After recall, do a quick line check to confirm mics and DIs are passing signal as expected.\n- [CrossBridge] Our board may use recall filtering/safes so a recall doesn't stomp on something you want to protect. Ask your lead which parameters are 'safe' on our setup before relying on it.",
-        tip: "Recall the starting Scene at the start of every service. It's the single best habit for consistency week to week.",
+        heading: "Storing with Button 7",
+        body: "Button 7 STORES the current setup back into the scene. After you've dialed in the mix during rehearsal, you press Button 7 to save it — the standard flow is: open Scenes → select 'Singing R1' → press Store.\n\nWe re-store because the setup changes week to week: for example, whether Randy is on electric guitar this week or not. Storing captures today's working setup so a recall brings it right back if something gets bumped.",
+        tip: "Store 'Singing R1' (Button 7) once the mix is set at ~8:40. Then a stray bump is one recall away from fixed.",
+        control: "Store (Button 7)",
       },
       {
-        heading: "Saving and overwriting — with care",
-        body: "You can save changes to a Scene, but overwriting the house Scene affects EVERY future service and every other tech. Treat it like editing a shared document.\n\n- Small tweak just for today? Make it live and DON'T save over the house Scene.\n- A genuine improvement worth keeping? Talk to your lead, then save deliberately — ideally to a new Scene slot or per our naming convention, not by silently clobbering the baseline.\n- [CrossBridge] Follow our booth policy on who may edit the house Scene and how we name/back up Scenes.",
-        tip: "When unsure, don't overwrite. It's far easier to redo a small tweak next week than to recover a house Scene someone accidentally saved over.",
+        heading: "Recall safely",
+        body: "A recall can change mutes (and, for full recalls, more) instantly. Do it when the room is quiet — before the service or between sets — not in the middle of a loud moment. After a recall, do a quick line check to confirm the right channels are live.\n\nBecause our recall buttons touch mutes and not levels, they're safe to use during a service to jump between mute states — but always know which scene you're recalling before you press it.",
+        tip: "Recall between sets, not mid-song. Then glance at the top-right mute buttons to confirm the right things are live.",
       },
     ],
     quiz: [
       {
-        question: "What does a Scene store?",
+        question: "Which scene do we recall to start every service?",
+        options: ["'Sunday AM'", "'Singing R1'", "Lighting scene 19", "'Pastor 2'"],
+        answer: 1,
+        explanation:
+          "We recall 'Singing R1' — our trusted baseline — at the start of every service.",
+      },
+      {
+        question: "On our board, what do scene-recall buttons 1–6 change?",
         options: [
-          "Only the master volume",
-          "A complete snapshot — channel names, gains, EQ, dynamics, routing, fader levels, and more",
-          "Just the lighting cues",
-          "Nothing; Scenes are only labels",
+          "All fader levels and processing",
+          "Mutes only — not levels",
+          "The lighting",
+          "Nothing",
         ],
         answer: 1,
         explanation:
-          "A Scene is a full snapshot of the console state, so recalling it reconfigures the whole board to that saved setup.",
+          "Buttons 1–6 recall scenes but control mutes only, so your fader levels aren't disturbed by a recall.",
       },
       {
-        question: "When is the best time to recall a Scene?",
+        question: "How do you save the current setup back into the scene?",
+        options: [
+          "It saves automatically",
+          "Press Button 7 (Scenes → Singing R1 → Store)",
+          "Turn off the key switch",
+          "Recall the scene again",
+        ],
+        answer: 1,
+        explanation:
+          "Button 7 stores the current setup. The flow is Scenes → select Singing R1 → Store, done around 8:40 once the mix is set.",
+      },
+      {
+        question: "When is the best time to recall a scene?",
         options: [
           "During the loudest moment of a song",
-          "While the house is quiet — before the service or between sets",
-          "Only after the service ends",
-          "It never matters when",
+          "While the room is quiet — before the service or between sets",
+          "Only after everyone leaves",
+          "It never matters",
         ],
         answer: 1,
         explanation:
-          "Because a recall can jump fader levels and routing instantly, do it when the room is quiet, then line-check before going live.",
-      },
-      {
-        question: "You made a small EQ tweak just for today's guest speaker. What should you do at the end?",
-        options: [
-          "Overwrite the house Scene so it's permanent",
-          "Leave it live for today but do NOT save over the house Scene",
-          "Delete every Scene on the board",
-          "Email the change to the whole congregation",
-        ],
-        answer: 1,
-        explanation:
-          "One-off tweaks shouldn't overwrite the shared house baseline. Only save deliberate, agreed improvements, per our booth policy.",
+          "Recall when it's quiet, then line-check. Our recalls touch mutes (not levels), but you should still know which scene you're loading.",
       },
     ],
   },
   {
     slug: "service-workflow",
     order: 12,
-    title: "The CrossBridge Sunday Workflow",
-    subtitle: "Putting it all together: from arrival to soundcheck to running the service.",
+    title: "Running the Service",
+    subtitle: "From rehearsal to the last song — priorities, leveling, and dB targets.",
     icon: "⛪",
-    estMinutes: 15,
+    estMinutes: 13,
     objectives: [
-      "Follow the full service-day flow from setup to teardown",
-      "Run an efficient soundcheck",
-      "Know your priorities and etiquette while running a live service",
+      "Run the service with the right moment-to-moment priorities",
+      "Level the mix and hit our loudness targets",
+      "Handle scene and mute changes smoothly",
     ],
     sections: [
       {
-        heading: "Before the service",
-        body: "A calm service starts with unhurried prep. A typical flow:\n\n1. Arrive early — before the team needs monitors.\n2. Power up in the correct order (console/sources first, speakers last) and recall the house starting Scene.\n3. Confirm stage boxes are connected and channels are showing signal.\n4. Line-check every input: each mic, DI, and playback source passes signal to the house and to the right monitors.\n5. Coordinate with the worship team on stage placement and any special needs (extra mic, click track, video audio).",
-        tip: "Your goal before rehearsal: every input verified and every performer able to hear themselves. Solve problems now, not during the first song.",
+        heading: "During the service",
+        body: "Once rehearsal is done and the room fills, your job is attentive, gentle mixing:\n\n- Follow the order of service. Know what's next — song, sermon, announcements, video — and have the right channels up and unused ones muted.\n- Unmute groups and channels as they're needed; focus on unmuting the essentials FIRST (Pastor and Blue).\n- Make scene/mute changes at natural breaks, not mid-phrase.\n- Ride the mix so the sound is even — no one element buried or blasting.\n- If Peter or Rob are preaching, prep Pastor 2 ahead of time.",
+        tip: "Be proactive: stay one step ahead of the platform. Keep the run sheet in front of you so nothing surprises you.",
+        control: "Mutes / Scenes",
       },
       {
-        heading: "Soundcheck",
-        body: "Soundcheck is where you set the foundation:\n\n1. Set GAIN on each channel with the source at realistic performance level.\n2. Build MONITORS first — musicians play better when they can hear. Use sends-on-faders and ask each performer what they need.\n3. Then build the HOUSE mix: HPF and gentle EQ to clean each channel, tasteful dynamics on vocals, and balance the faders so the mix supports the song (usually lead vocal on top, clear and present).\n4. Run a full song if you can, listening for problem frequencies, feedback risks, and anything harsh.",
-        control: "Sends on Faders",
+        heading: "Leveling and our dB targets",
+        body: "We mix to consistent loudness targets so the service is comfortable and clear:\n\n- MUSIC — around 80 dBA.\n- SERMON — around 70 dBA.\n\nWalk the auditorium during rehearsal and listen: it should be LEVEL across the board — balanced, with the lead vocal clear over the band, and nothing harsh. The booth can sound different from the seats, so trust what you hear in the room.",
+        tip: "Music ~80 dBA, sermon ~70 dBA. Step into the room to check — the mix that matters is the one the congregation hears.",
       },
       {
-        heading: "Running the service",
-        body: "During the service your job is attentive, gentle mixing and readiness:\n\n- Follow the service order. Know what's next — sermon, song, video, baptism — and have the right channels up and unused mics muted.\n- Mute mics that aren't in use (a huge win for cleanliness and feedback prevention). Unmute a beat before someone speaks/sings.\n- Ride the lead vocal so the words are always clear over the band. Make small, smooth moves, not jumps.\n- Watch for feedback and clipping; respond early and calmly.\n- Serve the moment: pull the band back under a prayer, support the dynamic build of a chorus.",
-        tip: "The best service mixing is proactive: you're one step ahead of the platform, not reacting late. Keep the run sheet in front of you.",
-      },
-      {
-        heading: "After the service",
-        body: "1. Pull down the house and mute as the room clears.\n2. Power down in the correct order (speakers/amps first).\n3. Handle Scenes responsibly — don't overwrite the house Scene with one-off changes.\n4. Store mics and cables to our booth standard, secure the booth, and note any gear issues for the next tech or your lead.",
+        heading: "Serve the moment",
+        body: "Great mixing serves what's happening on the platform. Pull the band back under a prayer or a soft verse; support the build of a chorus. Keep the lead vocal clear and present so the congregation can follow the words.\n\nSmall, smooth moves — not jumps. When you're using groups and DCAs, one gentle move can shape a whole section. Stay calm, stay ahead, and keep the focus on worship rather than on the mix.",
+        tip: "The best service mixing is felt, not noticed. Anticipate the dynamics of each song and move with them.",
       },
     ],
     quiz: [
       {
-        question: "During soundcheck, what should you generally build FIRST?",
+        question: "What are our approximate loudness targets?",
         options: [
-          "The lobby feed",
-          "The monitors — musicians play better when they can hear themselves",
-          "The recording",
-          "The reverb tails",
+          "Music 100 dBA, sermon 95 dBA",
+          "Music ~80 dBA, sermon ~70 dBA",
+          "Music 60 dBA, sermon 60 dBA",
+          "As loud as the system will go",
         ],
         answer: 1,
         explanation:
-          "Set gains, then build monitors first so performers can hear, then build the house mix. A confident stage leads to a better house sound.",
+          "We aim for about 80 dBA for music and 70 dBA for the sermon — comfortable and clear.",
       },
       {
-        question: "What's a key habit for cleanliness and feedback prevention while running the service?",
+        question: "When the service starts, which channels are the top priority to get live?",
         options: [
-          "Leave every mic open the whole time",
-          "Mute mics that aren't in use and unmute just before they're needed",
-          "Turn the gain up on all channels",
-          "Recall a new Scene every few minutes",
+          "The drum overheads",
+          "Pastor and Blue (announcements) — the spoken word",
+          "The FX returns",
+          "The hallway feed",
         ],
         answer: 1,
         explanation:
-          "Muting unused mics removes open channels that cause noise and feedback. Unmute a beat ahead so nothing gets clipped off.",
+          "Spoken word is most noticeable if missed — get Pastor and Blue up first, then fine-tune the band.",
       },
       {
-        question: "What does 'riding the lead vocal' mean during the service?",
+        question: "How do you judge whether the mix is balanced?",
         options: [
-          "Turning the vocal off during songs",
-          "Making small, smooth fader adjustments so the lead vocal stays clear over the band",
-          "Adding maximum reverb at all times",
-          "Muting the vocal to protect it",
+          "Trust the booth position only",
+          "Walk the auditorium and listen — it should be level across the board",
+          "Only look at the meters",
+          "Ask the drummer",
         ],
         answer: 1,
         explanation:
-          "You continuously make gentle fader moves so the lead vocal stays present and intelligible above the changing band level.",
+          "The booth can sound different from the seats. Walk the room and listen for a balanced, level mix with the lead vocal clear.",
       },
       {
-        question: "What's the mindset that separates great live mixing from stressful mixing?",
+        question: "If Peter or Rob are preaching, what should you do ahead of time?",
         options: [
-          "Reacting only after something goes wrong",
-          "Being proactive — knowing what's next and staying one step ahead of the platform",
-          "Keeping the run sheet out of sight",
-          "Making large, dramatic fader jumps",
+          "Mute all vocals permanently",
+          "Prep Pastor 2",
+          "Turn off the stream",
+          "Recall lighting scene 19",
         ],
         answer: 1,
         explanation:
-          "Great mixing is proactive. Following the run sheet and anticipating what's next keeps you ahead of the service instead of chasing it.",
+          "Our workflow calls for prepping Pastor 2 when Peter or Rob are preaching, so the sermon mic is ready.",
+      },
+    ],
+  },
+  {
+    slug: "shutdown",
+    order: 13,
+    title: "After Service & Shutdown",
+    subtitle: "Powering down safely and leaving the booth ready for next week.",
+    icon: "🌙",
+    estMinutes: 8,
+    objectives: [
+      "Follow the CBC shutdown sequence in order",
+      "Handle mics, scenes, and the system safely",
+      "Leave the booth secured and ready",
+    ],
+    sections: [
+      {
+        heading: "The shutdown sequence",
+        body: "After the service and teardown, power down in order:\n\n1. Ensure all MICS are turned OFF.\n2. MUTE ALL groups.\n3. Turn the Blue (computer/announcements) path OFF.\n4. LIGHTS off.\n5. BREAKERS off.\n6. SYSTEM off (console and stage boxes).\n7. Put the COVER on the board.\n8. Turn the KEY SWITCH off.\n\nThis reverses the startup and leaves everything safe and protected until next week.",
+        tip: "Mics off and all groups muted BEFORE you start switching things off — that prevents any pops or noise as the system powers down.",
+        control: "Key switch",
+      },
+      {
+        heading: "Scenes and mics",
+        body: "Handle scenes responsibly at the end. If you made only one-off tweaks for today, you don't need to overwrite the baseline — but if the team agreed on a lasting change, store it deliberately (per our scene practice) so next week starts from it.\n\nCollect the wireless mics, turn each OFF, and return them and their batteries to the booth standard. Note any low batteries or gear issues for the next tech.",
+        tip: "Leave 'Singing R1' in a state you'd trust next Sunday. If in doubt about overwriting the baseline, check with a lead.",
+      },
+      {
+        heading: "Leave it better than you found it",
+        body: "Put mics and cables away to our booth standard, cover the board, and secure the booth. Flag anything that needs attention — a scratchy mic, a flaky cable, a battery that drained fast — so the next tech isn't surprised.\n\nA tidy, documented handoff is part of serving the team. The person opening next week should be able to start the startup sequence and have everything work.",
+        tip: "The best sign you did the job well: next week's tech powers up and everything just works.",
+      },
+    ],
+    quiz: [
+      {
+        question: "What are the first two steps of shutdown?",
+        options: [
+          "Turn off the key switch, then the breakers",
+          "Ensure all mics are off, then mute all groups",
+          "Cover the board, then turn off lights",
+          "Store the scene, then turn off the stream",
+        ],
+        answer: 1,
+        explanation:
+          "Start by making sure all mics are off and all groups are muted — that prevents pops as you power the system down.",
+      },
+      {
+        question: "In what order do the system and key switch come at shutdown?",
+        options: [
+          "Key switch first, then everything else",
+          "Lights off, breakers off, system off, cover on, then key switch off last",
+          "Everything at once",
+          "Key switch off before muting mics",
+        ],
+        answer: 1,
+        explanation:
+          "After mics off and groups muted, it's lights → breakers → system off → cover on → key switch off, reversing the startup.",
+      },
+      {
+        question: "What should you do about one-off tweaks you made just for today?",
+        options: [
+          "Always overwrite the 'Singing R1' baseline with them",
+          "Leave the baseline unless the team agreed on a lasting change — then store deliberately",
+          "Delete every scene on the board",
+          "Email them to the congregation",
+        ],
+        answer: 1,
+        explanation:
+          "Don't clobber the shared baseline with one-offs. Only store deliberate, agreed changes so next week starts from a trusted 'Singing R1.'",
       },
     ],
   },
   {
     slug: "troubleshooting",
-    order: 13,
+    order: 14,
     title: "Troubleshooting Under Pressure",
-    subtitle: "Calm, systematic fixes for the problems that actually happen on Sunday.",
+    subtitle: "Calm, systematic fixes for the problems that actually happen at CBC.",
     icon: "🛠️",
     estMinutes: 12,
     objectives: [
-      "Diagnose 'no sound' with the signal-flow method",
-      "Respond to feedback quickly and safely",
-      "Handle common real-world issues without panic",
+      "Diagnose 'no sound' with our signal path in mind",
+      "Handle buzz, feedback, and monitor complaints",
+      "Know when to escalate to a lead",
     ],
     sections: [
       {
         heading: "No sound from a channel",
-        body: "Stay calm and walk the signal path from source to speaker. Check, in order:\n\n1. Is the source live? Is the mic on / cable seated / is the performer actually near the mic?\n2. Is the channel MUTED? (The most common culprit.)\n3. Is the FADER up, and are you on the LAYER where that channel lives?\n4. Is the GAIN set (not at minimum)? Is 48V on if it's a condenser/active DI?\n5. Is the channel ROUTED/assigned to the Main LR?\n6. Is the Main LR up and are the house speakers/amps on?\n\nThe first place the signal is missing is your problem. Fix it there.",
-        tip: "Nine times out of ten it's a mute, a fader down, or the wrong layer. Check the simple stuff first before assuming the gear failed.",
+        body: "Stay calm and walk our signal path. Check, in order:\n\n1. Is the source live? Mic turned on (red button), close to the mouth, battery ok?\n2. Is the channel MUTED — or is its mute GROUP muted (red at top-right)?\n3. Are you on the right LAYER (A inputs, D vocals) and is the fader up?\n4. Is its DCA up and unmuted?\n5. Is the stage source patched to the right stage box socket / SLink input?\n6. Is the main L/R up and are the house outputs live?\n\nThe first point where the signal disappears is your problem. Fix it there.",
+        tip: "Nine times out of ten it's a mute — the channel, or its mute group at the top-right. Check the simple stuff before assuming gear failed.",
       },
       {
-        heading: "Feedback (the squeal)",
-        body: "Feedback is a loop between a mic and a speaker. When it starts, act fast but controlled:\n\n1. Quickly pull down the fader (or PAFL to find which channel is the culprit) — don't hit random controls in a panic.\n2. Identify the source: usually an open mic too close to a speaker/monitor, or a channel pushed too hot.\n3. Reduce that channel's level, reposition the mic/monitor, or apply a narrow EQ cut at the offending frequency.\n\nPrevent it next time: mute unused mics, keep gain disciplined, mind mic and monitor placement, and don't over-boost.",
-        tip: "Prevention beats cure. Most feedback is avoided by muting open mics and not pushing gain/levels past what the room allows.",
+        heading: "Buzz, feedback, and monitors",
+        body: "- BUZZ/HUM on an open channel: an unused input left unmuted — often electric guitar or the piano mic. Mute what isn't being played.\n- FEEDBACK (squeal): pull down the offending channel calmly (or use PAFL to find it), then fix the cause — an open mic too close to a speaker/monitor, or a channel pushed too hot. Prevent it by muting unused mics and keeping levels disciplined.\n- MONITOR jumps with the house: a send that should be pre-fade is set post-fade. Remember our monitors are pre-fade.\n- WRONG PERSON'S FADER does nothing: the mic color and the person may be mismatched — recheck the Scheduling App assignment.",
+        tip: "Prevention beats cure: mute unused inputs, keep gain sane, and verify mic-to-color-to-person before rehearsal.",
       },
       {
-        heading: "Other common issues",
-        body: "- DISTORTED/CRACKLY channel: check for clipping — the gain is likely too high. Back it down.\n- HUM or BUZZ: often a cable, DI, or grounding issue. PAFL to isolate the channel, then try a different cable/DI or a passive DI's ground-lift. [CrossBridge] Report persistent hum to your lead so we can trace it.\n- MONITOR LEVEL JUMPS with the house: a monitor send set post-fade instead of pre-fade.\n- WHOLE SIDE OF THE ROOM DEAD: check that speaker/amp and its feed, not the console channel.\n- Something big and unclear: if you can't solve it quickly and it's affecting the service, get a lead tech — protecting the service matters more than solving it solo.",
+        heading: "When to escalate",
+        body: "If a problem is beyond a quick fix and it's disrupting the service — the stream is down, a whole stage box dropped, the console is misbehaving — get a lead tech. Protecting the service matters more than solving it solo.\n\nFor streaming issues specifically, remember the stream is a separate output path (and the Blue/computer path feeds it): if the room is fine but the stream isn't, the problem is downstream of L/R. Note what happened so the team can trace it afterward.",
+        tip: "Serving the service comes before solo heroics. Escalate early, document what you saw, and keep the room covered.",
       },
     ],
     quiz: [
       {
-        question: "A mic that worked at soundcheck is now silent. What's the single most common cause to check first?",
+        question: "A mic that worked at rehearsal is now silent. What's the most common cause to check first?",
         options: [
           "The console needs a firmware update",
-          "The channel is muted (or its fader is down / you're on the wrong layer)",
+          "The channel is muted — or its mute group (red at top-right) is muted",
           "The building lost power",
-          "The mic needs to be replaced immediately",
+          "The mic must be replaced",
         ],
         answer: 1,
         explanation:
-          "Most 'no sound' issues are a mute, a fader down, or the wrong layer. Walk the signal path and check the simple things first.",
+          "Most 'no sound' issues are a mute — the channel itself or its mute group. Walk the signal path and check the simple things first.",
       },
       {
-        question: "Feedback suddenly starts during a song. What's the best first move?",
-        options: [
-          "Randomly press buttons until it stops",
-          "Calmly pull down the offending fader (or PAFL to find it), then address the cause",
-          "Turn the house speakers up",
-          "Unplug the console",
-        ],
-        answer: 1,
-        explanation:
-          "Act fast but controlled: reduce the offending channel, identify the open mic/monitor, then fix placement/level/EQ. Panic-pressing makes it worse.",
-      },
-      {
-        question: "A channel sounds crackly and distorted. What's the likely fix?",
+        question: "You hear a buzz during a quiet moment. What's the likely fix?",
         options: [
           "Add reverb",
-          "The gain is probably too high and clipping — reduce it",
-          "Increase the fader to maximum",
-          "Switch to a different layer",
+          "Find the open, unused channel (often electric guitar or piano mic) and mute it",
+          "Turn the house up",
+          "Recall lighting scene 19",
         ],
         answer: 1,
         explanation:
-          "Crackly distortion is usually clipping from too much gain. Back the gain down to restore a clean signal.",
+          "Some inputs buzz when unused. Mute channels that aren't being played, especially electric guitar and the piano mic.",
       },
       {
-        question: "You hit a major problem you can't solve quickly and it's disrupting the service. What should you do?",
+        question: "A singer says their in-ears jump up and down when you mix the house. Why?",
         options: [
-          "Keep experimenting alone no matter how long it takes",
-          "Get a lead tech — protecting the service matters more than solving it solo",
-          "Turn everything off",
-          "Ignore it and hope it resolves",
+          "Their mic battery is low",
+          "Their monitor send is set post-fade when our monitors should be pre-fade",
+          "The stream is down",
+          "The lighting is wrong",
         ],
         answer: 1,
         explanation:
-          "When a problem is beyond a quick fix and affecting worship, escalate to a lead. Serving the service comes before solo heroics.",
+          "A post-fade send follows house fader moves. Our monitors are pre-fade so the in-ear blend stays independent of the house.",
+      },
+      {
+        question: "The room sounds fine but the live stream has no audio. What do you conclude?",
+        options: [
+          "Every channel is broken",
+          "The problem is downstream of the L/R mix — on the separate streaming feed (and Blue/computer path), not the channels",
+          "The stage box SLink failed",
+          "The mics need new batteries",
+        ],
+        answer: 1,
+        explanation:
+          "House and stream are separate outputs. If the room is fine, look downstream on the streaming feed, not at the input channels.",
       },
     ],
   },

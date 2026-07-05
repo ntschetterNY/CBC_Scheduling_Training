@@ -179,7 +179,8 @@ export default async function Home() {
               Everything you need to run the SQ-6
             </h2>
             <p className="mx-auto mt-2 max-w-xl font-serif text-brand-text/70">
-              Thirteen modules, in order &mdash; each one builds on the last.
+              {curriculum.length} modules, in order &mdash; each one builds on
+              the last.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

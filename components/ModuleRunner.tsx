@@ -107,8 +107,8 @@ export function ModuleRunner({
           )}
         </div>
 
-        {/* Show the board explorer on the board-tour module */}
-        {module.slug === "board-tour" && <BoardExplorer />}
+        {/* Show the board explorer on the board-layout module */}
+        {module.slug === "board-layout" && <BoardExplorer />}
 
         <div className="flex items-center justify-between">
           <button
