@@ -9,6 +9,73 @@ export function RichText({ text }: { text: string }) {
     <div className="space-y-3">
       {blocks.map((block, i) => {
         const lines = block.split("\n");
+
+        // Markdown-style table: every line starts with "|".
+        const isTable =
+          lines.length >= 2 && lines.every((l) => l.trim().startsWith("|"));
+        if (isTable) {
+          const rows = lines.map((l) =>
+            l
+              .trim()
+              .replace(/^\|/, "")
+              .replace(/\|$/, "")
+              .split("|")
+              .map((c) => c.trim())
+          );
+          const isSep = (r: string[]) =>
+            r.every((c) => /^:?-{2,}:?$/.test(c));
+          let header: string[] | null = null;
+          let bodyRows = rows;
+          if (rows.length >= 2 && isSep(rows[1])) {
+            header = rows[0];
+            bodyRows = rows.slice(2);
+          }
+          return (
+            <div
+              key={i}
+              className="overflow-x-auto rounded-xl border border-brand-border"
+            >
+              <table className="w-full border-collapse text-left text-sm">
+                {header && (
+                  <thead>
+                    <tr className="bg-brand-surface">
+                      {header.map((c, k) => (
+                        <th
+                          key={k}
+                          className="whitespace-nowrap px-3 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-brand-muted"
+                        >
+                          {c}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                )}
+                <tbody>
+                  {bodyRows.map((r, ri) => (
+                    <tr
+                      key={ri}
+                      className="border-t border-brand-border/70 align-top"
+                    >
+                      {r.map((c, ci) => (
+                        <td
+                          key={ci}
+                          className={`px-3 py-2 ${
+                            ci === 0
+                              ? "font-sans font-semibold text-brand-text"
+                              : "text-brand-text/80"
+                          }`}
+                        >
+                          {c || "—"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+
         const isList = lines.every((l) => l.trim().startsWith("- "));
         if (isList) {
           return (

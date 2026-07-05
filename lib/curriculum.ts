@@ -584,7 +584,7 @@ export const curriculum: Module[] = [
     objectives: [
       "Explain the difference between the house mix and monitor mixes",
       "Recognize our AUX assignments and the ME-500 system",
-      "Understand pre-fade sends and double-routed vocals",
+      "Understand how one vocal channel feeds both the house and the in-ears",
     ],
     sections: [
       {
@@ -600,10 +600,10 @@ export const curriculum: Module[] = [
         control: "Pre-fade sends",
       },
       {
-        heading: "Why vocals are routed twice",
-        body: "Here's a CBC-specific concept: our vocal mics are DOUBLE-ROUTED. A colored mic (say Orange) is patched to two input channels:\n\n- One instance feeds the ORANGE AUX → the singer's ME-500 in-ears (their monitor).\n- The other instance (the 'individual vocal input') feeds the VOCAL GROUP → the main L/R (the house).\n\nThis lets us handle the in-ear feed and the house feed separately — the singer can have plenty of themselves in their ears without pushing them loud in the room, and vice versa. It's more setup, but it gives each vocalist independent control of monitor vs. house.",
-        tip: "Because vocals are double-routed, changing the house vocal doesn't touch the in-ear feed — they're literally different channels. Adjust the one that matches the problem.",
-        control: "Double routing",
+        heading: "One vocal channel, two destinations",
+        body: "Each vocal is a SINGLE channel on the board — the colored mic itself (Yellow, Orange, etc.). That one channel feeds two different places at once:\n\n- To the HOUSE — through the Vocal Group → main L/R, so the congregation hears the singer.\n- To the singer's IN-EARS — through that vocal's AUX send to their ME-500 (for example, Orange goes out on AUX 6).\n\nBecause the monitor is a separate AUX SEND (taken pre-fade), you can give a singer plenty of themselves in their ears without making them loud in the room — and change the house level without disturbing their in-ear blend. One channel, two independent outputs.\n\n(Note: we used to split each vocalist onto two separate channels — that 'double routing' has been removed. Everyone now simply runs through their color channel.)",
+        tip: "The house vocal and the in-ear feed come from the same channel but through different paths — the Vocal Group for the house, the AUX send for the in-ears. Adjust the path that matches the problem.",
+        control: "Vocal AUX sends",
       },
     ],
     quiz: [
@@ -627,16 +627,16 @@ export const curriculum: Module[] = [
           "Pre-fade sends come before the channel fader, so house moves don't disturb the stage monitor blend.",
       },
       {
-        question: "What does 'double-routing' our vocals accomplish?",
+        question: "How does a single vocal channel reach both the house and the singer's in-ears?",
         options: [
-          "It makes the vocals twice as loud",
-          "It sends each vocal to two channels — one to the singer's in-ears (AUX), one to the house (Vocal Group/LR) — so they're controlled independently",
-          "It records the vocals twice",
-          "It's a mistake we're trying to fix",
+          "It doesn't — you need two separate channels per singer",
+          "The one channel feeds the house via the Vocal Group → L/R, and the in-ears via its AUX send (pre-fade)",
+          "By turning the vocal up twice as loud",
+          "Through the lighting board",
         ],
         answer: 1,
         explanation:
-          "Each vocal mic goes to two channels: one feeds the ME-500 in-ears via its AUX, the other feeds the Vocal Group → L/R for the house — independent control of monitor vs. house.",
+          "Each vocal is one channel with two paths: the Vocal Group → L/R for the house, and a pre-fade AUX send to the ME-500 in-ears — so the two levels are independent.",
       },
       {
         question: "Where do the musicians' monitor mixes actually come out?",
@@ -1110,6 +1110,99 @@ export const curriculum: Module[] = [
         answer: 1,
         explanation:
           "House and stream are separate outputs. If the room is fine, look downstream on the streaming feed, not at the input channels.",
+      },
+    ],
+  },
+  {
+    slug: "input-patch",
+    order: 15,
+    title: "Reference: Input Patch & I/O",
+    subtitle: "Which physical input feeds which channel — our patch, at a glance.",
+    icon: "🧩",
+    estMinutes: 12,
+    objectives: [
+      "Read the routing matrix: physical input (FROM) → mixer channel (TO)",
+      "Know our Local and SLink input patch",
+      "Use channel colors to scan the board by family",
+    ],
+    sections: [
+      {
+        heading: "How to read the patch",
+        body: "On the SQ-6's Routing screen, the left column is each mixer CHANNEL (the 'TO') and the grid shows which physical INPUT feeds it (the 'FROM'). Our inputs come from two places:\n\n- LOCAL — sockets on the console itself: the wireless handhelds and the computer audio.\n- SLINK — everything from the stage box (AR2412) on stage, carried to the console over the single SLink cable.\n\nThis reference is your map from a socket to a named channel. When a source is dead, it tells you exactly which input and channel to check.",
+        tip: "FROM = the physical socket (Local or SLink). TO = the named channel you see on the faders. The patch connects the two.",
+        control: "Routing screen",
+      },
+      {
+        heading: "Local inputs (at the console)",
+        body: "The wireless handhelds and the computer feed come in locally at the board:\n\n| Local in | Channel | Family |\n| --- | --- | --- |\n| 01 | Pstr 1 | Pastor (green) |\n| 02 | Pstr 2 | Pastor (green) |\n| 03 | Blue | Announcements (blue) |\n| 04 | Yellow | Vocal (red) |\n| 05 | Orange | Vocal (red) |\n| 06 | Green | Vocal |\n| 07 | White | Vocal (red) |\n| St 1 R | Comput | Computer audio |\n| St 3 L/R | ST3 / BgTrx | Backing tracks |\n\nVocals now run through their single color channel — Yellow, Orange, and so on. (The old per-singer duplicate channels, and the Local St2 L/R return, have been removed.)",
+        tip: "Local 04 = Yellow, Local 05 = Orange. The color mic IS the channel — no separate per-singer channel anymore.",
+        control: "Local inputs",
+      },
+      {
+        heading: "SLink inputs (from the stage box)",
+        body: "Everything on stage arrives through the AR2412 stage box over SLink:\n\n| SLink in | Channel | Family |\n| --- | --- | --- |\n| 01 | KbrdV | Keys vocal (red) |\n| 02 | GtrAc1 | Acoustic gtr (gold) |\n| 03 / 04 | KbrdLR | Keys, stereo (magenta) |\n| 05 / 06 | SynLR | Synth, stereo (magenta) |\n| 07 | Bass | Bass (gold) |\n| 08 | GtrAC2 | Acoustic gtr (gold) |\n| 09 / 10 | GtrST1 | Guitar, stereo (gold) |\n| 12 | Viola | Strings (gold) |\n| 13 / 14 | GtSt2 | Guitar, stereo (gold) |\n| 15 | Kick | Drums (cyan) |\n| 16 | Snare | Drums (cyan) |\n| 17 | TomsL | Drums (cyan) |\n| 18 | TomsR | Drums (cyan) |\n| 19 | Jymbe | Drums (cyan) |\n| 20 | GPianV | Grand piano vocal (red) |\n| 21 / 22 | GPiano | Grand piano, stereo (magenta) |\n\nStereo sources take two adjacent SLink inputs (an L and an R).",
+        tip: "If a whole family drops out (say all the drums), suspect the stage box or the SLink connection before any single channel.",
+        control: "SLink / AR2412",
+      },
+      {
+        heading: "Channel colors = families",
+        body: "Every channel's button is color-coded by family so you can find things fast under pressure:\n\n- GREEN — Pastors (Pstr 1, Pstr 2)\n- BLUE — Blue / announcements\n- RED — Vocals (color mics, keys/piano vocal mics)\n- MAGENTA — Keys, synth, and grand piano (stereo)\n- GOLD/YELLOW — Guitars, bass, and strings\n- CYAN — Drums\n- WHITE — Utility (computer, returns)\n\nScan by color first, then by name. 'The drums' is everything cyan; 'the vocals' is everything red.",
+        tip: "Learn the color families cold. In a busy moment you'll spot 'all the red channels' faster than reading each label.",
+      },
+      {
+        heading: "Group & DCA assignments — to be added",
+        body: "Beyond the input patch, each channel also routes to a GROUP (for shared processing) and rides on a DCA (for mute and level). Those exact numbers are being finalized on the board and will be filled in here.\n\n| Channel family | Group # | DCA # |\n| --- | --- | --- |\n| Pastors | (TBD) | (TBD) |\n| Vocals | (TBD) | (TBD) |\n| Guitars | (TBD) | (TBD) |\n| Keys / Synth / Piano | (TBD) | (TBD) |\n| Drums | (TBD) | (TBD) |\n\nCheck back once the Group and DCA numbers are confirmed — this table will be updated with the live assignments.",
+        tip: "Placeholder: the Group/DCA numbers land here after they're confirmed on the console. Until then, use the Groups & DCAs module for the concepts.",
+        control: "Groups / DCAs (TBD)",
+      },
+      {
+        heading: "Outputs recap",
+        body: "For completeness, where the mixes go out (see 'How Our System Is Wired' for detail):\n\n- MAIN L/R → out the AR2412 to the house speakers.\n- STREAMING → local outputs 11 & 12.\n- HALLWAY → local outputs 13 & 14 (a duplicate of L/R).\n- MONITORS → AUX sends to the ME-500 in-ears on stage.\n\nInputs come IN mostly over SLink; the finished mixes go OUT to the house, the stream, the hallway, and the musicians' in-ears.",
+      },
+    ],
+    quiz: [
+      {
+        question: "On the routing screen, what do 'FROM' and 'TO' mean?",
+        options: [
+          "FROM is the output, TO is the microphone",
+          "FROM is the physical input (Local or SLink); TO is the mixer channel it feeds",
+          "They mean the same thing",
+          "FROM is the lighting, TO is the sound",
+        ],
+        answer: 1,
+        explanation:
+          "The routing grid maps a physical input (FROM — a Local socket or an SLink input from the stage box) to the named mixer channel (TO).",
+      },
+      {
+        question: "Which channel does the Yellow wireless mic feed?",
+        options: [
+          "SLink 04",
+          "Local 04 → the 'Yellow' channel",
+          "A separate per-singer channel like 'Erin'",
+          "The hallway output",
+        ],
+        answer: 1,
+        explanation:
+          "Yellow comes in on Local 04 and feeds the single 'Yellow' vocal channel — the old per-singer duplicate channels were removed.",
+      },
+      {
+        question: "Most stage instruments (drums, guitars, keys) arrive at the console how?",
+        options: [
+          "As Local inputs at the board",
+          "Over SLink from the AR2412 stage box",
+          "Through the ME-500 mixers",
+          "Over the streaming feed",
+        ],
+        answer: 1,
+        explanation:
+          "Stage sources feed the AR2412 stage box and travel to the console over SLink. Local inputs are the wireless handhelds and computer.",
+      },
+      {
+        question: "A channel's button is cyan. What family is it?",
+        options: ["Vocals", "Drums", "Pastors", "Keys"],
+        answer: 1,
+        explanation:
+          "Cyan = drums (Kick, Snare, Toms, Jymbe). Red = vocals, green = pastors, magenta = keys/synth/piano, gold = guitars/bass/strings.",
       },
     ],
   },
