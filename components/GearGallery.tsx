@@ -33,7 +33,7 @@ const GEAR: Gear[] = [
   {
     name: "Allen & Heath ME-500",
     model: "16-channel personal monitor mixer",
-    img: "/products/me-500.jpg",
+    img: "/products/me-500.png",
     emoji: "🎧",
     where: "On stage",
     blurb:
@@ -63,7 +63,7 @@ function GearCard({ g }: { g: Gear }) {
 
   return (
     <div className="card overflow-hidden">
-      <div className="relative aspect-[4/3] bg-brand-surface">
+      <div className="relative aspect-[4/3] bg-white">
         {!broken ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
