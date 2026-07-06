@@ -21,9 +21,16 @@ export type LessonSection = {
   control?: string;
   /**
    * Optional named visual rendered under the lesson body (for visual learners).
-   * Handled by components/LessonVisual.tsx. Current keys:
-   *   "eq-vocal" | "eq-bass" | "eq-hpf" | "signal-chain"
-   *   "comp-transfer" | "comp-controls" | "comp-limiter"
+   * Handled by components/LessonVisual.tsx. Keys, by theme:
+   *   signal flow — "system-overview" | "physical-routing" | "digital-routing"
+   *     | "outputs-map" | "signal-chain" | "two-destinations" | "pre-post-fade"
+   *     | "no-sound-flow" | "patch-matrix"
+   *   surface     — "layers-stack" | "mute-groups" | "group-vs-dca" | "aux-map"
+   *   workflow    — "startup-sequence" | "service-timeline" | "shutdown-sequence"
+   *     | "scene-recall" | "recall-timing" | "db-targets"
+   *   mics/color  — "mic-colors" | "mic-tuning" | "color-families"
+   *   processing  — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
+   *     | "comp-limiter"
    */
   visual?: string;
 };
@@ -71,6 +78,7 @@ export const curriculum: Module[] = [
         heading: "Our system at a glance",
         body: "The heart of our audio system is the Allen & Heath SQ-6 digital mixing console. Around it:\n\n- An AR2412 stage box carries the stage inputs to the console over a single SLink cable.\n- ME-500 personal mixers give musicians their own in-ear monitor mixes on stage.\n- The console feeds the house (main speakers), the hallway, and the live stream.\n- Wireless handheld mics are color-coded (Pastor, Blue, Yellow, Orange, Green, White) so we can find a channel fast.\n\nUnlike an analog board, the SQ-6 is a digital console: it shows one channel's controls on a touchscreen at a time, and it remembers complete setups called Scenes — so every service can start from the same trusted baseline.\n\nThat baseline is a Scene called 'Singing R1'. When the system turns on it asks whether to recall the baseline — you select YES to load it. 'Singing R1' is never overwritten, so it's always there as a clean, known-good starting point for the next service. You'll do this hands-on in the Powering Up module.",
         tip: "\"Digital\" just means the board is a computer for sound. The concepts — gain, EQ, faders, groups, mixes — are universal. Learn the concepts and our specific buttons follow.",
+        visual: "system-overview",
       },
       {
         heading: "How to use this guide",
@@ -135,17 +143,20 @@ export const curriculum: Module[] = [
         body: "Every audio problem is easier to solve when you can picture the path a signal takes. At CBC the physical path is:\n\n1. Sound source — someone sings, speaks, or plays.\n2. Microphone / DI on stage — plugs into a stage box (the stage boxes are labeled by area, e.g. RFS, LRS, BCK for the drums).\n3. Stage box → back panel → SLink → the SQ-6 console.\n4. Our main mic inputs come in this way; the wireless handhelds are local inputs at the console.\n\nSo when a stage source is dead, the first question is: is it plugged into the right stage box socket, and is that socket patched to the channel you expect?",
         tip: "Most stage inputs reach the board through the AR2412 stage box over SLink. If a whole stage box goes quiet, suspect the SLink connection before any single channel.",
         control: "SLink / AR2412",
+        visual: "physical-routing",
       },
       {
         heading: "Digital routing: inside the console",
         body: "Once a signal is inside the SQ-6, it flows: Input → processing → out to the mixes.\n\n- Every INPUT channel can be sent to a GROUP (which adds shared processing) and is controlled by a DCA (which sets mute and level, with no processing).\n- From there it reaches the outputs: the main L/R (house), the AUX mixes (monitors and stream feeds), and the streaming/hallway outputs.\n\nThe short version we teach: Board → Input → Group → L/R. Groups and DCAs each do a specific job — you'll learn both in their own module.",
         control: "Groups / DCAs",
+        visual: "digital-routing",
       },
       {
         heading: "Our outputs",
         body: "The SQ-6 feeds several destinations at once:\n\n- MAIN L/R → out through the AR2412 (outputs 1 & 2) to the house speakers. This is what the congregation hears.\n- STREAMING → local outputs 11 & 12, feeding the live stream (YouTube / Facebook).\n- HALLWAY → local outputs 13 & 14, a duplicate of the L/R mix for the lobby/hallway.\n- MONITOR MIXES (AUX) → the ME-500 personal mixers so musicians hear themselves on stage.\n\nThe same channels feed all of these at different levels — that's the power of the console: many independent mixes from the same sources.",
         tip: "House, hallway, and stream are three different outputs. If the room sounds fine but the stream doesn't, the problem is downstream of the L/R mix — check the streaming feed, not the channel.",
         control: "Main LR / Outputs",
+        visual: "outputs-map",
       },
     ],
     quiz: [
@@ -217,6 +228,7 @@ export const curriculum: Module[] = [
         body: "The SQ-6 has more channels than physical faders, so it uses LAYERS — think of them as pages of faders. The Layer buttons on the bottom-left of the board cycle through them. At CrossBridge our layers are:\n\n- LAYER A — all inputs\n- LAYER B — DCAs, Groups, and FX Sends/Returns\n- LAYER C — AUX (monitor) controls\n- LAYER D — vocal inputs\n\nLearn where each thing lives so you're not hunting during a song. Press a Layer button and the same faders instantly become that page's controls.",
         tip: "During a service you'll spend most of your time on Layer A (inputs) and Layer D (vocals). Know how to jump to Layer C (AUX) when a musician needs a monitor tweak.",
         control: "Layer buttons (A/B/C/D)",
+        visual: "layers-stack",
       },
       {
         heading: "Touchscreen + select keys",
@@ -300,11 +312,13 @@ export const curriculum: Module[] = [
         body: "Follow this order every service — it's our 'Operator's Guide to the Universe':\n\n1. Turn on the BREAKERS (the labeled breakers in the left two panels — this also powers the lighting).\n2. Turn on the KEY SWITCH (on the wall, to the right of the sound board).\n3. Bring up LIGHTING — go to lighting scene 19, then raise the master fader on the lighting control panel.\n4. Check MIC BATTERIES — if a mic shows only 1 bar (of 3), change the batteries (2 AA).\n5. Recall the 'Singing R1' SCENE on the SQ-6. When the console powers up it asks whether to recall the baseline — select YES to load 'Singing R1'.\n6. Unmute GROUPS as required once rehearsal starts.\n7. Unmute the SPECIFIC channels being used — mute the others.\n8. Walk the auditorium and listen for balanced levels.\n9. If Peter, Rob, or Jonathan are preaching, prep Pastor 2.\n\nNote: 'Singing R1' is our permanent baseline — we recall it, but we never overwrite it. It stays intact so every service (and next week's tech) starts from the same trusted setup.",
         tip: "The Blue mic is the announcement mic and creates static if the mic is unmuted without being on — be sure to turn the mic on before unmuting it.",
         control: "Key switch / Scenes",
+        visual: "startup-sequence",
       },
       {
         heading: "The service-morning timeline",
         body: "Timing keeps the morning calm. Aim to be set up and running by 8:20 AM (rehearsal starts at 8:30):\n\n- By 8:20 — breakers on, key switch on, lighting up, console booted and 'Singing R1' recalled (select YES when it asks to recall the baseline).\n- 8:25 — check the Scheduling App to see who's singing (which color mic each vocalist gets). Bring out the mics and turn each on with the red button on the bottom; check the battery bars.\n- 8:30 — be ready to unmute instruments as they're plugged in. Unmute the Vocal, Instrument, Drum, and Keys groups as applicable.\n- 8:35 — walk out to the auditorium and listen; it should be level across the board.\n- 8:40 — do a final line check. Leave the 'Singing R1' baseline as it is — recall it, don't overwrite it.",
         tip: "Arrive early. Your goal before rehearsal: every input verified and every performer able to hear themselves. Solve problems now, not during the first song.",
+        visual: "service-timeline",
       },
       {
         heading: "Why order matters",
@@ -388,6 +402,7 @@ export const curriculum: Module[] = [
         body: "Our wireless handheld mics are color-coded so you can find any channel instantly under service pressure. The colors and their roles:\n\n- PASTOR 1 and PASTOR 2 — the preaching mics (their own group and DCA).\n- BLUE — the ANNOUNCEMENT mic. It is its own wireless handheld, separate from the computer input (the computer audio is a different channel entirely). Blue also creates static if it's unmuted while still turned off, so always turn the mic on before you unmute it.\n- YELLOW, ORANGE, GREEN, WHITE — worship vocalists.\n\nEach color maps to a fixed mute group and DCA on the board, so muting or leveling 'the vocals' is one move. Learn the colors cold — during a service you'll reach for 'Orange' faster than for a channel number.",
         tip: "The Blue mic is the announcement mic and creates static if the mic is unmuted without being on — be sure to turn the mic on before unmuting it. It is separate from the computer input.",
         control: "Wireless handhelds",
+        visual: "mic-colors",
       },
       {
         heading: "Who sings which color — the Scheduling App",
@@ -400,6 +415,7 @@ export const curriculum: Module[] = [
         body: "The mics aren't interchangeable — each one is EQ'd (tuned) for the kind of voice that uses it, so the singer sounds natural without a lot of channel EQ:\n\n- The WHITE mic is tuned for a MALE vocalist — its curve suits a lower, fuller voice.\n- The ORANGE and YELLOW mics are tuned for FEMALE vocalists — their curves suit a higher voice.\n\nThat's why our defaults line up the way they do: a new male vocalist takes White (already tuned for him), and a new female vocalist takes Orange (already tuned for her). Handing a male singer a mic tuned for a female voice (or vice-versa) means fighting the tuning with EQ all morning. Match the voice to the mic that's tuned for it first.",
         tip: "White = tuned for a male voice; Orange and Yellow = tuned for female voices. Match the voice to the mic and you'll barely need to touch the EQ.",
         control: "Mic tuning",
+        visual: "mic-tuning",
       },
       {
         heading: "Powering and checking mics",
@@ -488,6 +504,7 @@ export const curriculum: Module[] = [
         body: "The top-right buttons mute or unmute a whole GROUP of inputs at once (red = muted). As rehearsal starts and instruments get plugged in and turned on, you unmute the groups that are in use — Vocals, Instruments, Drums, Keys — and leave the rest muted.\n\nThis keeps the stage clean: only what's actually being played is open. Muting groups you don't need is one of the simplest, most powerful tools for a distraction-free mix.",
         tip: "Work the groups first, then fine-tune individual channels. A quick glance at the top-right buttons tells you what's live.",
         control: "Top-right mute buttons",
+        visual: "mute-groups",
       },
       {
         heading: "Mute the unused — watch for buzz",
@@ -558,6 +575,7 @@ export const curriculum: Module[] = [
         body: "Both let you control many channels together, but they do different jobs:\n\n- A GROUP is an actual audio bus: the channels are summed into it, and you can add PROCESSING (like compression) to the whole group at once. Our groups feed the L/R and are set PRE-FADER for their monitor sends.\n- A DCA (Digitally Controlled Amplifier) is NOT an audio bus — it's a remote master for the faders and mutes of its assigned channels. It controls MUTE and LEVEL only and does NO processing.\n\nRule of thumb: reach for a GROUP when you want shared processing; reach for a DCA when you just want one fader/mute to ride a set of channels.",
         tip: "Group = processing + audio bus. DCA = convenient master for level and mute, no processing. The audio still flows through the channels and groups; a DCA just rides them.",
         control: "Groups / DCAs",
+        visual: "group-vs-dca",
       },
       {
         heading: "Our assignments",
@@ -629,18 +647,21 @@ export const curriculum: Module[] = [
         body: "The main L/R is what the congregation hears. The musicians need their own separate blends — MONITOR mixes — delivered to their ME-500 personal mixers as in-ears on stage.\n\nOur AUX assignments:\n- AUX 1 — Stream\n- AUX 2 — Drums\n- AUX 3 — Comms (talkback between team)\n- AUX 4 — FX Return\n- AUX 7 — Pastor\n\nNote what changed: the vocalists no longer have their own AUX monitor sends (we removed the old AUX 5 = Yellow and AUX 6 = Orange). The colored vocal mics now feed the ME-500s as straight mic inputs on the personal-mixer network, and each singer dials in how much of themselves they want in their ears right on their own ME-500. That takes the vocal-monitor level off your plate at the console — you're no longer riding an AUX send for each singer.",
         tip: "The AUX buses aren't all monitors — AUX 1 is the stream feed and AUX 3 is comms. Vocal monitors are no longer AUX sends: each vocalist adjusts their own level on their ME-500.",
         control: "AUX (Layer C)",
+        visual: "aux-map",
       },
       {
         heading: "Pre-fade: monitors stay stable",
         body: "Monitor sends are taken PRE-FADER — before the channel's main fader. That means when you change the house level, the performer's monitor level does NOT change. Their in-ear blend stays rock-steady no matter what you do out front.\n\n(Effects, by contrast, are usually POST-fade so the wet effect follows the vocal. Rule of thumb here: monitors = pre-fade, effects = post-fade.)",
         tip: "If a musician says their in-ears jump around whenever you mix the house, a send that should be pre-fade is set post-fade.",
         control: "Pre-fade sends",
+        visual: "pre-post-fade",
       },
       {
         heading: "One vocal channel, two destinations",
         body: "Each vocal is a SINGLE channel on the board — the colored mic itself (Yellow, Orange, etc.). That one channel feeds two different places at once:\n\n- To the HOUSE — through the Vocal Group → main L/R, so the congregation hears the singer. This is the level you mix at the console.\n- To the STAGE — the same mic input is available on the ME-500 personal-mixer network, so each singer can put as much of themselves in their own in-ears as they want.\n\nThe key idea still holds: the singer's in-ear level and the house level are independent. But the responsibility split is simpler now — you own the house level; the vocalist owns their own monitor level on the ME-500. If a singer wants more of themselves in their ears, they turn themselves up on their ME-500; you don't touch the house fader for that.",
         tip: "You own the house level; the vocalist owns their own in-ear level on the ME-500. If they want more of themselves, that's a move on their personal mixer — not the house fader.",
         control: "ME-500 personal mix",
+        visual: "two-destinations",
       },
     ],
     quiz: [
@@ -872,6 +893,7 @@ export const curriculum: Module[] = [
         body: "A SCENE is a saved snapshot of the console — channel names, groups, routing, and starting mutes. We keep a trusted 'Singing R1' scene and recall it each service so everything begins from the same known-good baseline instead of last week's leftovers.\n\nOn our board the scene-recall soft keys are set up so that buttons 1–6 recall scenes and control MUTES only — not levels. That's deliberate: recalling a scene mid-service rearranges what's muted without yanking your carefully set fader levels around.",
         tip: "Recalling 'Singing R1' at the start of every service is the single best habit for week-to-week consistency.",
         control: "Scene keys 1–6",
+        visual: "scene-recall",
       },
       {
         heading: "The baseline is protected — Button 7",
@@ -883,6 +905,7 @@ export const curriculum: Module[] = [
         heading: "Recall safely — and time the singing recall",
         body: "A recall can change mutes (and, for full recalls, more) instantly. Do it when the room is quiet — not in the middle of a loud moment. After a recall, do a quick line check to confirm the right channels are live.\n\nTiming matters because recalling 'Singing R1' un-mutes the singing mics. Call the recall JUST BEFORE the singing starts — not way ahead of time. If you recall it too early, you leave hot (live) vocal mics open on stage during the count-in, prayer, or announcements, which invites bumps, handling noise, and feedback. Bring the singing scene up right as the band is ready to sing, so no mic is hot on stage before it's needed.\n\nBecause our recall buttons touch mutes and not levels, they're safe to use during a service to jump between mute states — but always know which scene you're recalling before you press it.",
         tip: "Recall 'Singing R1' just before singing starts — not early. Recalling it too soon leaves hot mics open on stage before anyone is singing.",
+        visual: "recall-timing",
       },
     ],
     quiz: [
@@ -954,6 +977,7 @@ export const curriculum: Module[] = [
         heading: "Leveling and our dB targets",
         body: "We mix to consistent loudness targets so the service is comfortable and clear:\n\n- MUSIC — around 80 dBA.\n- SERMON — around 70 dBA.\n\nWalk the auditorium during rehearsal and listen: it should be LEVEL across the board — balanced, with the lead vocal clear over the band, and nothing harsh. The booth can sound different from the seats, so trust what you hear in the room.",
         tip: "Music ~80 dBA, sermon ~70 dBA. Step into the room to check — the mix that matters is the one the congregation hears.",
+        visual: "db-targets",
       },
       {
         heading: "Serve the moment",
@@ -1047,6 +1071,7 @@ export const curriculum: Module[] = [
         body: "After the service and teardown, power down in order:\n\n1. Ensure all MICS are turned OFF (including the Blue announcement mic).\n2. MUTE ALL groups.\n3. Turn the COMPUTER audio path OFF.\n4. LIGHTS off.\n5. BREAKERS off.\n6. SYSTEM off (console and stage boxes).\n7. Put the COVER on the board.\n8. Turn the KEY SWITCH off.\n\nThis reverses the startup and leaves everything safe and protected until next week. You never store or overwrite the 'Singing R1' baseline at shutdown — leave it exactly as it is.",
         tip: "Mics off and all groups muted BEFORE you start switching things off — that prevents any pops or noise as the system powers down.",
         control: "Key switch",
+        visual: "shutdown-sequence",
       },
       {
         heading: "Scenes and mics",
@@ -1115,6 +1140,7 @@ export const curriculum: Module[] = [
         heading: "No sound from a channel",
         body: "Stay calm and walk our signal path. Check, in order:\n\n1. Is the source live? Mic turned on (red button), close to the mouth, battery ok?\n2. Is the channel MUTED — or is its mute GROUP muted (red at top-right)?\n3. Are you on the right LAYER (A inputs, D vocals) and is the fader up?\n4. Is its DCA up and unmuted?\n5. Is the stage source patched to the right stage box socket / SLink input?\n6. Is the main L/R up and are the house outputs live?\n\nThe first point where the signal disappears is your problem. Fix it there.",
         tip: "Nine times out of ten it's a mute — the channel, or its mute group at the top-right. Check the simple stuff before assuming gear failed.",
+        visual: "no-sound-flow",
       },
       {
         heading: "Buzz, feedback, and monitors",
@@ -1196,6 +1222,7 @@ export const curriculum: Module[] = [
         body: "On the SQ-6's Routing screen, the left column is each mixer CHANNEL (the 'TO') and the grid shows which physical INPUT feeds it (the 'FROM'). Our inputs come from two places:\n\n- LOCAL — sockets on the console itself: the wireless handhelds and the computer audio.\n- SLINK — everything from the stage box (AR2412) on stage, carried to the console over the single SLink cable.\n\nThis reference is your map from a socket to a named channel. When a source is dead, it tells you exactly which input and channel to check.",
         tip: "FROM = the physical socket (Local or SLink). TO = the named channel you see on the faders. The patch connects the two.",
         control: "Routing screen",
+        visual: "patch-matrix",
       },
       {
         heading: "Local inputs (at the console)",
@@ -1213,6 +1240,7 @@ export const curriculum: Module[] = [
         heading: "Channel colors = families",
         body: "Every channel's button is color-coded by family so you can find things fast under pressure:\n\n- GREEN — Pastors (Pstr 1, Pstr 2)\n- BLUE — Blue / announcements\n- RED — Vocals (color mics, keys/piano vocal mics)\n- MAGENTA — Keys, synth, and grand piano (stereo)\n- GOLD/YELLOW — Guitars, bass, and strings\n- CYAN — Drums\n- WHITE — Utility (computer, returns)\n\nScan by color first, then by name. 'The drums' is everything cyan; 'the vocals' is everything red.",
         tip: "Learn the color families cold. In a busy moment you'll spot 'all the red channels' faster than reading each label.",
+        visual: "color-families",
       },
       {
         heading: "Group & DCA assignments — to be added",

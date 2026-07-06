@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Module } from "@/lib/curriculum";
 import { createClient } from "@/lib/supabase/client";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 import { RichText } from "./RichText";
 import { BoardExplorer } from "./BoardExplorer";
 import { LessonVisual } from "./LessonVisual";
@@ -60,6 +61,16 @@ export function ModuleRunner({
     let lessonDelta = 0;
     let quizDelta = 0;
 
+    // Cache the access token so the final (keepalive) flush can authenticate
+    // synchronously even while the page is unloading.
+    let token: string | null = null;
+    supabase.auth.getSession().then(({ data }) => {
+      token = data.session?.access_token ?? null;
+    });
+    const { data: authSub } = supabase.auth.onAuthStateChange((_e, session) => {
+      token = session?.access_token ?? null;
+    });
+
     const accumulate = () => {
       const now = Date.now();
       // Clamp each interval so a backgrounded/slept tab can't over-count.
@@ -71,6 +82,8 @@ export function ModuleRunner({
       // "result" phase is not counted.
     };
 
+    // In-session flush via the SDK. Surfaces errors and, on failure, rolls the
+    // pending time back so the next tick retries it instead of dropping it.
     const flush = () => {
       accumulate();
       if (lessonDelta === 0 && quizDelta === 0) return;
@@ -84,20 +97,71 @@ export function ModuleRunner({
           p_lesson: l,
           p_quiz: q,
         })
-        .then(() => {});
+        .then(({ error }) => {
+          if (error) {
+            // Put the time back so it isn't lost — the next flush retries it.
+            lessonDelta += l;
+            quizDelta += q;
+            console.warn(
+              "[time-tracking] add_module_time failed — is the 0002 migration applied?",
+              error.message
+            );
+          }
+        });
     };
 
-    const interval = setInterval(flush, 20000);
+    // Terminal flush used on tab-hide / navigation / unmount. A normal fetch
+    // (or the SDK call) gets cancelled the instant the page starts unloading,
+    // which is why quick click-throughs recorded 0s. `keepalive` lets the
+    // browser finish the request after the page is gone.
+    const beaconFlush = () => {
+      accumulate();
+      if (lessonDelta === 0 && quizDelta === 0) return;
+      // Without a user token the RPC can't attribute the time — fall back to
+      // the SDK flush (best effort) rather than posting an unauthenticated,
+      // silently-dropped request.
+      if (!token) {
+        flush();
+        return;
+      }
+      const body = JSON.stringify({
+        p_module_slug: module.slug,
+        p_lesson: lessonDelta,
+        p_quiz: quizDelta,
+      });
+      lessonDelta = 0;
+      quizDelta = 0;
+      try {
+        fetch(`${SUPABASE_URL}/rest/v1/rpc/add_module_time`, {
+          method: "POST",
+          keepalive: true,
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${token}`,
+          },
+          body,
+        }).catch(() => {});
+      } catch {
+        /* page is unloading — nothing more we can do */
+      }
+    };
+
+    const interval = setInterval(flush, 15000);
     const onVisibility = () => {
-      if (document.visibilityState === "hidden") flush();
+      if (document.visibilityState === "hidden") beaconFlush();
       else last = Date.now(); // resume without counting the away time
     };
     document.addEventListener("visibilitychange", onVisibility);
+    // pagehide fires on real navigation / tab close where visibilitychange may not.
+    window.addEventListener("pagehide", beaconFlush);
 
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisibility);
-      flush();
+      window.removeEventListener("pagehide", beaconFlush);
+      authSub.subscription.unsubscribe();
+      beaconFlush(); // route change / unmount — survive the navigation
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [module.slug]);
