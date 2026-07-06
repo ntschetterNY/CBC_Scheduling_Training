@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { BoardExplorer } from "@/components/BoardExplorer";
+import { GearGallery } from "@/components/GearGallery";
 import { KnowledgeSearch } from "@/components/KnowledgeSearch";
 import { curriculum } from "@/lib/curriculum";
 import { getMyProgress } from "@/lib/progress";
@@ -42,6 +43,11 @@ export default async function LearnIndexPage() {
         {/* Interactive SQ-6 guide */}
         <div className="mt-6">
           <BoardExplorer />
+        </div>
+
+        {/* Real-gear photo gallery */}
+        <div className="mt-6">
+          <GearGallery />
         </div>
 
         <h2 className="mb-3 mt-10 text-lg font-bold">All modules</h2>

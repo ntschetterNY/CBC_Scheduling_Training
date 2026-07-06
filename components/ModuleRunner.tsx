@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 import { RichText } from "./RichText";
 import { BoardExplorer } from "./BoardExplorer";
+import { GearGallery } from "./GearGallery";
 import { LessonVisual } from "./LessonVisual";
 
 type Phase = "lesson" | "quiz" | "result";
@@ -235,6 +236,9 @@ export function ModuleRunner({
 
         {/* Show the board explorer on the board-layout module */}
         {module.slug === "board-layout" && <BoardExplorer showModuleLinks={false} />}
+
+        {/* Show the real-gear photo gallery on the welcome module */}
+        {module.slug === "welcome" && <GearGallery />}
 
         <div className="flex items-center justify-between">
           <button

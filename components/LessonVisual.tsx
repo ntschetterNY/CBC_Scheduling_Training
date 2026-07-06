@@ -6,9 +6,10 @@
  * SVG (no external assets) and uses the CrossBridge brand palette.
  *
  * Keys, grouped by what they teach:
- *   Signal flow  — "system-overview" | "physical-routing" | "digital-routing"
- *                  | "outputs-map" | "signal-chain" | "two-destinations"
- *                  | "pre-post-fade" | "no-sound-flow" | "patch-matrix"
+ *   Signal flow  — "system-overview" | "physical-routing" | "slink"
+ *                  | "digital-routing" | "outputs-map" | "signal-chain"
+ *                  | "two-destinations" | "pre-post-fade" | "no-sound-flow"
+ *                  | "patch-matrix"
  *   Surface      — "layers-stack" | "mute-groups" | "group-vs-dca" | "aux-map"
  *   Workflow     — "startup-sequence" | "service-timeline" | "shutdown-sequence"
  *                  | "scene-recall" | "recall-timing" | "db-targets"
@@ -480,6 +481,56 @@ function PhysicalRouting() {
       </text>
       <text x={positions[2] + 55} y={150} textAnchor="middle" fontSize="10.5" fill={DANGER} fontFamily={FONT}>
         whole stage box dead? suspect SLink before any one channel
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* SLink — one cable carries the whole stage box                       */
+/* ------------------------------------------------------------------ */
+
+function SLinkDetail() {
+  const W = 700;
+  const H = 236;
+  const cy = 128;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="How SLink carries the whole stage box over one cable">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        One shielded cable does the work of dozens of mic lines
+      </text>
+
+      {/* many stage sources converge into the stage box */}
+      {["Drums", "Gtrs", "Keys", "Vox"].map((t, i) => {
+        const x = 526 + i * 38;
+        return (
+          <g key={t}>
+            <rect x={x} y={48} width={34} height={20} rx="5" fill="#fff" stroke={GRID} strokeWidth="1" />
+            <text x={x + 17} y={62} textAnchor="middle" fontSize="8.5" fontWeight="700" fill={MUTED} fontFamily={FONT}>{t}</text>
+            <Arrow x1={x + 17} y1={68} x2={x + 17} y2={cy - 36} color={MUTED} width={1} />
+          </g>
+        );
+      })}
+
+      {/* console (booth) + stage box */}
+      <Node x={30} y={cy - 34} w={150} h={68} title="SQ-6" sub="in the booth" emoji="🖥️" color={TEAL} emphasis />
+      <Node x={520} y={cy - 34} w={150} h={68} title="AR2412" sub="24 in · 12 out · on stage" emoji="🎛️" color={GOLDF} emphasis />
+
+      {/* the single cable */}
+      <line x1={180} y1={cy} x2={520} y2={cy} stroke="#2f4a54" strokeWidth="9" strokeLinecap="round" />
+      <rect x={306} y={cy - 12} width={88} height={24} rx="12" fill="#fff" stroke={MUTED} strokeWidth="1" />
+      <text x={350} y={cy + 5} textAnchor="middle" fontSize="10.5" fontWeight="800" fill={INK} fontFamily={FONT}>1 SLink cable</text>
+
+      {/* inputs up */}
+      <Arrow x1={512} y1={cy - 22} x2={188} y2={cy - 22} color={TEAL} width={2} />
+      <text x={350} y={cy - 30} textAnchor="middle" fontSize="10" fill={TEAL} fontFamily={FONT}>stage inputs travel up to the console</text>
+
+      {/* mixes down */}
+      <Arrow x1={188} y1={cy + 22} x2={512} y2={cy + 22} color={GOLDF} width={2} dashed />
+      <text x={350} y={cy + 38} textAnchor="middle" fontSize="10" fill={GOLDF} fontFamily={FONT}>monitor mixes travel back down to the stage</text>
+
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={DANGER} fontFamily={FONT}>
+        Lose that one cable and the whole stage box drops at once — the sign it&apos;s SLink, not one channel
       </text>
     </svg>
   );
@@ -1410,6 +1461,15 @@ export function LessonVisual({ name }: { name: string }) {
           caption="Picture the path. Most stage inputs travel through the AR2412 stage box to the console over a single SLink cable — so a dead stage box points at SLink, not one channel."
         >
           <PhysicalRouting />
+        </Frame>
+      );
+    case "slink":
+      return (
+        <Frame
+          title="SLink: one cable, many channels"
+          caption="SLink is the digital link between the SQ-6 and the AR2412 stage box. One shielded cable carries every stage channel to the booth and monitor mixes back — so if it fails, the whole stage box drops at once."
+        >
+          <SLinkDetail />
         </Frame>
       );
     case "digital-routing":

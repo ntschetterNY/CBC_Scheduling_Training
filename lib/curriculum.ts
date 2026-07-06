@@ -22,9 +22,9 @@ export type LessonSection = {
   /**
    * Optional named visual rendered under the lesson body (for visual learners).
    * Handled by components/LessonVisual.tsx. Keys, by theme:
-   *   signal flow — "system-overview" | "physical-routing" | "digital-routing"
-   *     | "outputs-map" | "signal-chain" | "two-destinations" | "pre-post-fade"
-   *     | "no-sound-flow" | "patch-matrix"
+   *   signal flow — "system-overview" | "physical-routing" | "slink"
+   *     | "digital-routing" | "outputs-map" | "signal-chain" | "two-destinations"
+   *     | "pre-post-fade" | "no-sound-flow" | "patch-matrix"
    *   surface     — "layers-stack" | "mute-groups" | "group-vs-dca" | "aux-map"
    *   workflow    — "startup-sequence" | "service-timeline" | "shutdown-sequence"
    *     | "scene-recall" | "recall-timing" | "db-targets"
@@ -134,6 +134,7 @@ export const curriculum: Module[] = [
     estMinutes: 14,
     objectives: [
       "Trace a signal from the stage through the SQ-6 to every output",
+      "Explain what SLink is and why one cable carries the whole stage box",
       "Explain physical vs. digital routing at CBC",
       "Name our outputs: house LR, streaming, and hallway",
     ],
@@ -144,6 +145,13 @@ export const curriculum: Module[] = [
         tip: "Most stage inputs reach the board through the AR2412 stage box over SLink. If a whole stage box goes quiet, suspect the SLink connection before any single channel.",
         control: "SLink / AR2412",
         visual: "physical-routing",
+      },
+      {
+        heading: "What SLink is — one cable, many channels",
+        body: "You'll hear \"SLink\" constantly, so here's exactly what it means. SLink is the Allen & Heath digital audio connection between our SQ-6 and the AR2412 stage box — and it's how nearly every stage input reaches the console.\n\n- Instead of running a separate mic cable from the stage to the booth for every single input, SLink carries MANY channels of audio — dozens at once — down ONE shielded network-style cable.\n- That one cable runs from the SLink port on the back of the SQ-6 to the AR2412 stage box out on stage.\n- It's a two-way street: the stage inputs travel UP the cable to the console, and the mixes we send back (like monitor feeds) travel DOWN the same cable to the stage.\n- It's all digital: the AR2412 converts each mic and DI on stage into digital audio, SLink carries it to the booth, and the SQ-6 turns it back into the channels you mix.\n\nBecause all of those channels share one connection, SLink is a single point of dependency. If that one cable or port fails, the WHOLE stage box goes silent at once — every drum, guitar, and keys channel together. That all-at-once symptom is the tell-tale sign the problem is SLink, not a single channel.",
+        tip: "One SLink cable replaces dozens of individual mic lines between the stage and the booth. Its strength — one simple connection — is also its risk: lose that cable and you lose the entire stage box at once.",
+        control: "SLink",
+        visual: "slink",
       },
       {
         heading: "Digital routing: inside the console",
@@ -171,6 +179,19 @@ export const curriculum: Module[] = [
         answer: 1,
         explanation:
           "Stage sources plug into a stage box, which sends everything to the console over SLink. The wireless handhelds are the local inputs at the board.",
+      },
+      {
+        question:
+          "What is SLink, and why does a failed SLink cable take out the whole stage box?",
+        options: [
+          "It's a single mic cable for the lead vocal, so only that one channel drops",
+          "It's the Allen & Heath digital link that carries all of the stage box's channels over one cable — so if it fails, every channel on that box drops at once",
+          "It's the wireless connection to the ME-500 in-ears",
+          "It's the power cable for the console",
+        ],
+        answer: 1,
+        explanation:
+          "SLink is the digital audio connection between the SQ-6 and the AR2412 stage box. One cable carries dozens of channels in both directions, so a failure silences the entire stage box at once — the tell-tale sign it's SLink, not a single channel.",
       },
       {
         question: "Which outputs carry the streaming and hallway feeds?",
