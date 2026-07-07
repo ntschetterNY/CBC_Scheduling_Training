@@ -26,11 +26,14 @@ export type LessonSection = {
    *     | "digital-routing" | "outputs-map" | "signal-chain" | "two-destinations"
    *     | "pre-post-fade" | "no-sound-flow" | "patch-matrix"
    *   surface     — "layers-stack" | "mute-groups" | "group-vs-dca" | "aux-map"
+   *     | "select-focus" | "softkey-map" | "assignments-map"
    *   workflow    — "startup-sequence" | "service-timeline" | "shutdown-sequence"
-   *     | "scene-recall" | "recall-timing" | "db-targets"
+   *     | "scene-recall" | "recall-timing" | "db-targets" | "learn-loop"
+   *     | "recall-vs-store" | "mix-priorities" | "stay-present" | "escalate-flow"
    *   mics/color  — "mic-colors" | "mic-tuning" | "color-families"
+   *     | "mic-assignments" | "battery-check" | "blue-mic-order"
    *   processing  — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
-   *     | "comp-limiter"
+   *     | "comp-limiter" | "buzz-sources" | "feedback-loop"
    */
   visual?: string;
 };
@@ -84,6 +87,7 @@ export const curriculum: Module[] = [
         heading: "How to use this guide",
         body: "Each module is a set of short lessons followed by a quiz. Read a lesson, then when you're next in the booth, find the control on the real board and try it during rehearsal — hands-on repetition is how this sticks.\n\n- Use Next / Previous to move through a module's lessons.\n- Pass the quiz (70%) to mark a module complete.\n- Your dashboard shows overall progress and what's next.\n- Nothing you do in this guide touches the real console. Practice fearlessly here.",
         tip: "Pair this guide with real board time. Shadow a lead tech for your first couple of services before you fly solo.",
+        visual: "learn-loop",
       },
     ],
     quiz: [
@@ -256,12 +260,14 @@ export const curriculum: Module[] = [
         body: "The SQ-6 pairs a color touchscreen with physical knobs. You press a channel's SELECT key (or touch it on screen) to FOCUS it — the screen and rotaries then show that channel's processing (gain, HPF, EQ, compressor). Select a different channel and the same knobs now control the new one.\n\nSelecting a channel changes nothing about what's heard — it just decides which channel you're editing. That's how one board controls dozens of channels without thousands of knobs.",
         tip: "Use the interactive Board Explorer below to click each region of the SQ-6 and see what it does.",
         control: "Select keys",
+        visual: "select-focus",
       },
       {
         heading: "Mute-group and scene buttons",
         body: "Two sets of buttons do a lot of the work on a Sunday:\n\n- The MUTE-GROUP buttons at the top-right of the board mute or unmute a whole group of inputs at once. RED means muted. You'll unmute groups as the band comes in and mute the ones not in use.\n- The SCENE-RECALL buttons (soft keys) load saved setups. Buttons 1–6 recall scenes — and importantly they control MUTES only, not levels. Button 7 STORES the current setup back to the scene.\n\nWe recall the 'Singing R1' scene to start each service (selecting YES when the console asks). 'Singing R1' is our permanent baseline — we recall it but never overwrite it, so Button 7 is reserved for rare, deliberate changes a lead has approved.",
         tip: "Red = muted. A glance at the top-right mute buttons tells you what's live and what's silenced.",
         control: "Mute-group / Scene keys",
+        visual: "softkey-map",
       },
     ],
     quiz: [
@@ -430,6 +436,7 @@ export const curriculum: Module[] = [
         body: "Before the service, check the Scheduling App to see who is singing and which color mic each vocalist gets. Assignments change week to week, so always check the app rather than assuming.\n\nOur current standing mic assignments are:\n\n- Erin — Yellow\n- Sarah — Piano Mic\n- Val — Orange\n- William — White Mic\n- New Female Vocalist — Orange\n- New Male Vocalist — White\n\nOnce you know the assignments, bring out exactly those mics and hand them to the right people. This is why the color system works: the singer changes, but 'Yellow' is always the same channel, group, and DCA on the board.",
         tip: "Match the app to the mic to the person before rehearsal. A mislabeled mic is the most common cause of 'why is the wrong person's fader doing nothing?'",
         control: "Scheduling App",
+        visual: "mic-assignments",
       },
       {
         heading: "Why the mics are tuned by voice",
@@ -442,6 +449,7 @@ export const curriculum: Module[] = [
         heading: "Powering and checking mics",
         body: "For each mic in use:\n\n1. Turn it ON with the red button on the bottom of the handheld.\n2. Check the battery — full is 3 bars; if it's at 1 bar, change the batteries (2 AA).\n3. Confirm it shows up and passes signal at the board on the matching color channel.\n\nAt the end of the service, ensure every mic is turned OFF, then mute all groups. (Our wireless system includes Shure ULX and Sennheiser EW/XSW units — a lead can show you which receiver belongs to which color.)",
         tip: "Turn mics on with the red button on the bottom and always verify signal at the board before rehearsal — don't assume 'on' means 'working.'",
+        visual: "battery-check",
       },
     ],
     quiz: [
@@ -532,11 +540,13 @@ export const curriculum: Module[] = [
         body: "Some inputs BUZZ or hum when they're plugged in but not in use — the electric guitar and the piano mic are known culprits on our stage. If an instrument isn't being played, keep its channel muted so that buzz never reaches the mix.\n\nThe habit: unmute the SPECIFIC channels being used, mute the others. Then unmute a channel a beat before it's needed and re-mute it when it goes quiet. Open, unused mics and DIs are the #1 source of noise and feedback.",
         tip: "If you hear a mystery buzz, look for an open channel that isn't being played — especially electric guitar or the piano mic — and mute it.",
         control: "Channel mutes",
+        visual: "buzz-sources",
       },
       {
         heading: "Focus on the essentials first — the Blue mic",
         body: "When the service starts, get the essentials up before anything else: the Pastor mic and the Blue (announcement) mic. Those carry the spoken word, and a missed unmute there is the most noticeable mistake we can make.\n\nBlue is the announcement mic — its own wireless handheld, separate from the computer input. Turn the mic ON before you unmute it (unmuting it while it's off creates static), then unmute it when announcements are happening and mute it when they're done. Prioritize spoken-word channels being live and clean over fine-tuning the band.",
         tip: "Unmute first, fine-tune second. Pastor and Blue live and clear is the top priority every service — and turn Blue on before unmuting it so it doesn't static.",
+        visual: "blue-mic-order",
       },
     ],
     quiz: [
@@ -602,6 +612,7 @@ export const curriculum: Module[] = [
         heading: "Our assignments",
         body: "Our setup groups things logically (confirm exact numbers on the board, as they've evolved):\n\n- GROUPS — roughly: 1 Pastor, 2 Vocals (Yellow/Orange/etc.), 3 Instruments, 4 Piano/Keys, plus a drums group. Groups add processing.\n- DCAs — roughly: 1 Pastor, 2 Vocals Main, 3 Vocals Second, 4 Electric Guitar, 5 Analog Guitar, 6 Synth L/R, 7 Piano L/R, 8 Drums.\n\nSo the pastor's mics ride together on Group 1 / DCA 1, the vocals ride on the vocal group and vocal DCAs, and so on. This is why one move can raise 'the vocals' or mute 'the drums.'",
         tip: "When someone says 'bring up the vocals,' you're moving a group/DCA — not chasing four individual faders. Learn which master controls which family.",
+        visual: "assignments-map",
       },
       {
         heading: "Group compression, used musically",
@@ -921,6 +932,7 @@ export const curriculum: Module[] = [
         body: "Button 7 STORES the current setup into a scene. It exists for deliberate, team-approved permanent changes to the console — and those are rare.\n\nImportantly, we do NOT store over 'Singing R1' during a normal service. 'Singing R1' is our permanent baseline: we recall it, we never overwrite it. That's what keeps it a trustworthy starting point week after week. If something gets bumped mid-service, you don't re-store — you re-recall the baseline (select YES when prompted) to snap the mutes back where they belong.\n\nSo the everyday flow is recall-only: select YES on power-up to load 'Singing R1', and leave it untouched. Reach for Button 7 only when a lead has decided on a lasting change and asks you to save it.",
         tip: "Everyday rule: recall 'Singing R1', never overwrite it. Button 7 is only for a deliberate, team-approved permanent change — not for saving today's one-off tweaks.",
         control: "Store (Button 7)",
+        visual: "recall-vs-store",
       },
       {
         heading: "Recall safely — and time the singing recall",
@@ -993,6 +1005,7 @@ export const curriculum: Module[] = [
         body: "Once rehearsal is done and the room fills, your job is attentive, gentle mixing:\n\n- Follow the order of service. Know what's next — song, sermon, announcements, video — and have the right channels up and unused ones muted.\n- Unmute groups and channels as they're needed; focus on unmuting the essentials FIRST (Pastor and Blue).\n- Make scene/mute changes at natural breaks, not mid-phrase.\n- Ride the mix so the sound is even — no one element buried or blasting.\n- If Peter, Rob, or Jonathan are preaching, prep Pastor 2 ahead of time.",
         tip: "Be proactive: stay one step ahead of the platform. Keep the run sheet in front of you so nothing surprises you.",
         control: "Mutes / Scenes",
+        visual: "mix-priorities",
       },
       {
         heading: "Leveling and our dB targets",
@@ -1007,8 +1020,9 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Stay present — put the phone away",
-        body: "The booth is a visible position. During the service, keep your phone put away and your attention on the platform and the mix. It's easy to glance down at a notification and miss an unmute, a cue, or a level that's drifting — and just as importantly, a tech scrolling a phone in the booth becomes a distraction to the people around and behind us.\n\nWe are here to serve worship, not to become a distraction within the service. Anything you genuinely need for the job — the run sheet, the Scheduling App, this guide — is fine to have open, but treat the service like the focused, active work it is. Personal texting, social media, and browsing wait until after.",
-        tip: "Phone away, eyes up. We never want to be the distraction in the room — stay present and on the mix through the whole service.",
+        body: "The sound board sits at the back of the room, and nobody stands behind the booth — no one is checking over your shoulder during the service. That's exactly why staying present is a personal discipline: the only thing that will catch a missed unmute, a late cue, or a level that's drifting is your own attention. One glance down at a notification at the wrong moment and the pastor is talking into a muted mic.\n\nWe are here to serve worship, and mixing is focused, active work for the whole service. Anything you genuinely need for the job — the run sheet, the Scheduling App, this guide — is fine to have open, but personal texting, social media, and browsing wait until after.",
+        tip: "Phone away, eyes up. Nobody's watching you in the back — the mix is what tells on us. Stay present and on the mix through the whole service.",
+        visual: "stay-present",
       },
     ],
     quiz: [
@@ -1064,13 +1078,13 @@ export const curriculum: Module[] = [
         question: "What's our expectation around phone use in the booth during the service?",
         options: [
           "Scroll freely between cues",
-          "Keep your phone put away and stay present — we don't want to miss a cue or become a distraction",
+          "Keep your phone put away and stay present — nobody catches a missed cue for you in the back",
           "Take calls as long as they're quiet",
           "Phones are required for mixing",
         ],
         answer: 1,
         explanation:
-          "Personal phone use waits until after the service. Glancing at a phone risks missing an unmute or cue, and a tech on their phone becomes a distraction. Job tools (run sheet, Scheduling App) are fine.",
+          "Personal phone use waits until after the service. The booth is at the back and nobody's checking over your shoulder — which is exactly why your own attention is the only thing standing between the service and a missed unmute. Job tools (run sheet, Scheduling App) are fine.",
       },
     ],
   },
@@ -1167,11 +1181,13 @@ export const curriculum: Module[] = [
         heading: "Buzz, feedback, and monitors",
         body: "- BUZZ/HUM on an open channel: an unused input left unmuted — often electric guitar or the piano mic. Mute what isn't being played.\n- FEEDBACK (squeal): pull down the offending channel calmly (or use PAFL to find it), then fix the cause — an open mic too close to a speaker/monitor, or a channel pushed too hot. Prevent it by muting unused mics and keeping levels disciplined.\n- MONITOR jumps with the house: a send that should be pre-fade is set post-fade. Remember our monitors are pre-fade.\n- WRONG PERSON'S FADER does nothing: the mic color and the person may be mismatched — recheck the Scheduling App assignment.",
         tip: "Prevention beats cure: mute unused inputs, keep gain sane, and verify mic-to-color-to-person before rehearsal.",
+        visual: "feedback-loop",
       },
       {
         heading: "When to escalate",
         body: "If a problem is beyond a quick fix and it's disrupting the service — the stream is down, a whole stage box dropped, the console is misbehaving — get a lead tech. Protecting the service matters more than solving it solo.\n\nFor streaming issues specifically, remember the stream is a separate output path (its own AUX/output feed): if the room is fine but the stream isn't, the problem is downstream of L/R. Note what happened so the team can trace it afterward.",
         tip: "Serving the service comes before solo heroics. Escalate early, document what you saw, and keep the room covered.",
+        visual: "escalate-flow",
       },
     ],
     quiz: [

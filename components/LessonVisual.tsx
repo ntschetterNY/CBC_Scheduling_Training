@@ -11,11 +11,15 @@
  *                  | "two-destinations" | "pre-post-fade" | "no-sound-flow"
  *                  | "patch-matrix"
  *   Surface      — "layers-stack" | "mute-groups" | "group-vs-dca" | "aux-map"
+ *                  | "select-focus" | "softkey-map" | "assignments-map"
  *   Workflow     — "startup-sequence" | "service-timeline" | "shutdown-sequence"
  *                  | "scene-recall" | "recall-timing" | "db-targets"
+ *                  | "learn-loop" | "recall-vs-store" | "mix-priorities"
+ *                  | "stay-present" | "escalate-flow"
  *   Mics / color — "mic-colors" | "mic-tuning" | "color-families"
+ *                  | "mic-assignments" | "battery-check" | "blue-mic-order"
  *   Processing   — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
- *                  | "comp-limiter"
+ *                  | "comp-limiter" | "buzz-sources" | "feedback-loop"
  */
 
 const GOLD = "#d8a23c";
@@ -134,6 +138,15 @@ function Node({
 }) {
   const cx = x + w / 2;
   const hasEmoji = Boolean(emoji);
+  // Vertically center the emoji/title/sub stack inside the box so text never
+  // spills past the border regardless of the box height.
+  const stackH = (hasEmoji ? 20 : 0) + 14 + (sub ? 13 : 0);
+  let cursor = y + (h - stackH) / 2;
+  const emojiY = cursor + 15;
+  if (hasEmoji) cursor += 20;
+  const titleY = cursor + 11;
+  cursor += 14;
+  const subY = cursor + 10;
   return (
     <g>
       <rect
@@ -147,13 +160,13 @@ function Node({
         strokeWidth={emphasis ? 2.5 : 1.5}
       />
       {hasEmoji && (
-        <text x={cx} y={y + 26} textAnchor="middle" fontSize="19">
+        <text x={cx} y={emojiY} textAnchor="middle" fontSize="19">
           {emoji}
         </text>
       )}
       <text
         x={cx}
-        y={hasEmoji ? y + 46 : sub ? y + h / 2 - 3 : y + h / 2 + 4}
+        y={titleY}
         textAnchor="middle"
         fontSize="13"
         fontWeight="700"
@@ -165,7 +178,7 @@ function Node({
       {sub && (
         <text
           x={cx}
-          y={hasEmoji ? y + 62 : y + h / 2 + 14}
+          y={subY}
           textAnchor="middle"
           fontSize="10.5"
           fill={MUTED}
@@ -396,16 +409,16 @@ function SystemOverview() {
   ];
   const cx = W / 2;
   const consoleBox = { x: cx - 70, y: 116, w: 140, h: 70 };
-  const inY = (i: number) => 44 + i * 78;
-  const outY = (i: number) => 28 + i * 62;
+  const inY = (i: number) => 40 + i * 80;
+  const outY = (i: number) => 20 + i * 68;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="CrossBridge audio system overview">
       {/* input nodes + arrows in */}
       {inputs.map((n, i) => (
         <g key={n.t}>
-          <Node x={18} y={inY(i)} w={168} h={54} title={n.t} sub={n.s} emoji={n.emoji} color={TEAL2} />
-          <Arrow x1={190} y1={inY(i) + 27} x2={consoleBox.x - 4} y2={consoleBox.y + 35} color={MUTED} />
+          <Node x={18} y={inY(i)} w={168} h={58} title={n.t} sub={n.s} emoji={n.emoji} color={TEAL2} />
+          <Arrow x1={190} y1={inY(i) + 29} x2={consoleBox.x - 4} y2={consoleBox.y + 35} color={MUTED} />
         </g>
       ))}
       {/* console */}
@@ -419,8 +432,8 @@ function SystemOverview() {
       {/* output nodes + arrows out */}
       {outputs.map((n, i) => (
         <g key={n.t}>
-          <Arrow x1={consoleBox.x + consoleBox.w + 4} y1={consoleBox.y + 35} x2={W - 190} y2={outY(i) + 25} color={n.color} />
-          <Node x={W - 186} y={outY(i)} w={170} h={50} title={n.t} sub={n.s} emoji={n.emoji} color={n.color} />
+          <Arrow x1={consoleBox.x + consoleBox.w + 4} y1={consoleBox.y + 35} x2={W - 190} y2={outY(i) + 28} color={n.color} />
+          <Node x={W - 186} y={outY(i)} w={170} h={56} title={n.t} sub={n.s} emoji={n.emoji} color={n.color} />
         </g>
       ))}
       <text x={18} y={20} fontSize="11" fontWeight="700" fill={MUTED} fontFamily={FONT}>
@@ -586,7 +599,7 @@ function OutputsMap() {
     { t: "Monitors", s: "AUX sends", d: "ME-500 in-ears", color: GOLDF, emoji: "🎧" },
   ];
   const cx = 150;
-  const yOf = (i: number) => 24 + i * 66;
+  const yOf = (i: number) => 16 + i * 70;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Outputs map">
       <rect x={40} y={116} width={120} height={70} rx="12" fill="rgba(216,162,60,0.14)" stroke={GOLD} strokeWidth="2.5" />
@@ -594,10 +607,10 @@ function OutputsMap() {
       <text x={cx - 50} y={164} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>mix bus</text>
       {outs.map((o, i) => (
         <g key={o.t}>
-          <Arrow x1={162} y1={150} x2={300} y2={yOf(i) + 26} color={o.color} />
-          <Node x={304} y={yOf(i)} w={200} h={52} title={o.t} sub={o.s} emoji={o.emoji} color={o.color} />
-          <Arrow x1={508} y1={yOf(i) + 26} x2={556} y2={yOf(i) + 26} color={MUTED} />
-          <text x={562} y={yOf(i) + 30} fontSize="11" fontWeight="600" fill={INK} fontFamily={FONT}>{o.d}</text>
+          <Arrow x1={162} y1={150} x2={300} y2={yOf(i) + 29} color={o.color} />
+          <Node x={304} y={yOf(i)} w={200} h={58} title={o.t} sub={o.s} emoji={o.emoji} color={o.color} />
+          <Arrow x1={508} y1={yOf(i) + 29} x2={556} y2={yOf(i) + 29} color={MUTED} />
+          <text x={562} y={yOf(i) + 33} fontSize="11" fontWeight="600" fill={INK} fontFamily={FONT}>{o.d}</text>
         </g>
       ))}
       <text x={cx - 50} y={210} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
@@ -697,8 +710,18 @@ function LayersStack() {
             <rect x={x} y={y} width={360} height={cardH} rx="12" fill={top ? "#fff" : SURFACE} stroke={l.color} strokeWidth={top ? 2.5 : 1.5} />
             <rect x={x} y={y} width={40} height={cardH} rx="12" fill={l.color} opacity={top ? 1 : 0.55} />
             <text x={x + 20} y={y + 76} textAnchor="middle" fontSize="20" fontWeight="800" fill="#fff" fontFamily={FONT}>{l.k}</text>
-            <text x={x + 58} y={y + 28} fontSize="12.5" fontWeight="700" fill={INK} fontFamily={FONT}>Layer {l.k}</text>
-            <text x={x + 58} y={y + 46} fontSize="11" fill={MUTED} fontFamily={FONT}>{l.t}</text>
+            {/* back cards only expose a 26px top strip — keep their label on one line inside it */}
+            {top ? (
+              <>
+                <text x={x + 58} y={y + 28} fontSize="12.5" fontWeight="700" fill={INK} fontFamily={FONT}>Layer {l.k}</text>
+                <text x={x + 58} y={y + 46} fontSize="11" fill={MUTED} fontFamily={FONT}>{l.t}</text>
+              </>
+            ) : (
+              <text x={x + 58} y={y + 18} fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+                Layer {l.k}
+                <tspan fontWeight="400" fill={MUTED}> — {l.t}</tspan>
+              </text>
+            )}
             {top &&
               Array.from({ length: 8 }).map((_, k) => (
                 <g key={k}>
@@ -1359,7 +1382,7 @@ function CompControls() {
           <div key={c.name} className="rounded-xl border border-brand-border bg-white p-3 text-center">
             <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-full" style={{ backgroundColor: `${c.color}22` }}>
               <span className="text-lg font-bold" style={{ color: c.color }}>
-                {c.name === "Ratio" ? "2:1" : c.name === "Threshold" ? "▼" : "＋"}
+                {c.name === "Ratio" ? "÷" : c.name === "Threshold" ? "▼" : "＋"}
               </span>
             </div>
             <p className="font-sans text-xs font-bold text-brand-text">{c.name}</p>
@@ -1433,6 +1456,620 @@ function CompLimiter() {
       <path d={lim.join(" ")} fill="none" stroke={TEAL} strokeWidth="2.5" />
       <text x={24} y={16} fontSize="11" fill={MUTED} fontFamily={FONT}>
         faint = signal trying to spike · solid = held at the ceiling
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* How this guide works (lesson → board → quiz loop)                   */
+/* ------------------------------------------------------------------ */
+
+function LearnLoop() {
+  const W = 728;
+  const H = 208;
+  const y = 46;
+  const h = 84;
+  const steps = [
+    { emoji: "📖", t: "Read a lesson", s: "here, at your pace", w: 150 },
+    { emoji: "🎛️", t: "Try it on the board", s: "at rehearsal, hands-on", w: 170 },
+    { emoji: "📝", t: "Pass the quiz", s: "70% to complete", w: 150 },
+    { emoji: "✅", t: "Progress saved", s: "dashboard shows what's next", w: 170 },
+  ];
+  let x = 8;
+  const positions = steps.map((s) => {
+    const px = x;
+    x += s.w + 24;
+    return px;
+  });
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="How to use this guide: read, try, quiz, progress">
+      <text x={W / 2} y={22} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Each module is the same loop — reading plus real board time is what makes it stick
+      </text>
+      {steps.map((s, i) => (
+        <g key={s.t}>
+          {i > 0 && (
+            <Arrow x1={positions[i] - 22} y1={y + h / 2} x2={positions[i] - 4} y2={y + h / 2} color={MUTED} />
+          )}
+          <Node x={positions[i]} y={y} w={s.w} h={h} title={s.t} sub={s.s} emoji={s.emoji} color={i === 1 ? GOLD : TEAL2} fill={i === 1 ? "rgba(216,162,60,0.10)" : "#fff"} emphasis={i === 1} />
+        </g>
+      ))}
+      {/* loop back arrow */}
+      <path
+        d={`M ${positions[3] + 85} ${y + h + 8} C ${positions[3] + 85} ${y + h + 32}, ${positions[0] + 75} ${y + h + 32}, ${positions[0] + 75} ${y + h + 10}`}
+        fill="none"
+        stroke={MUTED}
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
+      />
+      <text x={W / 2} y={y + h + 52} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        then on to the next module — each one builds on the last
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Select key focuses a channel (edit focus, not sound)                */
+/* ------------------------------------------------------------------ */
+
+function SelectFocus() {
+  const W = 700;
+  const H = 300;
+  const sel = 2; // selected strip
+  const stripY = 44;
+  const stripX = (i: number) => 200 + i * 62;
+  const screen = { x: 225, y: 186, w: 250, h: 84 };
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Pressing Select focuses a channel for editing without changing the sound">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        SELECT chooses what you&apos;re EDITING — it changes nothing about what&apos;s heard
+      </text>
+
+      {/* fader strips with select keys */}
+      {[0, 1, 2, 3, 4].map((i) => {
+        const x = stripX(i);
+        const isSel = i === sel;
+        return (
+          <g key={i}>
+            <rect x={x - 16} y={stripY} width={32} height={17} rx="3" fill={isSel ? GOLD : "#dfe6e4"} stroke={isSel ? "#a87b22" : GRID} />
+            <text x={x} y={stripY + 12.5} textAnchor="middle" fontSize="8.5" fontWeight="700" fill={isSel ? "#1b2c32" : MUTED} fontFamily={FONT}>SEL</text>
+            <line x1={x} y1={stripY + 26} x2={x} y2={stripY + 66} stroke={GRID} strokeWidth="2" />
+            <rect x={x - 6} y={stripY + 32 + ((i * 9) % 20)} width={12} height={16} rx="2" fill={isSel ? GOLD : "#9fb0b5"} />
+            <text x={x} y={stripY + 82} textAnchor="middle" fontSize="8.5" fill={isSel ? GOLD : MUTED} fontWeight={isSel ? 700 : 400} fontFamily={FONT}>ch {i + 1}</text>
+          </g>
+        );
+      })}
+
+      {/* arrow from selected strip down to the screen */}
+      <Arrow x1={stripX(sel)} y1={stripY + 92} x2={screen.x + screen.w / 2} y2={screen.y - 6} color={GOLD} width={2.5} />
+      <text x={stripX(sel) + 34} y={stripY + 118} fontSize="10.5" fontWeight="700" fill={GOLD} fontFamily={FONT}>
+        press SELECT on ch 3…
+      </text>
+
+      {/* the shared screen */}
+      <rect x={screen.x} y={screen.y} width={screen.w} height={screen.h} rx="10" fill="#0f2b30" stroke={TEAL} strokeWidth="2" />
+      <text x={screen.x + screen.w / 2} y={screen.y + 28} textAnchor="middle" fontSize="12.5" fontWeight="800" fill="#d8a23c" fontFamily={FONT}>CH 3 · ORANGE</text>
+      <text x={screen.x + screen.w / 2} y={screen.y + 50} textAnchor="middle" fontSize="10" fill="#8fc0c8" fontFamily={FONT}>gain · HPF · EQ · compressor</text>
+      <text x={screen.x + screen.w / 2} y={screen.y + 68} textAnchor="middle" fontSize="9.5" fill="#6fa5ad" fontFamily={FONT}>…and the screen shows that channel</text>
+
+      {/* knobs beside screen */}
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <circle cx={520 + i * 46} cy={screen.y + 30} r="15" fill="#fff" stroke={TEAL} strokeWidth="2" />
+          <line x1={520 + i * 46} y1={screen.y + 30} x2={520 + i * 46} y2={screen.y + 18} stroke={TEAL} strokeWidth="2" strokeLinecap="round" />
+        </g>
+      ))}
+      <text x={566} y={screen.y + 66} textAnchor="middle" fontSize="9.5" fill={MUTED} fontFamily={FONT}>same knobs, every channel</text>
+
+      {/* what's heard is untouched */}
+      <text x={110} y={screen.y + 44} textAnchor="middle" fontSize="20">🔊</text>
+      <text x={110} y={screen.y + 64} textAnchor="middle" fontSize="9.5" fill={MUTED} fontFamily={FONT}>the sound? unchanged</text>
+
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Faders and mutes decide what&apos;s HEARD — Select only decides which channel you&apos;re editing
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* SoftKey map — scene recall keys vs mute-group keys                  */
+/* ------------------------------------------------------------------ */
+
+function SoftkeyMap() {
+  const W = 700;
+  const H = 260;
+  const groups = [
+    { t: "Vocals", muted: false },
+    { t: "Instr", muted: false },
+    { t: "Drums", muted: true },
+    { t: "Keys", muted: true },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Scene-recall SoftKeys versus mute-group SoftKeys">
+      {/* left block: scene keys */}
+      <rect x={30} y={40} width={300} height={190} rx="12" fill="#fff" stroke={TEAL} strokeWidth="1.5" />
+      <text x={180} y={64} textAnchor="middle" fontSize="12.5" fontWeight="800" fill={TEAL} fontFamily={FONT}>SCENE KEYS (left of screen)</text>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const bx = 52 + (i % 3) * 88;
+        const by = 78 + Math.floor(i / 3) * 34;
+        return (
+          <g key={i}>
+            <rect x={bx} y={by} width={72} height={24} rx="5" fill="rgba(30,81,98,0.10)" stroke={TEAL2} strokeWidth="1.25" />
+            <text x={bx + 36} y={by + 16} textAnchor="middle" fontSize="10.5" fontWeight="700" fill={TEAL} fontFamily={FONT}>{i + 1} recall</text>
+          </g>
+        );
+      })}
+      <text x={180} y={158} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>1–6 RECALL scenes — they move MUTES only, never levels</text>
+      <rect x={52} y={170} width={72} height={24} rx="5" fill="rgba(191,70,64,0.10)" stroke={DANGER} strokeWidth="1.25" />
+      <text x={88} y={186} textAnchor="middle" fontSize="10.5" fontWeight="700" fill={DANGER} fontFamily={FONT}>7 store</text>
+      <text x={136} y={186} fontSize="10" fill={DANGER} fontFamily={FONT}>rare — only with a lead&apos;s approval</text>
+
+      {/* right block: mute-group keys */}
+      <rect x={370} y={40} width={300} height={190} rx="12" fill="#fff" stroke={GOLDF} strokeWidth="1.5" />
+      <text x={520} y={64} textAnchor="middle" fontSize="12.5" fontWeight="800" fill={GOLDF} fontFamily={FONT}>MUTE-GROUP KEYS (top-right)</text>
+      {groups.map((g, i) => {
+        const by = 80 + i * 34;
+        return (
+          <g key={g.t}>
+            <rect x={396} y={by} width={110} height={24} rx="5" fill={g.muted ? DANGER : "#dfe6e4"} stroke={g.muted ? "#8f2f2a" : GRID} />
+            <text x={451} y={by + 16} textAnchor="middle" fontSize="10.5" fontWeight="700" fill={g.muted ? "#fff" : MUTED} fontFamily={FONT}>{g.t}</text>
+            <text x={522} y={by + 16} fontSize="10" fill={g.muted ? DANGER : SUCCESS} fontWeight="700" fontFamily={FONT}>
+              {g.muted ? "● muted" : "live"}
+            </text>
+          </g>
+        );
+      })}
+      <text x={W / 2} y={H - 10} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Two different jobs: left keys jump between saved mute states; right keys silence whole families — RED = muted
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Scheduling App → person → color mic → channel                       */
+/* ------------------------------------------------------------------ */
+
+function MicAssignments() {
+  const W = 700;
+  const H = 250;
+  const rows = [
+    { who: "Erin", mic: "Yellow", c: GOLD },
+    { who: "Val", mic: "Orange", c: GOLDF },
+    { who: "William", mic: "White", c: "#c9ced0" },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Scheduling App assigns each singer a color mic, which is a fixed channel">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        The app tells you WHO gets WHICH color — the color is always the same channel on the board
+      </text>
+      {/* app card */}
+      <rect x={30} y={62} width={150} height={130} rx="14" fill="#fff" stroke={TEAL} strokeWidth="2" />
+      <rect x={30} y={62} width={150} height={30} rx="14" fill={TEAL} />
+      <rect x={30} y={78} width={150} height={14} fill={TEAL} />
+      <text x={105} y={82} textAnchor="middle" fontSize="11" fontWeight="800" fill="#fff" fontFamily={FONT}>📱 Scheduling App</text>
+      {rows.map((r, i) => (
+        <text key={r.who} x={46} y={116 + i * 24} fontSize="11" fill={INK} fontFamily={FONT}>
+          {r.who} — <tspan fontWeight="700">{r.mic}</tspan>
+        </text>
+      ))}
+
+      {rows.map((r, i) => {
+        const y = 74 + i * 44;
+        const light = r.mic === "White";
+        return (
+          <g key={r.who}>
+            <Arrow x1={186} y1={104 + i * 24} x2={252} y2={y + 20} color={MUTED} width={1.5} />
+            {/* person + mic */}
+            <rect x={256} y={y} width={190} height={38} rx="10" fill="#fff" stroke={GRID} strokeWidth="1.5" />
+            <circle cx={280} cy={y + 19} r="12" fill={r.c} stroke={light ? MUTED : r.c} strokeWidth={light ? 1 : 0} />
+            <text x={280} y={y + 24} textAnchor="middle" fontSize="12">🎤</text>
+            <text x={300} y={y + 24} fontSize="11.5" fontWeight="700" fill={INK} fontFamily={FONT}>{r.who} gets {r.mic}</text>
+            <Arrow x1={450} y1={y + 19} x2={508} y2={y + 19} color={r.c === "#c9ced0" ? MUTED : r.c} width={2} />
+            {/* fixed channel */}
+            <rect x={512} y={y} width={158} height={38} rx="10" fill="#fff" stroke={light ? MUTED : r.c} strokeWidth="1.5" />
+            <text x={591} y={y + 17} textAnchor="middle" fontSize="11" fontWeight="700" fill={INK} fontFamily={FONT}>&lsquo;{r.mic}&rsquo; channel</text>
+            <text x={591} y={y + 30} textAnchor="middle" fontSize="9.5" fill={MUTED} fontFamily={FONT}>same fader every week</text>
+          </g>
+        );
+      })}
+      <text x={W / 2} y={H - 10} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Singers change week to week — the channels never do. Match app → mic → person before rehearsal.
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Battery check                                                       */
+/* ------------------------------------------------------------------ */
+
+function BatteryCheck() {
+  const W = 700;
+  const H = 210;
+  const cells = [
+    { bars: 3, label: "3 bars — good", note: "use it", color: SUCCESS },
+    { bars: 2, label: "2 bars — fine", note: "keep an eye on it", color: GOLDF },
+    { bars: 1, label: "1 bar — change now", note: "swap in 2 fresh AA", color: DANGER },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Mic battery levels: three bars good, one bar means change the batteries">
+      <text x={W / 2} y={22} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Check every mic&apos;s battery display during setup — never let one die mid-song
+      </text>
+      {cells.map((c, i) => {
+        const x = 52 + i * 212;
+        return (
+          <g key={c.label}>
+            <rect x={x} y={52} width={180} height={110} rx="12" fill="#fff" stroke={c.color} strokeWidth={i === 2 ? 2.5 : 1.5} />
+            {/* battery body */}
+            <rect x={x + 40} y={70} width={86} height={34} rx="6" fill="none" stroke={INK} strokeWidth="2" />
+            <rect x={x + 126} y={80} width={8} height={14} rx="2" fill={INK} />
+            {[0, 1, 2].map((b) => (
+              <rect
+                key={b}
+                x={x + 46 + b * 27}
+                y={76}
+                width={21}
+                height={22}
+                rx="3"
+                fill={b < c.bars ? c.color : "#e8ecea"}
+              />
+            ))}
+            <text x={x + 90} y={128} textAnchor="middle" fontSize="12" fontWeight="800" fill={c.color} fontFamily={FONT}>{c.label}</text>
+            <text x={x + 90} y={146} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>{c.note}</text>
+          </g>
+        );
+      })}
+      <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Power on with the red button on the bottom of the handheld, then verify signal at the board
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Buzz sources — open unused inputs hum                               */
+/* ------------------------------------------------------------------ */
+
+function BuzzSources() {
+  const W = 700;
+  const H = 230;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Unused open channels buzz; muted channels stay silent">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Plugged in but not being played = noise waiting to happen
+      </text>
+
+      {/* left: open unused channel buzzing */}
+      <rect x={36} y={44} width={300} height={150} rx="12" fill="rgba(191,70,64,0.06)" stroke={DANGER} strokeWidth="1.5" />
+      <text x={186} y={68} textAnchor="middle" fontSize="12" fontWeight="800" fill={DANGER} fontFamily={FONT}>OPEN + idle → buzz in the mix</text>
+      <text x={96} y={106} textAnchor="middle" fontSize="26">🎸</text>
+      <text x={96} y={126} textAnchor="middle" fontSize="9.5" fill={MUTED} fontFamily={FONT}>electric guitar</text>
+      <text x={186} y={106} textAnchor="middle" fontSize="26">🎹</text>
+      <text x={186} y={126} textAnchor="middle" fontSize="9.5" fill={MUTED} fontFamily={FONT}>piano mic</text>
+      {/* buzz waves */}
+      <path d="M 240 96 q 8 -10 16 0 t 16 0 t 16 0" fill="none" stroke={DANGER} strokeWidth="2" strokeLinecap="round" />
+      <path d="M 244 112 q 8 -10 16 0 t 16 0" fill="none" stroke={DANGER} strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+      <text x={276} y={136} textAnchor="middle" fontSize="10.5" fontWeight="700" fill={DANGER} fontFamily={FONT}>bzzz…</text>
+      <text x={186} y={172} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>channel unmuted, nobody playing</text>
+
+      {/* right: muted = clean */}
+      <rect x={364} y={44} width={300} height={150} rx="12" fill="rgba(61,139,107,0.06)" stroke={SUCCESS} strokeWidth="1.5" />
+      <text x={514} y={68} textAnchor="middle" fontSize="12" fontWeight="800" fill={SUCCESS} fontFamily={FONT}>MUTED until it&apos;s played → silence</text>
+      <rect x={444} y={86} width={140} height={34} rx="8" fill={DANGER} />
+      <text x={514} y={108} textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff" fontFamily={FONT}>MUTE ON</text>
+      <text x={514} y={144} textAnchor="middle" fontSize="10.5" fill={SUCCESS} fontFamily={FONT}>…nothing reaches the mix</text>
+      <text x={514} y={172} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>unmute a beat before it&apos;s needed</text>
+
+      <text x={W / 2} y={H - 10} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Open, unused mics and DIs are the #1 source of noise and feedback — keep them muted
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Blue mic order of operations                                        */
+/* ------------------------------------------------------------------ */
+
+function BlueMicOrder() {
+  const W = 700;
+  const H = 240;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Turn the Blue mic on before unmuting it; unmuting it while off creates static">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Blue mic rule: power it ON first, THEN unmute — in that order
+      </text>
+
+      {/* right way */}
+      <rect x={36} y={40} width={628} height={80} rx="12" fill="rgba(61,139,107,0.06)" stroke={SUCCESS} strokeWidth="1.5" />
+      <text x={62} y={66} fontSize="12" fontWeight="800" fill={SUCCESS} fontFamily={FONT}>✓ RIGHT</text>
+      <Node x={150} y={56} w={150} h={48} title="1 · Turn mic ON" sub="red button, bottom" color={SUCCESS} />
+      <Arrow x1={300} y1={80} x2={352} y2={80} color={SUCCESS} width={2.5} />
+      <Node x={356} y={56} w={150} h={48} title="2 · Unmute" sub="at the board" color={SUCCESS} />
+      <Arrow x1={506} y1={80} x2={558} y2={80} color={SUCCESS} width={2.5} />
+      <text x={598} y={78} textAnchor="middle" fontSize="11.5" fontWeight="700" fill={SUCCESS} fontFamily={FONT}>clean</text>
+      <text x={598} y={92} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>announcements</text>
+
+      {/* wrong way */}
+      <rect x={36} y={136} width={628} height={80} rx="12" fill="rgba(191,70,64,0.06)" stroke={DANGER} strokeWidth="1.5" />
+      <text x={62} y={162} fontSize="12" fontWeight="800" fill={DANGER} fontFamily={FONT}>✗ WRONG</text>
+      <Node x={150} y={152} w={150} h={48} title="1 · Unmute first" sub="mic still OFF" color={DANGER} />
+      <Arrow x1={300} y1={176} x2={352} y2={176} color={DANGER} width={2.5} />
+      <rect x={356} y={152} width={150} height={48} rx="11" fill="#fff" stroke={DANGER} strokeWidth="1.5" />
+      <text x={431} y={172} textAnchor="middle" fontSize="13" fontWeight="700" fill={DANGER} fontFamily={FONT}>⚡ STATIC</text>
+      <text x={431} y={188} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>over the house</text>
+      <Arrow x1={506} y1={176} x2={558} y2={176} color={DANGER} width={2.5} />
+      <text x={598} y={174} textAnchor="middle" fontSize="11.5" fontWeight="700" fill={DANGER} fontFamily={FONT}>everyone</text>
+      <text x={598} y={188} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>hears it</text>
+
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Same rule in reverse at the end: mute it at the board, then power the mic off
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Group & DCA assignments map                                         */
+/* ------------------------------------------------------------------ */
+
+function AssignmentsMap() {
+  const W = 700;
+  const H = 300;
+  const groupRows = [
+    { n: "1", t: "Pastor" },
+    { n: "2", t: "Vocals" },
+    { n: "3", t: "Instruments" },
+    { n: "4", t: "Piano / Keys" },
+    { n: "•", t: "Drums" },
+  ];
+  const dcaRows = [
+    { n: "1", t: "Pastor" },
+    { n: "2", t: "Vocals Main" },
+    { n: "3", t: "Vocals Second" },
+    { n: "4", t: "Electric Guitar" },
+    { n: "5", t: "Analog Guitar" },
+    { n: "6", t: "Synth L/R" },
+    { n: "7", t: "Piano L/R" },
+    { n: "8", t: "Drums" },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Our Group and DCA assignments">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        One move controls a whole family — confirm exact numbers on the board
+      </text>
+
+      <text x={190} y={48} textAnchor="middle" fontSize="12.5" fontWeight="800" fill={TEAL} fontFamily={FONT}>GROUPS — add processing</text>
+      {groupRows.map((r, i) => {
+        const y = 60 + i * 40;
+        return (
+          <g key={r.t}>
+            <rect x={60} y={y} width={260} height={32} rx="8" fill="#fff" stroke={TEAL2} strokeWidth="1.25" />
+            <rect x={60} y={y} width={32} height={32} rx="8" fill={TEAL2} />
+            <text x={76} y={y + 21} textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff" fontFamily={FONT}>{r.n}</text>
+            <text x={104} y={y + 21} fontSize="12" fontWeight="600" fill={INK} fontFamily={FONT}>{r.t}</text>
+          </g>
+        );
+      })}
+
+      <text x={510} y={48} textAnchor="middle" fontSize="12.5" fontWeight="800" fill={GOLD} fontFamily={FONT}>DCAs — ride level &amp; mute</text>
+      {dcaRows.map((r, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = 380 + col * 140;
+        const y = 60 + row * 40;
+        return (
+          <g key={r.t}>
+            <rect x={x} y={y} width={130} height={32} rx="8" fill="#fff" stroke={GOLDF} strokeWidth="1.25" />
+            <rect x={x} y={y} width={26} height={32} rx="8" fill={GOLDF} />
+            <text x={x + 13} y={y + 21} textAnchor="middle" fontSize="11.5" fontWeight="800" fill="#fff" fontFamily={FONT}>{r.n}</text>
+            <text x={x + 34} y={y + 21} fontSize="10" fontWeight="600" fill={INK} fontFamily={FONT}>{r.t}</text>
+          </g>
+        );
+      })}
+      <line x1={350} y1={40} x2={350} y2={265} stroke={GRID} strokeWidth="1.5" strokeDasharray="4 5" />
+      <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        &lsquo;Bring up the vocals&rsquo; = one Group/DCA move, not four individual faders
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Recall (everyday) vs Store (rare)                                   */
+/* ------------------------------------------------------------------ */
+
+function RecallVsStore() {
+  const W = 700;
+  const H = 230;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Recall is the everyday move; storing with Button 7 is rare and lead-approved">
+      {/* recall side */}
+      <rect x={36} y={30} width={390} height={160} rx="12" fill="rgba(61,139,107,0.06)" stroke={SUCCESS} strokeWidth="1.5" />
+      <text x={231} y={56} textAnchor="middle" fontSize="12.5" fontWeight="800" fill={SUCCESS} fontFamily={FONT}>EVERYDAY — RECALL (buttons 1–6)</text>
+      <Node x={60} y={72} w={150} h={62} title="'Singing R1'" sub="protected baseline" emoji="💾" color={SUCCESS} />
+      <Arrow x1={210} y1={103} x2={268} y2={103} color={SUCCESS} width={2.5} />
+      <text x={239} y={94} textAnchor="middle" fontSize="9.5" fill={SUCCESS} fontFamily={FONT}>recall</text>
+      <Node x={272} y={76} w={130} h={54} title="The board" sub="mutes reset" color={SUCCESS} />
+      <text x={231} y={162} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Read-only: the scene loads INTO the board.
+      </text>
+      <text x={231} y={177} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        The saved baseline itself never changes.
+      </text>
+
+      {/* store side */}
+      <rect x={446} y={30} width={218} height={160} rx="12" fill="rgba(191,70,64,0.06)" stroke={DANGER} strokeWidth="1.5" />
+      <text x={555} y={56} textAnchor="middle" fontSize="12.5" fontWeight="800" fill={DANGER} fontFamily={FONT}>RARE — STORE (button 7)</text>
+      <Node x={490} y={76} w={130} h={54} title="The board" sub="today's setup" color={DANGER} />
+      <Arrow x1={555} y1={130} x2={555} y2={152} color={DANGER} width={2.5} />
+      <text x={555} y={168} textAnchor="middle" fontSize="10.5" fontWeight="700" fill={DANGER} fontFamily={FONT}>overwrites the scene</text>
+      <text x={555} y={182} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>only with a lead&apos;s approval</text>
+
+      <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="11" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Recall &lsquo;Singing R1&rsquo;, never overwrite it — Button 7 is not part of a normal Sunday
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Mix priorities during the service                                   */
+/* ------------------------------------------------------------------ */
+
+function MixPriorities() {
+  const W = 700;
+  const H = 240;
+  const rows = [
+    { n: 1, t: "Spoken word — Pastor & Blue", s: "a missed unmute here is the most noticeable mistake", color: DANGER, w: 620 },
+    { n: 2, t: "Lead vocal clear over the band", s: "the congregation follows the words", color: GOLD, w: 520 },
+    { n: 3, t: "Band balance & dynamics", s: "smooth, small moves with groups and DCAs", color: TEAL2, w: 420 },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Mixing priorities: spoken word first, then lead vocal, then band balance">
+      <text x={W / 2} y={22} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        When attention is limited, this is the order it goes in
+      </text>
+      {rows.map((r, i) => {
+        const y = 44 + i * 58;
+        return (
+          <g key={r.n}>
+            <circle cx={62} cy={y + 24} r="16" fill={r.color} />
+            <text x={62} y={y + 29} textAnchor="middle" fontSize="14" fontWeight="800" fill="#fff" fontFamily={FONT}>{r.n}</text>
+            <rect x={92} y={y} width={r.w - 92} height={48} rx="10" fill="#fff" stroke={r.color} strokeWidth="1.5" />
+            <text x={108} y={y + 21} fontSize="12.5" fontWeight="700" fill={INK} fontFamily={FONT}>{r.t}</text>
+            <text x={108} y={y + 38} fontSize="10.5" fill={MUTED} fontFamily={FONT}>{r.s}</text>
+          </g>
+        );
+      })}
+      <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Unmute the essentials first, then fine-tune — never the other way around
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Stay present — where attention goes during the service              */
+/* ------------------------------------------------------------------ */
+
+function StayPresent() {
+  const W = 700;
+  const H = 290;
+  const cy = 120; // vertical center of the loop nodes
+  const items = [
+    { emoji: "🎤", t: "Platform", s: "who's up next", x: 60 },
+    { emoji: "📋", t: "Run sheet", s: "what's next", x: 230 },
+    { emoji: "📊", t: "Meters & mutes", s: "anything drifting?", x: 400 },
+    { emoji: "👂", t: "The room", s: "how it really sounds", x: 570 },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Keep your attention cycling between the platform, run sheet, meters, and the room — not your phone">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Mixing is active work — your eyes and ears keep cycling through this loop
+      </text>
+      {items.map((it, i) => (
+        <g key={it.t}>
+          {i > 0 && <Arrow x1={it.x - 32} y1={cy - 26} x2={it.x - 6} y2={cy - 26} color={MUTED} width={1.5} />}
+          <Node x={it.x} y={cy - 56} w={130} h={60} title={it.t} sub={it.s} emoji={it.emoji} color={TEAL2} />
+        </g>
+      ))}
+      {/* loop back */}
+      <path
+        d={`M ${635} ${cy + 12} C ${635} ${cy + 32}, ${125} ${cy + 32}, ${125} ${cy + 14}`}
+        fill="none"
+        stroke={MUTED}
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
+      />
+      <text x={W / 2} y={cy + 46} textAnchor="middle" fontSize="9.5" fill={MUTED} fontFamily={FONT}>…and around again, all service long</text>
+
+      {/* phone, out of the loop */}
+      <rect x={262} y={cy + 62} width={176} height={50} rx="10" fill="rgba(191,70,64,0.07)" stroke={DANGER} strokeWidth="1.5" />
+      <text x={294} y={cy + 94} textAnchor="middle" fontSize="18">📱</text>
+      <line x1={282} y1={cy + 100} x2={306} y2={cy + 74} stroke={DANGER} strokeWidth="2.5" strokeLinecap="round" />
+      <text x={372} y={cy + 84} textAnchor="middle" fontSize="12" fontWeight="700" fill={DANGER} fontFamily={FONT}>phone — not in the loop</text>
+      <text x={372} y={cy + 100} textAnchor="middle" fontSize="9.5" fill={DANGER} fontFamily={FONT}>put it away until after</text>
+
+      <text x={W / 2} y={H - 10} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        One glance down at the wrong moment is a missed unmute or a level that drifted
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Feedback loop — how the squeal happens and the fix                  */
+/* ------------------------------------------------------------------ */
+
+function FeedbackLoop() {
+  const W = 700;
+  const H = 250;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Feedback: the mic hears the speaker, which replays the mic, louder each time">
+      <text x={W / 2} y={20} textAnchor="middle" fontSize="12" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Feedback is a loop: the mic hears the speaker, the speaker replays the mic — louder every lap
+      </text>
+
+      <Node x={80} y={60} w={140} h={62} title="Open mic" sub="picks up sound" emoji="🎤" color={DANGER} emphasis />
+      <Node x={480} y={60} w={140} h={62} title="Speaker" sub="plays it back out" emoji="🔊" color={DANGER} emphasis />
+      {/* circular arrows */}
+      <path d="M 224 78 C 300 48, 400 48, 476 78" fill="none" stroke={DANGER} strokeWidth="2.5" />
+      <polygon points="476,78 462,70 466,82" fill={DANGER} />
+      <text x={350} y={52} textAnchor="middle" fontSize="10" fill={DANGER} fontFamily={FONT}>mic&apos;s sound goes to the speaker…</text>
+      <path d="M 476 108 C 400 138, 300 138, 224 108" fill="none" stroke={DANGER} strokeWidth="2.5" />
+      <polygon points="224,108 238,116 234,104" fill={DANGER} />
+      <text x={350} y={146} textAnchor="middle" fontSize="10" fill={DANGER} fontFamily={FONT}>…and the mic hears it again — SQUEAL</text>
+
+      {/* the fix */}
+      <rect x={70} y={172} width={560} height={52} rx="12" fill="rgba(61,139,107,0.07)" stroke={SUCCESS} strokeWidth="1.5" />
+      <text x={350} y={193} textAnchor="middle" fontSize="11.5" fontWeight="800" fill={SUCCESS} fontFamily={FONT}>
+        THE FIX: calmly pull that channel down (PAFL helps find it), then remove the cause
+      </text>
+      <text x={350} y={211} textAnchor="middle" fontSize="10" fill={MUTED} fontFamily={FONT}>
+        an open mic too close to a speaker, or a channel pushed too hot — prevention is muting unused mics
+      </text>
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="10.5" fill={MUTED} fontFamily={FONT}>
+        Break any link in the loop and the squeal stops instantly
+      </text>
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* When to escalate — decision flow                                    */
+/* ------------------------------------------------------------------ */
+
+function EscalateFlow() {
+  const W = 700;
+  const H = 250;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Escalation decision: quick fix yourself, or get a lead if the service is disrupted">
+      <Node x={40} y={30} w={180} h={56} title="Something's wrong" sub="stay calm, walk the path" emoji="⚠️" color={GOLD} emphasis />
+
+      {/* branch: quick fix */}
+      <Arrow x1={220} y1={50} x2={330} y2={50} color={SUCCESS} width={2.5} />
+      <text x={275} y={42} textAnchor="middle" fontSize="9.5" fontWeight="700" fill={SUCCESS} fontFamily={FONT}>quick fix?</text>
+      <Node x={334} y={26} w={160} h={50} title="Fix it yourself" sub="mute, fader, patch…" color={SUCCESS} />
+      <Arrow x1={494} y1={51} x2={546} y2={51} color={SUCCESS} width={2} />
+      <Node x={550} y={26} w={120} h={50} title="Note it" sub="tell the team after" color={SUCCESS} />
+
+      {/* branch: escalate */}
+      <Arrow x1={130} y1={86} x2={130} y2={140} color={DANGER} width={2.5} />
+      <text x={210} y={122} textAnchor="middle" fontSize="9.5" fontWeight="700" fill={DANGER} fontFamily={FONT}>disrupting the service?</text>
+      <Node x={40} y={144} w={180} h={56} title="Get a lead tech" sub="stream down, stage box dead…" emoji="🙋" color={DANGER} emphasis />
+      <Arrow x1={220} y1={172} x2={330} y2={172} color={DANGER} width={2} />
+      <Node x={334} y={148} w={160} h={50} title="Cover the room" sub="the service comes first" color={DANGER} />
+      <Arrow x1={494} y1={173} x2={546} y2={173} color={DANGER} width={2} />
+      <Node x={550} y={148} w={120} h={50} title="Document" sub="what you saw, when" color={DANGER} />
+
+      <text x={W / 2} y={H - 14} textAnchor="middle" fontSize="11" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Protecting the service matters more than solving it solo — escalate early, without embarrassment
       </text>
     </svg>
   );
@@ -1758,6 +2395,124 @@ export function LessonVisual({ name }: { name: string }) {
           caption="A limiter is a very high-ratio compressor acting as a ceiling: it stops sudden peaks from ever exceeding a set level, protecting the system."
         >
           <CompLimiter />
+        </Frame>
+      );
+    /* ---- beginner visuals ---- */
+    case "learn-loop":
+      return (
+        <Frame
+          title="How each module works"
+          caption="Read a lesson here, try the control on the real board at rehearsal, then pass the quiz (70%) to complete the module. Your dashboard tracks it all."
+        >
+          <LearnLoop />
+        </Frame>
+      );
+    case "select-focus":
+      return (
+        <Frame
+          title="SELECT = edit focus, not sound"
+          caption="Pressing a channel's Select key points the touchscreen and rotaries at that channel so you can edit it. Nothing about what's heard changes — that's the faders' and mutes' job."
+        >
+          <SelectFocus />
+        </Frame>
+      );
+    case "softkey-map":
+      return (
+        <Frame
+          title="The two SoftKey blocks"
+          caption="Scene keys 1–6 recall saved mute states (levels untouched); key 7 stores — rare and lead-approved. The top-right keys mute whole families at once; red = muted."
+        >
+          <SoftkeyMap />
+        </Frame>
+      );
+    case "mic-assignments":
+      return (
+        <Frame
+          title="App → mic → person → channel"
+          caption="The Scheduling App says who sings and which color they get. Hand each person their color, and the board side never changes — 'Yellow' is always the same fader."
+        >
+          <MicAssignments />
+        </Frame>
+      );
+    case "battery-check":
+      return (
+        <Frame
+          title="Reading the battery bars"
+          caption="Full is 3 bars. At 1 bar, change the batteries (2 AA) during setup — a mic that dies mid-song is a fully preventable problem."
+        >
+          <BatteryCheck />
+        </Frame>
+      );
+    case "buzz-sources":
+      return (
+        <Frame
+          title="Why unused channels get muted"
+          caption="Some inputs — notably the electric guitar and the piano mic — hum when they're plugged in but idle. Muted, they can't reach the mix at all."
+        >
+          <BuzzSources />
+        </Frame>
+      );
+    case "blue-mic-order":
+      return (
+        <Frame
+          title="Blue mic: on first, then unmute"
+          caption="Unmuting the Blue announcement mic while the mic itself is still off sends static through the house. Power it on with the red button first, then unmute at the board."
+        >
+          <BlueMicOrder />
+        </Frame>
+      );
+    case "assignments-map":
+      return (
+        <Frame
+          title="Our Group & DCA families"
+          caption="Roughly how our channels are grouped — confirm exact numbers on the board. Groups add shared processing; DCAs ride level and mute for a family."
+        >
+          <AssignmentsMap />
+        </Frame>
+      );
+    case "recall-vs-store":
+      return (
+        <Frame
+          title="Recall vs. Store"
+          caption="Recalling loads the scene into the board and leaves the saved baseline untouched — do it every service. Storing overwrites the scene — only ever with a lead's approval."
+        >
+          <RecallVsStore />
+        </Frame>
+      );
+    case "mix-priorities":
+      return (
+        <Frame
+          title="Moment-to-moment priorities"
+          caption="Spoken word first — a silent pastor is the most noticeable mistake we can make. Then keep the lead vocal clear, then shape the band."
+        >
+          <MixPriorities />
+        </Frame>
+      );
+    case "stay-present":
+      return (
+        <Frame
+          title="Where your attention lives"
+          caption="During the service your attention cycles between the platform, the run sheet, the meters, and the room. The phone isn't in the loop — personal use waits until after."
+        >
+          <StayPresent />
+        </Frame>
+      );
+    case "feedback-loop":
+      return (
+        <Frame
+          title="What feedback actually is"
+          caption="A mic hearing its own speaker creates a loop that gets louder each pass — the squeal. Pull the offending channel down calmly, then fix the cause."
+        >
+          <FeedbackLoop />
+        </Frame>
+      );
+    case "escalate-flow":
+      return (
+        <Frame
+          title="Fix it or escalate it"
+          caption="Quick fixes are yours. If the problem is disrupting the service — stream down, stage box dead, console misbehaving — get a lead and keep the room covered."
+        >
+          <EscalateFlow />
         </Frame>
       );
     default:

@@ -1,8 +1,42 @@
 /**
  * Minimal renderer for the lesson body text. Splits on blank lines into
- * paragraphs and renders lines beginning with "- " as a bullet list.
+ * blocks; within a block, consecutive "- " lines become a bullet list,
+ * consecutive "1. " lines become a numbered list, and any other lines are
+ * paragraphs — so an intro line followed by bullets renders correctly.
  * Keeps content authoring simple (plain strings in curriculum.ts).
  */
+
+function Bullets({ lines }: { lines: string[] }) {
+  return (
+    <ul className="space-y-1.5 pl-1">
+      {lines.map((l, j) => (
+        <li key={j} className="flex gap-2.5 prose-body">
+          <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-accent" />
+          <span>{l.replace(/^-\s+/, "")}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Numbered({ lines }: { lines: string[] }) {
+  return (
+    <ol className="space-y-1.5">
+      {lines.map((l, j) => {
+        const m = l.match(/^(\d+)\.\s+(.*)$/);
+        return (
+          <li key={j} className="flex gap-3 prose-body">
+            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-surface text-xs font-bold text-brand-accent">
+              {m ? m[1] : j + 1}
+            </span>
+            <span className="pt-0.5">{m ? m[2] : l}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export function RichText({ text }: { text: string }) {
   const blocks = text.split("\n\n");
   return (
@@ -76,42 +110,33 @@ export function RichText({ text }: { text: string }) {
           );
         }
 
-        const isList = lines.every((l) => l.trim().startsWith("- "));
-        if (isList) {
-          return (
-            <ul key={i} className="space-y-1.5 pl-1">
-              {lines.map((l, j) => (
-                <li key={j} className="flex gap-2.5 prose-body">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-accent" />
-                  <span>{l.replace(/^-\s+/, "")}</span>
-                </li>
-              ))}
-            </ul>
-          );
-        }
-        // Numbered lists (lines like "1. ")
-        const isNumbered = lines.every((l) => /^\d+\.\s/.test(l.trim()));
-        if (isNumbered) {
-          return (
-            <ol key={i} className="space-y-1.5">
-              {lines.map((l, j) => {
-                const m = l.match(/^(\d+)\.\s+(.*)$/);
-                return (
-                  <li key={j} className="flex gap-3 prose-body">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-surface text-xs font-bold text-brand-accent">
-                      {m ? m[1] : j + 1}
-                    </span>
-                    <span className="pt-0.5">{m ? m[2] : l}</span>
-                  </li>
-                );
-              })}
-            </ol>
-          );
+        // Group the block's lines into runs: bullets, numbered items, or
+        // plain paragraph lines. A block like "Intro:\n- a\n- b" renders as
+        // a paragraph followed by a proper list instead of a run-on string.
+        type Run = { kind: "ul" | "ol" | "p"; lines: string[] };
+        const kindOf = (l: string): Run["kind"] =>
+          l.trim().startsWith("- ") ? "ul" : /^\d+\.\s/.test(l.trim()) ? "ol" : "p";
+        const runs: Run[] = [];
+        for (const line of lines) {
+          const kind = kindOf(line);
+          const last = runs[runs.length - 1];
+          if (last && last.kind === kind) last.lines.push(line.trim());
+          else runs.push({ kind, lines: [line.trim()] });
         }
         return (
-          <p key={i} className="prose-body">
-            {block}
-          </p>
+          <div key={i} className="space-y-3">
+            {runs.map((run, ri) =>
+              run.kind === "ul" ? (
+                <Bullets key={ri} lines={run.lines} />
+              ) : run.kind === "ol" ? (
+                <Numbered key={ri} lines={run.lines} />
+              ) : (
+                <p key={ri} className="prose-body">
+                  {run.lines.join(" ")}
+                </p>
+              )
+            )}
+          </div>
         );
       })}
     </div>
