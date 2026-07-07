@@ -6,12 +6,13 @@ exact filenames:
 
 | File           | Product                              | Status            |
 | -------------- | ------------------------------------ | ----------------- |
-| `sq-6.jpg`     | Allen & Heath SQ-6 console           | needed            |
+| `sq-6.png`     | Allen & Heath SQ-6 console           | ✅ included        |
 | `me-500.png`   | Allen & Heath ME-500 personal mixer  | ✅ included        |
-| `ar2412.jpg`   | Allen & Heath AR2412 stage box       | needed            |
+| `ar2412.jpg`   | Allen & Heath AR2412 stage box       | ✅ included        |
 
-The ME-500 image was taken from the official Allen & Heath ME-500 User Guide
-(AP11137). For the SQ-6 and AR2412, drop a photo in with the filename above.
+All three product images come from official Allen & Heath materials (the
+SQ-6 marketing photo, the ME-500 User Guide AP11137, and the AR2412 Getting
+Started Guide). To swap any of them, replace the file with the same name.
 
 Any web image format works (`.jpg`, `.png`, `.webp`); if you use a different
 extension, update the matching `img` path in `components/GearGallery.tsx`.

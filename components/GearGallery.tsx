@@ -24,7 +24,7 @@ const GEAR: Gear[] = [
   {
     name: "Allen & Heath SQ-6",
     model: "48-channel digital console · 24+1 faders",
-    img: "/products/sq-6.jpg",
+    img: "/products/sq-6.png",
     emoji: "🎛️",
     where: "In the booth",
     blurb:
