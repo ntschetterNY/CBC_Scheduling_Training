@@ -1,0 +1,28 @@
+name: Feature request / bug report
+description: Suggest an idea or report a problem with the sound training app.
+title: "[Request]: "
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the training app! You can also file this
+        straight from the app under **Feedback** — it opens an issue here for you.
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like, or what went wrong?
+      description: Describe the idea or the bug. For a bug, include the steps to reproduce it.
+      placeholder: When I ... I expected ... but instead ...
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images in here to show what you mean (optional).
+  - type: markdown
+    attributes:
+      value: |
+        When this request is handled, a maintainer or the person who filed it
+        can comment `/close` on the issue to close it.

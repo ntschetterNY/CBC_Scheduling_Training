@@ -147,6 +147,37 @@ can generate the sections and quizzes from their content.
 
 ---
 
+## Feature Request tracker (Feedback page)
+
+Signed-in users get a **Feedback** page (`/feature-requests`) where they can
+file a feature request or bug report — with screenshots — straight from the
+app. Each submission opens a **GitHub issue** (labelled `feature-request`) in
+the repo, and the page lists the open and closed requests read back from
+GitHub. A maintainer or the person who filed it can comment **`/close`** on the
+issue to close it (handled by `.github/workflows/close-on-comment.yml`).
+
+To turn it on:
+
+1. **Create the storage bucket.** Run the migration
+   [`supabase/migrations/0003_feature_requests.sql`](supabase/migrations/0003_feature_requests.sql)
+   in the Supabase SQL Editor. It creates a public `feature-request-photos`
+   bucket (so GitHub can render the embedded screenshots) and lets signed-in
+   users upload to it.
+2. **Add a GitHub token.** Create a Personal Access Token with **Issues:
+   read & write** on this repo (classic scope `repo`, or a fine-grained token
+   scoped to Issues), then set two environment variables (locally in
+   `.env.local`, and in Vercel under **Settings → Environment Variables**):
+
+   ```
+   GITHUB_TOKEN=github_pat_xxxxxxxx      # server-side only — never NEXT_PUBLIC
+   GITHUB_REPO=ntschetterNY/CBC_Scheduling_Training
+   ```
+
+Until `GITHUB_TOKEN` is set the page shows a "not connected yet" notice and the
+form is disabled — everything else in the app keeps working. Photos are
+uploaded from the browser to Supabase Storage; only their public URLs (from
+that one bucket) are sent to the server, which opens the issue with the token.
+
 ## Project structure
 
 ```
@@ -156,18 +187,25 @@ app/
   dashboard/            Trainee home + progress
   learn/                Module list
   learn/[slug]/         A single module (lessons + quiz)
+  feature-requests/     Feedback page: file a request → opens a GitHub issue
+  api/feature-requests/ Route handler that creates the GitHub issue
   admin/                Team progress (admins only)
   admin/analytics/      Time-on-task analytics (super admin only)
   admin/users/          User directory + admin seeding (super admin only)
   auth/signout/         Sign-out route handler
 components/             UI: header, board explorer, module runner, quiz, auth form,
-                        lesson visuals, knowledge search, user directory
+                        lesson visuals, knowledge search, user directory,
+                        feature-request form
 lib/
   curriculum.ts         ← All training content lives here
   access.ts             Super-admin list + time formatting helpers
   progress.ts           Progress fetch helpers
+  github.ts             Server-only GitHub issue helpers (feature tracker)
+  feature-requests.ts   Shared, non-secret tracker constants
   supabase/             Browser / server / middleware Supabase clients
-supabase/migrations/    Database schema + RLS (0001 base, 0002 analytics)
+supabase/migrations/    Database schema + RLS (0001 base, 0002 analytics,
+                        0003 feature-request photo bucket)
+.github/                Issue template + /close-comment workflow
 middleware.ts           Refreshes auth session, guards protected routes
 ```
 

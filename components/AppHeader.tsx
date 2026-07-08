@@ -34,6 +34,9 @@ export function AppHeader({
             <Link href="/learn" className="btn-ghost">
               Modules
             </Link>
+            <Link href="/feature-requests" className="btn-ghost">
+              Feedback
+            </Link>
             {(isAdmin || superAdmin) && (
               <Link href="/admin" className="btn-ghost">
                 Team Progress

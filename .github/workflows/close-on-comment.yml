@@ -1,0 +1,34 @@
+name: Close request on /close comment
+
+# Lets a maintainer or the person who filed a request close it by commenting
+# "/close" on the issue — matching the in-app tracker's workflow.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  close:
+    # Only on real issues (not PRs), only when the comment is a /close command,
+    # and only from someone allowed to close it: a repo owner/member/collaborator,
+    # or the person who opened the request.
+    if: >
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, '/close') &&
+      (
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) ||
+        github.event.comment.user.login == github.event.issue.user.login
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close the issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close "${{ github.event.issue.number }}" \
+            --repo "${{ github.repository }}" \
+            --reason completed \
+            --comment "Closed via /close by @${{ github.event.comment.user.login }}."
