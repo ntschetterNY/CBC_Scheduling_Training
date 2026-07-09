@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { createFeatureRequestIssue, isGitHubConfigured } from "@/lib/github";
+import {
+  createFeatureRequestIssue,
+  isGitHubConfigured,
+  requesterMarker,
+} from "@/lib/github";
 import { FEATURE_PHOTO_BUCKET, MAX_PHOTOS } from "@/lib/feature-requests";
 
 /** Only accept photo URLs that point at our own public storage bucket. */
@@ -10,9 +14,15 @@ const ALLOWED_PHOTO_PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${FEATURE
 function buildIssueBody(input: {
   description: string;
   photoUrls: string[];
+  requester: string;
   email?: string | null;
 }): string {
-  const parts = [input.description.trim()];
+  const parts = [
+    // Hidden marker the tracker reads back to show who filed it.
+    requesterMarker(input.requester),
+    `**Requested by:** ${input.requester}`,
+    input.description.trim(),
+  ];
 
   if (input.photoUrls.length > 0) {
     parts.push(
@@ -25,8 +35,8 @@ function buildIssueBody(input: {
 
   parts.push(
     "---\n" +
-      `_Filed from the training app${
-        input.email ? ` by ${input.email}` : ""
+      `_Filed from the training app by ${input.requester}${
+        input.email ? ` (${input.email})` : ""
       }. A maintainer or the author can comment \`/close\` to close this request._`
   );
 
@@ -45,6 +55,18 @@ export async function POST(request: Request) {
       { status: 401 }
     );
   }
+
+  // The requester's name goes onto the request. Prefer their profile name,
+  // fall back to the email local part so it's never blank.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  const requester =
+    profile?.full_name?.trim() ||
+    (user.email ? user.email.split("@")[0] : "") ||
+    "Unknown";
 
   if (!isGitHubConfigured) {
     return NextResponse.json(
@@ -90,7 +112,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = buildIssueBody({ description, photoUrls, email: user.email });
+  const body = buildIssueBody({
+    description,
+    photoUrls,
+    requester,
+    email: user.email,
+  });
 
   try {
     const issue = await createFeatureRequestIssue({ title, body });

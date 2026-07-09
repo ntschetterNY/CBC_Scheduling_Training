@@ -37,10 +37,32 @@ export type FeatureRequest = {
   title: string;
   state: "open" | "closed";
   url: string;
+  /** GitHub account that opened the issue (the token owner). */
   author: string;
+  /** The app user who filed it, parsed from the issue body (may be null on
+   *  older issues filed before we recorded it). */
+  requester: string | null;
   createdAt: string;
   comments: number;
 };
+
+// Machine-readable marker we embed in each issue body so we can read back who
+// filed the request (the GitHub `author` is always the token account).
+const REQUESTER_MARKER = /<!--\s*fr-requester:\s*(.*?)\s*-->/i;
+
+/** Build the hidden requester marker for an issue body. */
+export function requesterMarker(name: string): string {
+  // Strip angle brackets so a name can never terminate the HTML comment early.
+  const safe = name.replace(/[<>]/g, "").trim();
+  return `<!-- fr-requester: ${safe} -->`;
+}
+
+/** Read the app user's name back out of an issue body, if present. */
+export function parseRequester(body: string | null | undefined): string | null {
+  if (!body) return null;
+  const m = body.match(REQUESTER_MARKER);
+  return m ? m[1].trim() : null;
+}
 
 /** Create a GitHub issue for a feature request and return its number + URL. */
 export async function createFeatureRequestIssue(input: {
@@ -85,6 +107,7 @@ export async function listFeatureRequests(): Promise<FeatureRequest[]> {
       state: i.state as "open" | "closed",
       url: i.html_url as string,
       author: (i.user as { login?: string })?.login ?? "unknown",
+      requester: parseRequester(i.body as string | null),
       createdAt: i.created_at as string,
       comments: (i.comments as number) ?? 0,
     }));

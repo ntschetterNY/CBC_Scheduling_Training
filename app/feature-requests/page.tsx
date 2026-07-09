@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { FeatureRequestForm } from "@/components/FeatureRequestForm";
 import { createClient } from "@/lib/supabase/server";
+import { formatFrNumber } from "@/lib/feature-requests";
 import {
   GITHUB_REPO,
   isGitHubConfigured,
@@ -45,11 +47,13 @@ function RequestRow({ r }: { r: FeatureRequest }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold text-brand-text">
-          {r.title}{" "}
-          <span className="font-normal text-brand-muted">#{r.number}</span>
+          <span className="font-mono text-xs text-brand-accentDark">
+            {formatFrNumber(r.number)}
+          </span>{" "}
+          · {r.title}
         </p>
         <p className="mt-0.5 text-xs text-brand-muted">
-          by {r.author} · {timeAgo(r.createdAt)} ·{" "}
+          by {r.requester ?? r.author} · {timeAgo(r.createdAt)} ·{" "}
           {r.comments} comment{r.comments === 1 ? "" : "s"}
         </p>
       </div>
@@ -100,6 +104,15 @@ export default async function FeatureRequestsPage() {
           maintainer or the author can comment <code>/close</code> to close it
           when it&apos;s handled.
         </p>
+
+        <div className="mt-4">
+          <Link
+            href="/feature-requests/pending"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-accentDark hover:text-brand-text"
+          >
+            View all pending requests →
+          </Link>
+        </div>
 
         <div className="mt-6">
           <FeatureRequestForm disabled={!isGitHubConfigured} />
