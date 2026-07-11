@@ -26,10 +26,10 @@ export function Logo({
         style={{ backgroundColor: badgeBg }}
         aria-hidden
       >
-        {/* Stylized brushstroke "C" */}
+        {/* Stylized brushstroke "C" with the rising tail flick */}
         <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
           <path
-            d="M72.3 14.4 A42 42 0 1 0 72.3 85.6 L64.8 68.9 A24 24 0 1 1 64.8 31.1 Q60 22 72.3 14.4 Z"
+            d="M93,15 C78,8 58,8 46,12 C23.9,12 6,29.9 6,52 C6,74.1 23.9,92 46,92 C68.1,92 79,88 76.6,77.7 L61.3,64.9 C57,70 51,72 46,72 C34.95,72 26,63.05 26,52 C26,40.95 34.95,32 46,32 C57.05,32 59,36 61.3,39.1 C70,30 84,22 93,15 Z"
             fill={glyph}
           />
         </svg>
