@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { FeatureRequestForm } from "@/components/FeatureRequestForm";
+import { PageHero } from "@/components/PageHero";
 import { createClient } from "@/lib/supabase/server";
 import { formatFrNumber } from "@/lib/feature-requests";
 import {
@@ -93,19 +94,22 @@ export default async function FeatureRequestsPage() {
   return (
     <div className="min-h-screen">
       <AppHeader email={user.email} isAdmin={profile?.role === "admin"} />
+      <PageHero
+        width="3xl"
+        eyebrow="Feedback"
+        title={<>Feature Requests &amp; Bugs</>}
+        description={
+          <>
+            Have an idea to make the training better, or hit something
+            that&apos;s broken? File it here. Each request opens a ticket the
+            team tracks on GitHub — attach screenshots to show exactly what you
+            mean, and a maintainer or the author can comment <code>/close</code>{" "}
+            to close it when it&apos;s handled.
+          </>
+        }
+      />
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Feature Requests &amp; Bugs
-        </h1>
-        <p className="prose-body mt-1">
-          Have an idea to make the training better, or hit something that&apos;s
-          broken? File it here. Each request opens a ticket the team tracks on
-          GitHub — attach screenshots to show exactly what you mean, and a
-          maintainer or the author can comment <code>/close</code> to close it
-          when it&apos;s handled.
-        </p>
-
-        <div className="mt-4">
+        <div>
           <Link
             href="/feature-requests/pending"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-accentDark hover:text-brand-text"
@@ -142,7 +146,7 @@ export default async function FeatureRequestsPage() {
         {isGitHubConfigured && !loadError && (
           <div className="mt-8 space-y-6">
             <section>
-              <h2 className="mb-3 text-lg font-bold">
+              <h2 className="section-title mb-3">
                 Open requests{" "}
                 <span className="text-sm font-normal text-brand-muted">
                   ({open.length})
@@ -163,7 +167,7 @@ export default async function FeatureRequestsPage() {
 
             {closed.length > 0 && (
               <section>
-                <h2 className="mb-3 text-lg font-bold">
+                <h2 className="section-title mb-3">
                   Closed{" "}
                   <span className="text-sm font-normal text-brand-muted">
                     ({closed.length})

@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { BoardExplorer } from "@/components/BoardExplorer";
 import { GearGallery } from "@/components/GearGallery";
 import { KnowledgeSearch } from "@/components/KnowledgeSearch";
+import { PageHero } from "@/components/PageHero";
 import { curriculum } from "@/lib/curriculum";
 import { getMyProgress } from "@/lib/progress";
 import { createClient } from "@/lib/supabase/server";
@@ -27,16 +28,14 @@ export default async function LearnIndexPage() {
   return (
     <div className="min-h-screen">
       <AppHeader email={user?.email} isAdmin={profile?.role === "admin"} />
+      <PageHero
+        eyebrow="The curriculum"
+        title="Training Modules"
+        description="Work through them in order — each module builds on the one before it."
+      />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Training Modules
-        </h1>
-        <p className="prose-body mt-1">
-          Work through them in order — each module builds on the one before it.
-        </p>
-
         {/* Searchable knowledge base — find the module for a live problem fast */}
-        <div className="mt-6">
+        <div>
           <KnowledgeSearch />
         </div>
 
@@ -50,7 +49,7 @@ export default async function LearnIndexPage() {
           <GearGallery />
         </div>
 
-        <h2 className="mb-3 mt-10 text-lg font-bold">All modules</h2>
+        <h2 className="section-title mb-3 mt-10">All modules</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {curriculum.map((m) => {
             const p = progress[m.slug];

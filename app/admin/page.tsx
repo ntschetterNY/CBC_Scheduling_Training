@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { PageHero } from "@/components/PageHero";
 import { curriculum } from "@/lib/curriculum";
 import { isSuperAdmin } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
@@ -54,17 +55,15 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen">
       <AppHeader email={user?.email} isAdmin />
+      <PageHero
+        width="6xl"
+        eyebrow="Admin"
+        title="Team Progress"
+        description={`Completion across all ${curriculum.length} modules. A checkmark shows a completed module and its quiz score.`}
+      />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Team Progress
-        </h1>
-        <p className="prose-body mt-1">
-          Completion across all {curriculum.length} modules. A checkmark shows a
-          completed module and its quiz score.
-        </p>
-
         {superAdmin && (
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Link
               href="/admin/analytics"
               className="card group flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"

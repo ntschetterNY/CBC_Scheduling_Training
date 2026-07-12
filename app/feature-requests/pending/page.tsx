@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { PageHero } from "@/components/PageHero";
 import { createClient } from "@/lib/supabase/server";
 import { formatFrNumber } from "@/lib/feature-requests";
 import {
@@ -78,24 +79,27 @@ export default async function PendingFeatureRequestsPage() {
   return (
     <div className="min-h-screen">
       <AppHeader email={user.email} isAdmin={profile?.role === "admin"} />
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Pending Feature Requests
-            </h1>
-            <p className="prose-body mt-1">
-              Every open request, oldest work still to do. Each one has an
-              <span className="font-mono"> FR-###</span> number you can refer to.
-            </p>
-          </div>
-          <Link href="/feature-requests" className="btn-secondary shrink-0">
+      <PageHero
+        width="3xl"
+        backHref="/feature-requests"
+        backLabel="Feature Requests"
+        eyebrow="Feedback"
+        title="Pending Feature Requests"
+        description={
+          <>
+            Every open request, oldest work still to do. Each one has an
+            <span className="font-mono"> FR-###</span> number you can refer to.
+          </>
+        }
+        actions={
+          <Link href="/feature-requests" className="btn-primary shrink-0">
             + File a request
           </Link>
-        </div>
-
+        }
+      />
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         {!isGitHubConfigured && (
-          <div className="mt-6 rounded-xl border border-brand-border bg-brand-surface/60 p-4 text-sm text-brand-muted">
+          <div className="rounded-xl border border-brand-border bg-brand-surface/60 p-4 text-sm text-brand-muted">
             <p className="font-semibold text-brand-text">
               Not connected to GitHub yet
             </p>
@@ -107,14 +111,14 @@ export default async function PendingFeatureRequestsPage() {
         )}
 
         {loadError && (
-          <p className="mt-6 text-sm text-brand-danger">
+          <p className="text-sm text-brand-danger">
             Couldn&apos;t load requests from GitHub right now — try again in a
             moment.
           </p>
         )}
 
         {isGitHubConfigured && !loadError && (
-          <div className="mt-6">
+          <div>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-muted">
                 {pending.length} open
