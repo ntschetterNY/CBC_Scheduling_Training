@@ -84,6 +84,10 @@ body {
   .eyebrow {
     @apply font-sans text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-accentDark;
   }
+  /* In-page section heading — light sans, like the landing-page sections */
+  .section-title {
+    @apply font-sans text-xl font-light tracking-tight text-brand-text;
+  }
   .prose-body {
     @apply text-[15px] leading-relaxed text-brand-text/80;
   }

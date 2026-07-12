@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { PageHero } from "@/components/PageHero";
 import { curriculum, moduleOrder } from "@/lib/curriculum";
 import { getMyProgress } from "@/lib/progress";
 import { createClient } from "@/lib/supabase/server";
@@ -39,22 +40,19 @@ export default async function DashboardPage() {
     <div className="min-h-screen">
       <AppHeader email={user?.email} isAdmin={profile?.role === "admin"} />
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Welcome back, {firstName} 👋
-            </h1>
-            <p className="prose-body mt-1">
-              {completedCount === curriculum.length
-                ? "You’ve completed every module. Nice work — keep practicing on the real board!"
-                : "Pick up where you left off and keep building your SQ-6 skills."}
-            </p>
-          </div>
-        </div>
+      <PageHero
+        eyebrow="Your training"
+        title={<>Welcome back, {firstName} 👋</>}
+        description={
+          completedCount === curriculum.length
+            ? "You’ve completed every module. Nice work — keep practicing on the real board!"
+            : "Pick up where you left off and keep building your SQ-6 skills."
+        }
+      />
 
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         {/* Progress summary */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="card p-5 sm:col-span-2">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-brand-text">
@@ -98,7 +96,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Module list */}
-        <h2 className="mb-3 mt-10 text-lg font-bold">Your modules</h2>
+        <h2 className="section-title mb-3 mt-10">Your modules</h2>
         <div className="space-y-3">
           {curriculum.map((m) => {
             const p = progress[m.slug];

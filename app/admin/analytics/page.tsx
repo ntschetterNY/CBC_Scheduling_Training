@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { PageHero } from "@/components/PageHero";
 import { curriculum } from "@/lib/curriculum";
 import { formatDuration, isSuperAdmin } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
@@ -57,26 +58,24 @@ export default async function AnalyticsPage() {
   return (
     <div className="min-h-screen">
       <AppHeader email={user?.email} isAdmin />
+      <PageHero
+        width="7xl"
+        backHref="/admin"
+        backLabel="Team Progress"
+        eyebrow="Admin"
+        title="Time Analytics"
+        description={
+          <>
+            Time each person has spent on each module&apos;s lessons and its
+            test. Each cell shows{" "}
+            <span className="font-semibold text-white">lesson time</span> on top
+            and <span className="font-semibold text-white">📝 test time</span>{" "}
+            below. Times accrue while a page is open and active.
+          </>
+        }
+      />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <Link
-          href="/admin"
-          className="text-xs font-medium text-brand-muted hover:text-brand-text"
-        >
-          ← Team Progress
-        </Link>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
-          Time Analytics
-        </h1>
-        <p className="prose-body mt-1">
-          Time each person has spent on each module&apos;s lessons and its test.
-          Each cell shows{" "}
-          <span className="font-semibold text-brand-text">lesson time</span> on
-          top and{" "}
-          <span className="font-semibold text-brand-text">📝 test time</span>{" "}
-          below. Times accrue while a page is open and active.
-        </p>
-
-        <div className="mt-6 overflow-x-auto">
+        <div className="overflow-x-auto">
           <div className="card min-w-[900px] overflow-hidden">
             <table className="w-full border-collapse text-sm">
               <thead>

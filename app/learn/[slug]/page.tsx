@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { ModuleRunner } from "@/components/ModuleRunner";
+import { PageHero } from "@/components/PageHero";
 import { curriculum, getModule, moduleOrder } from "@/lib/curriculum";
 import { getMyProgress } from "@/lib/progress";
 import { createClient } from "@/lib/supabase/server";
@@ -52,35 +53,29 @@ export default async function ModulePage({
     <div className="min-h-screen">
       <AppHeader email={user?.email} isAdmin={profile?.role === "admin"} />
 
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        {/* Breadcrumb / header */}
-        <div className="mb-6">
-          <Link
-            href="/learn"
-            className="text-xs font-medium text-brand-muted hover:text-brand-text"
-          >
-            ← All modules
-          </Link>
-          <div className="mt-3 flex items-start gap-4">
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand-surface text-2xl">
-              {module.icon}
-            </span>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-muted">
-                Module {module.order} of {curriculum.length}
-                {alreadyCompleted && (
-                  <span className="ml-2 text-brand-success">· Completed ✓</span>
-                )}
-              </p>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {module.title}
-              </h1>
-              <p className="prose-body mt-1 text-sm">{module.subtitle}</p>
-            </div>
-          </div>
+      <PageHero
+        width="3xl"
+        backHref="/learn"
+        backLabel="All modules"
+        icon={module.icon}
+        eyebrow={
+          <>
+            Module {module.order} of {curriculum.length}
+            {alreadyCompleted && (
+              <span className="ml-2 normal-case tracking-normal text-white/80">
+                · Completed ✓
+              </span>
+            )}
+          </>
+        }
+        title={module.title}
+        description={module.subtitle}
+      />
 
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+        <div className="mb-6">
           {/* Objectives */}
-          <div className="mt-5 rounded-xl border border-brand-border bg-brand-surface/50 p-4">
+          <div className="rounded-xl border border-brand-border bg-brand-surface/50 p-4">
             <p className="text-xs font-bold uppercase tracking-wider text-brand-muted">
               What you’ll learn
             </p>
