@@ -49,6 +49,13 @@ export function ModuleRunner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Whenever the learner moves to a new lesson step or switches phase
+  // (lesson → quiz → result, or back to review), start them at the top of the
+  // page — otherwise a long lesson leaves them scrolled halfway down the next.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step, phase]);
+
   // ---- TIME-ON-TASK TRACKING -------------------------------------------
   // Accrue seconds spent in the lesson vs. quiz phases and flush them to the
   // server via the add_module_time RPC. Powers the admin analytics view.
