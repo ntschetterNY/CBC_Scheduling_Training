@@ -4,11 +4,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "CrossBridge Sound Tech Training — SQ-6",
-    template: "%s · CrossBridge Sound Training",
+    default: "CrossBridge Training Center",
+    template: "%s · CrossBridge Training",
   },
   description:
-    "Interactive training for CrossBridge sound technicians on the Allen & Heath SQ-6 digital mixing console.",
+    "The home for every CrossBridge volunteer training program — sound tech, physical security, Bible teaching, and more. Learn your role at your own pace.",
 };
 
 export default function RootLayout({

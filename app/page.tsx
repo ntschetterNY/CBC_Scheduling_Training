@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { curriculum } from "@/lib/curriculum";
+import { programs, STATUS_LABEL, type ProgramStatus } from "@/lib/programs";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -12,6 +13,9 @@ export default async function Home() {
   const primaryHref = user ? "/dashboard" : "/login";
   const primaryLabel = user ? "Go to dashboard" : "Start training";
   const totalMin = curriculum.reduce((a, m) => a + m.estMinutes, 0);
+  const soundMeta = `${curriculum.length} modules · ~${Math.floor(
+    totalMin / 60
+  )}–${Math.ceil(totalMin / 60)} hours`;
 
   return (
     <div className="min-h-screen bg-white">
@@ -41,27 +45,28 @@ export default async function Home() {
         />
         <div className="relative mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
           <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-accent">
-            Allen &amp; Heath SQ-6 · Interactive Guide
+            CrossBridge Church · Volunteer Equipping
           </p>
           <h1 className="mt-5 font-sans text-4xl font-light tracking-tight text-white sm:text-5xl">
-            Sound Tech Training
+            Training Center
           </h1>
           <p className="mx-auto mt-4 max-w-2xl font-serif text-lg italic text-white/85">
-            Bring your best to worship. Learn the board. Serve the room.
+            Bring your best to every place you serve.
           </p>
           <p className="mx-auto mt-5 max-w-xl font-serif text-[15px] leading-relaxed text-white/75">
-            A hands-on, step-by-step program that takes you from your first look
-            at the console to confidently mixing a Sunday service on our SQ-6.
+            One home for every CrossBridge training program — from the sound
+            booth to the security team to the teaching platform. Pick your area,
+            work at your own pace, and your progress follows you.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href={primaryHref} className="btn-primary px-7 py-3 text-base">
               {primaryLabel}
             </Link>
             <a
-              href="#curriculum"
+              href="#programs"
               className="btn px-7 py-3 text-base border border-white/40 text-white hover:bg-white/10"
             >
-              See the curriculum
+              Browse all trainings
             </a>
           </div>
         </div>
@@ -72,9 +77,9 @@ export default async function Home() {
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-white sm:grid-cols-3 sm:px-6">
           {[
             {
-              icon: "🎚️",
-              title: `${curriculum.length} interactive modules`,
-              body: "Lessons, tips, and a clickable board explorer.",
+              icon: "📚",
+              title: "Multiple training tracks",
+              body: "Each ministry area has its own guided path.",
             },
             {
               icon: "✓",
@@ -83,10 +88,8 @@ export default async function Home() {
             },
             {
               icon: "⏱️",
-              title: `About ${Math.floor(totalMin / 60)}–${Math.ceil(
-                totalMin / 60
-              )} hours`,
-              body: "Go at your own pace; progress is saved.",
+              title: "Go at your own pace",
+              body: "Sign in once; progress is saved everywhere.",
             },
           ].map((f) => (
             <div key={f.title} className="flex items-start gap-3">
@@ -102,25 +105,97 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Programs grid — choose your training area */}
+      <section id="programs" className="bg-brand-surface py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-8 text-center">
+            <p className="eyebrow">Training programs</p>
+            <h2 className="mt-3 font-sans text-3xl font-light tracking-tight text-brand-text">
+              Choose your area to serve
+            </h2>
+            <p className="mx-auto mt-2 max-w-xl font-serif text-brand-text/70">
+              Every CrossBridge equipping track in one place. New programs are
+              added as they&rsquo;re built.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {programs.map((p) => {
+              const available = p.status === "available";
+              const meta = (
+                <>
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-surface text-xl">
+                      {p.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="eyebrow">{p.category}</p>
+                      <h3 className="font-sans text-[15px] font-semibold leading-tight text-brand-text">
+                        {p.name}
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="mt-3 flex-1 font-serif text-sm leading-relaxed text-brand-text/75">
+                    {p.description}
+                  </p>
+                  {available && (
+                    <p className="mt-3 font-sans text-xs text-brand-muted">
+                      {soundMeta}
+                    </p>
+                  )}
+                  <div className="mt-4 flex items-center justify-between gap-2">
+                    <StatusBadge status={p.status} />
+                    <span
+                      className={`font-sans text-sm font-semibold ${
+                        available ? "text-brand-accentDark" : "text-brand-muted"
+                      }`}
+                    >
+                      {available ? "Start training →" : "Notify me"}
+                    </span>
+                  </div>
+                </>
+              );
+
+              return available ? (
+                <Link
+                  key={p.slug}
+                  href={primaryHref}
+                  className="card group flex flex-col p-5 transition-colors hover:border-brand-accent/40"
+                >
+                  {meta}
+                </Link>
+              ) : (
+                <div
+                  key={p.slug}
+                  className="card flex flex-col p-5 opacity-75"
+                >
+                  {meta}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Welcome / intro — light, two-column like the CrossBridge welcome */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
             <p className="eyebrow">Welcome, volunteer</p>
             <h2 className="mt-3 font-sans text-3xl font-light tracking-tight text-brand-text">
-              Serving on the CrossBridge sound team
+              Equipped to serve, wherever you&rsquo;re called
             </h2>
             <div className="mt-4 space-y-4 font-serif text-[15px] leading-relaxed text-brand-text/80">
               <p>
-                Great sound is invisible. When it&rsquo;s done well, nobody
-                thinks about the mix &mdash; they&rsquo;re free to worship. This
-                program equips you to serve the congregation and the platform
-                team with clear, consistent, distraction-free audio.
+                Every team at CrossBridge does its best work when it&rsquo;s
+                trained well. This is the one place to learn your role &mdash;
+                clear, consistent, and built around how we actually do things
+                here.
               </p>
               <p>
-                Whether you&rsquo;ve never touched a mixer or you&rsquo;re
-                sharpening your skills, work through the modules in order. Each
-                one builds on the last and tracks your progress along the way.
+                Pick the program that fits where you serve. Whether you&rsquo;ve
+                done it for years or you&rsquo;re brand new, work through the
+                modules in order &mdash; each one builds on the last and tracks
+                your progress along the way.
               </p>
             </div>
             <Link href={primaryHref} className="btn-teal mt-6">
@@ -128,12 +203,12 @@ export default async function Home() {
             </Link>
           </div>
 
-          {/* Featured "up next" style card echoing the sermons list */}
+          {/* Featured "start here" card — the one live track today */}
           <div className="card overflow-hidden">
             <div className="bg-brand-surface px-6 py-4">
-              <p className="eyebrow">Start here</p>
+              <p className="eyebrow">Available now</p>
               <p className="mt-1 font-sans text-lg text-brand-text">
-                The training path
+                Start with Sound Tech
               </p>
             </div>
             <ul className="divide-y divide-brand-border">
@@ -159,52 +234,13 @@ export default async function Home() {
               ))}
             </ul>
             <div className="px-6 py-3">
-              <a
-                href="#curriculum"
+              <Link
+                href={primaryHref}
                 className="font-sans text-sm font-semibold text-brand-accentDark hover:underline"
               >
                 See all {curriculum.length} modules →
-              </a>
+              </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Curriculum grid */}
-      <section id="curriculum" className="bg-brand-surface py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mb-8 text-center">
-            <p className="eyebrow">The curriculum</p>
-            <h2 className="mt-3 font-sans text-3xl font-light tracking-tight text-brand-text">
-              Everything you need to run the SQ-6
-            </h2>
-            <p className="mx-auto mt-2 max-w-xl font-serif text-brand-text/70">
-              {curriculum.length} modules, in order &mdash; each one builds on
-              the last.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {curriculum.map((m) => (
-              <div key={m.slug} className="card p-5">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-surface text-xl">
-                    {m.icon}
-                  </span>
-                  <div>
-                    <p className="eyebrow">Module {m.order}</p>
-                    <h3 className="font-sans text-[15px] font-semibold leading-tight text-brand-text">
-                      {m.title}
-                    </h3>
-                  </div>
-                </div>
-                <p className="mt-3 font-serif text-sm leading-relaxed text-brand-text/75">
-                  {m.subtitle}
-                </p>
-                <p className="mt-3 font-sans text-xs text-brand-muted">
-                  ~{m.estMinutes} min · {m.quiz.length} question quiz
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -213,10 +249,11 @@ export default async function Home() {
       <section className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6">
         <p className="eyebrow">Ready to serve?</p>
         <h2 className="mt-3 font-sans text-3xl font-light tracking-tight text-brand-text">
-          Create your account and start with Module 1
+          Sign in and pick up where you left off
         </h2>
         <p className="mx-auto mt-2 max-w-lg font-serif text-brand-text/70">
-          Reach out to your sound lead if you need access to the team.
+          New to a team? Reach out to your ministry lead for access, then start
+          with Module 1.
         </p>
         <Link href={primaryHref} className="btn-primary mt-6 px-7 py-3 text-base">
           {primaryLabel}
@@ -239,7 +276,7 @@ export default async function Home() {
             </div>
             <div>
               <p className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
-                Sound Team
+                Training Center
               </p>
               <ul className="mt-2 space-y-1.5 font-serif text-sm text-white/80">
                 <li>
@@ -248,31 +285,46 @@ export default async function Home() {
                   </Link>
                 </li>
                 <li>
-                  <a href="#curriculum" className="hover:text-brand-accent">
-                    Curriculum
+                  <a href="#programs" className="hover:text-brand-accent">
+                    Browse trainings
                   </a>
                 </li>
               </ul>
             </div>
             <div>
               <p className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
-                Console
+                For leads
               </p>
               <p className="mt-2 font-serif text-sm text-white/80">
-                Allen &amp; Heath SQ-6
-                <br />
-                Digital Mixing System
+                Track your team&rsquo;s progress and manage access from the
+                admin view.
               </p>
             </div>
           </div>
           <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-6 sm:flex-row">
             <Logo tone="light" />
             <p className="font-serif text-xs text-white/60">
-              CrossBridge Sound Tech Training · Built for the SQ-6
+              CrossBridge Training Center · Equipping volunteers to serve
             </p>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+function StatusBadge({ status }: { status: ProgramStatus }) {
+  const styles: Record<ProgramStatus, string> = {
+    available: "bg-brand-success/15 text-brand-success",
+    in_progress: "bg-brand-accent/15 text-brand-accentDark",
+    coming_soon: "bg-brand-surface text-brand-muted",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-sans text-[10px] font-bold uppercase tracking-wide ${styles[status]}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {STATUS_LABEL[status]}
+    </span>
   );
 }
