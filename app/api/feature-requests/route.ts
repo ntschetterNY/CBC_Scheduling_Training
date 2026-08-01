@@ -1,72 +1,53 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { SUPABASE_URL } from "@/lib/supabase/config";
 import {
   createFeatureRequestIssue,
   isGitHubConfigured,
-  requesterMarker,
 } from "@/lib/github";
-import { FEATURE_PHOTO_BUCKET, MAX_PHOTOS } from "@/lib/feature-requests";
+import {
+  FR_PRIORITIES,
+  FR_TYPES,
+  type FrPriority,
+  type FrType,
+} from "@/lib/feature-requests";
+import {
+  getActor,
+  loadDashboardData,
+  sanitizePhotoUrls,
+} from "@/lib/fr-server";
 
-/** Only accept photo URLs that point at our own public storage bucket. */
-const ALLOWED_PHOTO_PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${FEATURE_PHOTO_BUCKET}/`;
-
-function buildIssueBody(input: {
-  description: string;
-  photoUrls: string[];
-  requester: string;
-  email?: string | null;
-}): string {
-  const parts = [
-    // Hidden marker the tracker reads back to show who filed it.
-    requesterMarker(input.requester),
-    `**Requested by:** ${input.requester}`,
-    input.description.trim(),
-  ];
-
-  if (input.photoUrls.length > 0) {
-    parts.push(
-      "### Screenshots\n" +
-        input.photoUrls
-          .map((u, i) => `![screenshot ${i + 1}](${u})`)
-          .join("\n")
+/** GET /api/feature-requests — dashboard payload (tickets + upvotes). */
+export async function GET() {
+  const actor = await getActor();
+  if (!actor) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+  if (!isGitHubConfigured) {
+    return NextResponse.json(
+      { requests: [], upvotes: {}, myUpvotes: [] },
+      { status: 200 }
     );
   }
-
-  parts.push(
-    "---\n" +
-      `_Filed from the training app by ${input.requester}${
-        input.email ? ` (${input.email})` : ""
-      }. A maintainer or the author can comment \`/close\` to close this request._`
-  );
-
-  return parts.join("\n\n");
+  try {
+    const data = await loadDashboardData(actor.id);
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error("Feature request list failed:", err);
+    return NextResponse.json(
+      { error: "Could not load requests right now." },
+      { status: 502 }
+    );
+  }
 }
 
+/** POST /api/feature-requests — file a new request (opens a GitHub issue). */
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const actor = await getActor();
+  if (!actor) {
     return NextResponse.json(
       { error: "You must be signed in to file a request." },
       { status: 401 }
     );
   }
-
-  // The requester's name goes onto the request. Prefer their profile name,
-  // fall back to the email local part so it's never blank.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .maybeSingle();
-  const requester =
-    profile?.full_name?.trim() ||
-    (user.email ? user.email.split("@")[0] : "") ||
-    "Unknown";
 
   if (!isGitHubConfigured) {
     return NextResponse.json(
@@ -78,49 +59,52 @@ export async function POST(request: Request) {
     );
   }
 
-  let payload: {
-    title?: unknown;
-    description?: unknown;
-    photoUrls?: unknown;
-  };
+  let payload: Record<string, unknown>;
   try {
-    payload = await request.json();
+    payload = (await request.json()) as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
   const title = typeof payload.title === "string" ? payload.title.trim() : "";
-  const description =
-    typeof payload.description === "string" ? payload.description.trim() : "";
-  const photoUrls = Array.isArray(payload.photoUrls)
-    ? payload.photoUrls
-        .filter((u): u is string => typeof u === "string")
-        .filter((u) => u.startsWith(ALLOWED_PHOTO_PREFIX))
-        .slice(0, MAX_PHOTOS)
-    : [];
+  const details =
+    typeof payload.details === "string" ? payload.details.trim() : "";
+  const affected =
+    typeof payload.affected === "string" ? payload.affected.trim() : "";
+  const priority: FrPriority = (FR_PRIORITIES as string[]).includes(
+    payload.priority as string
+  )
+    ? (payload.priority as FrPriority)
+    : "Medium";
+  const type: FrType = (FR_TYPES as string[]).includes(payload.type as string)
+    ? (payload.type as FrType)
+    : "adjustment";
+  const photoUrls = sanitizePhotoUrls(payload.photoUrls);
 
-  if (!title || !description) {
+  if (!title || !details) {
     return NextResponse.json(
-      { error: "Please include a title and a description." },
+      { error: "Please include a summary and details." },
       { status: 400 }
     );
   }
   if (title.length > 200) {
     return NextResponse.json(
-      { error: "Title must be 200 characters or fewer." },
+      { error: "Summary must be 200 characters or fewer." },
       { status: 400 }
     );
   }
 
-  const body = buildIssueBody({
-    description,
-    photoUrls,
-    requester,
-    email: user.email,
-  });
-
   try {
-    const issue = await createFeatureRequestIssue({ title, body });
+    const issue = await createFeatureRequestIssue({
+      title,
+      details,
+      affected,
+      priority,
+      type,
+      requester: actor.name,
+      email: actor.email,
+      photoUrls,
+    });
     return NextResponse.json({ number: issue.number, url: issue.url });
   } catch (err) {
     console.error("Feature request issue creation failed:", err);

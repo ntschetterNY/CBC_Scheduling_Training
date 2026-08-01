@@ -26,6 +26,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# lavish review artifacts (local HTML mockups / feedback surfaces)
+.lavish/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

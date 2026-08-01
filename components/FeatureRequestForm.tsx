@@ -1,56 +1,52 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { AttachmentZone } from "@/components/AttachmentZone";
+import { uploadPhotos } from "@/lib/fr-upload";
 import {
-  FEATURE_PHOTO_BUCKET,
-  MAX_PHOTOS,
-  MAX_PHOTO_BYTES,
+  FR_PRIORITIES,
+  FR_TYPES,
+  PRIORITY_META,
+  TYPE_META,
+  type FrPriority,
+  type FrType,
 } from "@/lib/feature-requests";
 
 type Status = "idle" | "submitting" | "done" | "error";
 
 /**
- * Form for filing a feature request / bug report. Photos are uploaded straight
- * to Supabase Storage from the browser; the resulting public URLs are sent to
+ * Form for filing a feature request / bug report. Screenshots upload to
+ * Supabase Storage first; the resulting URLs are sent to
  * /api/feature-requests, which opens the GitHub issue and embeds them.
  */
-export function FeatureRequestForm({ disabled = false }: { disabled?: boolean }) {
+export function FeatureRequestForm({
+  disabled = false,
+  onFiled,
+}: {
+  disabled?: boolean;
+  /** Called after a request is successfully filed (e.g. to refresh a list). */
+  onFiled?: () => void;
+}) {
   const router = useRouter();
-  const fileInput = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [details, setDetails] = useState("");
+  const [affected, setAffected] = useState("");
+  const [type, setType] = useState<FrType>("adjustment");
+  const [priority, setPriority] = useState<FrPriority>("Medium");
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
   const [createdUrl, setCreatedUrl] = useState<string | null>(null);
 
-  function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(e.target.files ?? []);
-    const images = picked.filter((f) => f.type.startsWith("image/"));
-    const tooBig = images.find((f) => f.size > MAX_PHOTO_BYTES);
-    if (tooBig) {
-      setStatus("error");
-      setMessage(`"${tooBig.name}" is larger than 10 MB.`);
-      return;
-    }
-    if (images.length > MAX_PHOTOS) {
-      setStatus("error");
-      setMessage(`Please attach at most ${MAX_PHOTOS} photos.`);
-      return;
-    }
-    setStatus("idle");
-    setMessage("");
-    setFiles(images);
-  }
+  const busy = status === "submitting";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (disabled) return;
-    if (!title.trim() || !description.trim()) {
+    if (!title.trim() || !details.trim()) {
       setStatus("error");
-      setMessage("Please add a title and a description.");
+      setMessage("Please add a summary and some details.");
       return;
     }
 
@@ -59,33 +55,17 @@ export function FeatureRequestForm({ disabled = false }: { disabled?: boolean })
     setCreatedUrl(null);
 
     try {
-      // 1. Upload any screenshots to Supabase Storage, collect public URLs.
-      const photoUrls: string[] = [];
-      if (files.length > 0) {
-        const supabase = createClient();
-        for (const file of files) {
-          const ext = (file.name.split(".").pop() || "png").toLowerCase();
-          const path = `${crypto.randomUUID()}.${ext}`;
-          const { error } = await supabase.storage
-            .from(FEATURE_PHOTO_BUCKET)
-            .upload(path, file, { contentType: file.type, upsert: false });
-          if (error) {
-            throw new Error(`Photo upload failed: ${error.message}`);
-          }
-          const { data } = supabase.storage
-            .from(FEATURE_PHOTO_BUCKET)
-            .getPublicUrl(path);
-          photoUrls.push(data.publicUrl);
-        }
-      }
+      const photoUrls = await uploadPhotos(files);
 
-      // 2. Ask the server to open the GitHub issue.
       const res = await fetch("/api/feature-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
-          description: description.trim(),
+          details: details.trim(),
+          affected: affected.trim(),
+          type,
+          priority,
           photoUrls,
         }),
       });
@@ -98,31 +78,61 @@ export function FeatureRequestForm({ disabled = false }: { disabled?: boolean })
       setCreatedUrl(json.url ?? null);
       setMessage("Thanks! Your request was filed.");
       setTitle("");
-      setDescription("");
+      setDetails("");
+      setAffected("");
+      setType("adjustment");
+      setPriority("Medium");
       setFiles([]);
-      if (fileInput.current) fileInput.current.value = "";
-      router.refresh(); // pull the new item into the list below
+      onFiled?.();
+      router.refresh();
     } catch (err) {
       setStatus("error");
       setMessage(err instanceof Error ? err.message : "Something went wrong.");
     }
   }
 
-  const busy = status === "submitting";
-
   return (
     <form onSubmit={handleSubmit} className="card p-5">
-      <h3 className="text-sm font-semibold text-brand-text">
+      <h3 className="font-sans text-sm font-semibold text-brand-text">
         File a new request
       </h3>
       <p className="mt-0.5 text-xs text-brand-muted">
-        Describe the idea or bug. Screenshots help a lot — drag them in below.
+        Describe the idea or bug. Screenshots help a lot.
       </p>
 
       <div className="mt-4 space-y-4">
+        {/* Type */}
         <div>
-          <label htmlFor="fr-title" className="mb-1.5 block text-sm font-medium text-brand-text">
-            Title
+          <span className="mb-1.5 block text-sm font-medium text-brand-text">
+            Type
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {FR_TYPES.map((t) => (
+              <button
+                type="button"
+                key={t}
+                disabled={disabled || busy}
+                onClick={() => setType(t)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-sans text-sm transition-colors ${
+                  type === t
+                    ? "border-brand-accent bg-brand-accent/10 font-semibold text-brand-accentDark"
+                    : "border-brand-border text-brand-muted hover:border-brand-accent/40"
+                }`}
+              >
+                <span aria-hidden>{TYPE_META[t].glyph}</span>
+                {TYPE_META[t].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div>
+          <label
+            htmlFor="fr-title"
+            className="mb-1.5 block text-sm font-medium text-brand-text"
+          >
+            Summary
           </label>
           <input
             id="fr-title"
@@ -135,43 +145,82 @@ export function FeatureRequestForm({ disabled = false }: { disabled?: boolean })
           />
         </div>
 
+        {/* Priority */}
         <div>
-          <label htmlFor="fr-desc" className="mb-1.5 block text-sm font-medium text-brand-text">
-            Description
+          <span className="mb-1.5 block text-sm font-medium text-brand-text">
+            Priority
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {FR_PRIORITIES.map((p) => (
+              <button
+                type="button"
+                key={p}
+                disabled={disabled || busy}
+                onClick={() => setPriority(p)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-sans text-sm transition-colors ${
+                  priority === p
+                    ? "border-brand-accent bg-brand-accent/10 font-semibold text-brand-text"
+                    : "border-brand-border text-brand-muted hover:border-brand-accent/40"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${PRIORITY_META[p].dot}`}
+                  aria-hidden
+                />
+                {PRIORITY_META[p].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Details */}
+        <div>
+          <label
+            htmlFor="fr-details"
+            className="mb-1.5 block text-sm font-medium text-brand-text"
+          >
+            Details
           </label>
           <textarea
-            id="fr-desc"
+            id="fr-details"
             className="input min-h-[120px] resize-y"
             placeholder="What would you like to see, or what went wrong? Steps to reproduce a bug are gold."
-            value={description}
+            value={details}
             disabled={disabled || busy}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => setDetails(e.target.value)}
           />
         </div>
 
+        {/* Affected area */}
         <div>
-          <label htmlFor="fr-photos" className="mb-1.5 block text-sm font-medium text-brand-text">
-            Screenshots <span className="text-brand-muted">(optional)</span>
+          <label
+            htmlFor="fr-affected"
+            className="mb-1.5 block text-sm font-medium text-brand-text"
+          >
+            Affected area{" "}
+            <span className="text-brand-muted">(optional)</span>
           </label>
           <input
-            id="fr-photos"
-            ref={fileInput}
-            type="file"
-            accept="image/*"
-            multiple
+            id="fr-affected"
+            className="input"
+            placeholder="e.g. Sound Tech · Module 4, or the dashboard"
+            value={affected}
+            maxLength={200}
             disabled={disabled || busy}
-            onChange={onPickFiles}
-            className="block w-full text-sm text-brand-muted file:mr-3 file:rounded-lg file:border-0 file:bg-brand-surface file:px-3 file:py-2 file:text-sm file:font-semibold file:text-brand-text hover:file:bg-brand-border/60"
+            onChange={(e) => setAffected(e.target.value)}
           />
-          {files.length > 0 && (
-            <p className="mt-1 text-xs text-brand-muted">
-              {files.length} photo{files.length > 1 ? "s" : ""} attached:{" "}
-              {files.map((f) => f.name).join(", ")}
-            </p>
-          )}
-          <p className="mt-1 text-[11px] text-brand-muted">
-            Up to {MAX_PHOTOS} images, 10 MB each.
-          </p>
+        </div>
+
+        {/* Screenshots */}
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-brand-text">
+            Screenshots <span className="text-brand-muted">(optional)</span>
+          </span>
+          <AttachmentZone
+            files={files}
+            onChange={setFiles}
+            disabled={disabled || busy}
+          />
         </div>
       </div>
 
@@ -199,11 +248,7 @@ export function FeatureRequestForm({ disabled = false }: { disabled?: boolean })
       )}
 
       <div className="mt-4 flex items-center gap-3">
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={disabled || busy}
-        >
+        <button type="submit" className="btn-primary" disabled={disabled || busy}>
           {busy ? "Filing…" : "Submit request"}
         </button>
         {disabled && (
