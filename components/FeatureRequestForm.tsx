@@ -18,7 +18,7 @@ type Status = "idle" | "submitting" | "done" | "error";
 /**
  * Form for filing a feature request / bug report. Screenshots upload to
  * Supabase Storage first; the resulting URLs are sent to
- * /api/feature-requests, which opens the GitHub issue and embeds them.
+ * /api/feature-requests, which files the ticket and embeds them.
  */
 export function FeatureRequestForm({
   disabled = false,
@@ -37,7 +37,6 @@ export function FeatureRequestForm({
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
-  const [createdUrl, setCreatedUrl] = useState<string | null>(null);
 
   const busy = status === "submitting";
 
@@ -52,7 +51,6 @@ export function FeatureRequestForm({
 
     setStatus("submitting");
     setMessage("");
-    setCreatedUrl(null);
 
     try {
       const photoUrls = await uploadPhotos(files);
@@ -75,7 +73,6 @@ export function FeatureRequestForm({
       }
 
       setStatus("done");
-      setCreatedUrl(json.url ?? null);
       setMessage("Thanks! Your request was filed.");
       setTitle("");
       setDetails("");
@@ -233,17 +230,7 @@ export function FeatureRequestForm({
           }`}
           role="status"
         >
-          {message}{" "}
-          {createdUrl && (
-            <a
-              href={createdUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline"
-            >
-              View it on GitHub →
-            </a>
-          )}
+          {message}
         </div>
       )}
 
@@ -253,7 +240,7 @@ export function FeatureRequestForm({
         </button>
         {disabled && (
           <span className="text-xs text-brand-muted">
-            Connect GitHub to enable submissions.
+            The tracker isn&apos;t connected yet, so submissions are paused.
           </span>
         )}
       </div>

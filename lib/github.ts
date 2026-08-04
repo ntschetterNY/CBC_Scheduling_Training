@@ -458,6 +458,28 @@ export async function setStatus(
   }
 }
 
+/**
+ * Change a ticket's priority and/or type labels in place, preserving its
+ * current status and open/closed state. Used by the in-app tag editor.
+ */
+export async function setMeta(
+  number: number,
+  next: { priority?: FrPriority; type?: FrType }
+): Promise<void> {
+  const fr = await getFeatureRequest(number);
+  if (!fr) throw new Error("Not a feature request");
+  const priority = next.priority ?? fr.priority;
+  const type = next.type ?? fr.type;
+  // Rebuild the full label set from the (possibly updated) priority/type plus
+  // the untouched status. A PATCH of labels only never changes open/closed.
+  await putLabels(number, [
+    FEATURE_REQUEST_LABEL,
+    priorityLabel(priority),
+    typeLabel(type),
+    statusLabel(fr.status),
+  ]);
+}
+
 /** Close a ticket (mark done). Optionally leaves a closing note. */
 export async function closeRequest(
   number: number,

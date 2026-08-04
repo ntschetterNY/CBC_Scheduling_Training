@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FeatureRequestForm } from "@/components/FeatureRequestForm";
 import { FeatureRequestDetail } from "@/components/FeatureRequestDetail";
 import {
@@ -34,11 +35,11 @@ function timeAgo(iso: string): string {
 export function FeatureRequestDashboard({
   initial,
   isAdmin,
-  githubConfigured,
+  trackerConnected,
 }: {
   initial: DashData;
   isAdmin: boolean;
-  githubConfigured: boolean;
+  trackerConnected: boolean;
 }) {
   const [requests, setRequests] = useState(initial.requests);
   const [upvotes, setUpvotes] = useState(initial.upvotes);
@@ -51,6 +52,16 @@ export function FeatureRequestDashboard({
   const [selected, setSelected] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Deep link: /feature-requests?fr=12 opens that ticket's detail in-app, so
+  // other pages can link straight to a request without leaving the app.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const raw = searchParams.get("fr");
+    if (!raw) return;
+    const n = Number.parseInt(raw, 10);
+    if (Number.isInteger(n) && n > 0) setSelected(n);
+  }, [searchParams]);
 
   async function refresh() {
     setRefreshing(true);
@@ -165,7 +176,7 @@ export function FeatureRequestDashboard({
         <button
           onClick={() => setShowForm((s) => !s)}
           className="btn-primary"
-          disabled={!githubConfigured}
+          disabled={!trackerConnected}
         >
           {showForm ? "Close form" : "+ File a request"}
         </button>
@@ -202,7 +213,7 @@ export function FeatureRequestDashboard({
       {showForm && (
         <div className="mt-4">
           <FeatureRequestForm
-            disabled={!githubConfigured}
+            disabled={!trackerConnected}
             onFiled={() => {
               setShowForm(false);
               refresh();

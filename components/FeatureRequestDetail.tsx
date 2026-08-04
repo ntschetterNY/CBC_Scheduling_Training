@@ -5,10 +5,14 @@ import { AttachmentZone } from "@/components/AttachmentZone";
 import { uploadPhotos } from "@/lib/fr-upload";
 import {
   formatFrNumber,
+  FR_PRIORITIES,
+  FR_TYPES,
   PRIORITY_META,
   STATUS_META,
   TYPE_META,
+  type FrPriority,
   type FrStatus,
+  type FrType,
 } from "@/lib/feature-requests";
 import type { FeatureRequest, FrComment } from "@/lib/github";
 
@@ -70,6 +74,7 @@ export function FeatureRequestDetail({
 
   const [note, setNote] = useState("");
   const [working, setWorking] = useState<FrStatus | null>(null);
+  const [savingTag, setSavingTag] = useState(false);
   const [actionErr, setActionErr] = useState("");
 
   const status = request.status;
@@ -107,7 +112,7 @@ export function FeatureRequestDetail({
     try {
       const photoUrls = await uploadPhotos(files);
       const res = await fetch(
-        `/api/feature-requests/${request.number}/comment`,
+        `/api/feature-requests/${request.number}/comments`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -124,6 +129,26 @@ export function FeatureRequestDetail({
       setActionErr(err instanceof Error ? err.message : "Could not post.");
     } finally {
       setPosting(false);
+    }
+  }
+
+  async function changeTags(next: { priority?: FrPriority; type?: FrType }) {
+    setSavingTag(true);
+    setActionErr("");
+    try {
+      const res = await fetch(`/api/feature-requests/${request.number}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Could not update the tag.");
+      // Refresh so the modal reflects the new tag without closing it.
+      onChanged();
+    } catch (err) {
+      setActionErr(err instanceof Error ? err.message : "Could not update.");
+    } finally {
+      setSavingTag(false);
     }
   }
 
@@ -180,14 +205,6 @@ export function FeatureRequestDetail({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <a
-              href={request.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-semibold text-brand-muted underline hover:text-brand-text"
-            >
-              GitHub ↗
-            </a>
             <button
               onClick={onClose}
               aria-label="Close"
@@ -249,7 +266,7 @@ export function FeatureRequestDetail({
                     className="rounded-xl border border-brand-border bg-white p-3"
                   >
                     <p className="text-xs font-semibold text-brand-text">
-                      {c.author ?? c.githubAuthor}{" "}
+                      {c.author ?? "Team"}{" "}
                       <span className="font-normal text-brand-muted">
                         · {fmtDateTime(c.createdAt)}
                       </span>
@@ -308,6 +325,44 @@ export function FeatureRequestDetail({
           {/* Admin lifecycle controls */}
           {isAdmin && (
             <Section title="Maintainer actions">
+              {/* Tags — change priority / type in place, without leaving the app. */}
+              <p className="mb-1.5 text-xs font-medium text-brand-text">Priority</p>
+              <div className="flex flex-wrap gap-2">
+                {FR_PRIORITIES.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    disabled={savingTag}
+                    onClick={() => changeTags({ priority: p })}
+                    className={tagPill(request.priority === p)}
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full ${PRIORITY_META[p].dot}`}
+                      aria-hidden
+                    />
+                    {PRIORITY_META[p].label}
+                  </button>
+                ))}
+              </div>
+              <p className="mb-1.5 mt-3 text-xs font-medium text-brand-text">Type</p>
+              <div className="flex flex-wrap gap-2">
+                {FR_TYPES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    disabled={savingTag}
+                    onClick={() => changeTags({ type: t })}
+                    className={tagPill(request.type === t)}
+                  >
+                    <span aria-hidden>{TYPE_META[t].glyph}</span>
+                    {TYPE_META[t].label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="mb-1.5 mt-4 text-xs font-medium text-brand-text">
+                Status
+              </p>
               <textarea
                 className="input min-h-[56px] resize-y"
                 placeholder="Optional note (posted as a comment with the status change)…"
@@ -340,6 +395,15 @@ export function FeatureRequestDetail({
       </div>
     </div>
   );
+}
+
+/** Pill styling for the priority/type selectors; highlighted when active. */
+function tagPill(active: boolean): string {
+  return `inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-sans text-sm transition-colors disabled:opacity-50 ${
+    active
+      ? "border-brand-accent bg-brand-accent/10 font-semibold text-brand-text"
+      : "border-brand-border text-brand-muted hover:border-brand-accent/40"
+  }`;
 }
 
 function Section({

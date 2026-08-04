@@ -5,7 +5,6 @@ import { PageHero } from "@/components/PageHero";
 import { createClient } from "@/lib/supabase/server";
 import { formatFrNumber } from "@/lib/feature-requests";
 import {
-  GITHUB_REPO,
   isGitHubConfigured,
   listFeatureRequests,
   type FeatureRequest,
@@ -13,7 +12,7 @@ import {
 
 export const metadata = { title: "Pending Feature Requests" };
 
-// Always read fresh issue state from GitHub.
+// Always read fresh ticket state.
 export const dynamic = "force-dynamic";
 
 function fmtDate(iso: string): string {
@@ -27,10 +26,8 @@ function fmtDate(iso: string): string {
 
 function PendingRow({ r }: { r: FeatureRequest }) {
   return (
-    <a
-      href={r.url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/feature-requests?fr=${r.number}`}
       className="group grid grid-cols-[auto,1fr,auto] items-center gap-4 border-b border-brand-border px-4 py-3 last:border-b-0 hover:bg-brand-surface/50"
     >
       <span className="font-mono text-xs font-bold text-brand-accentDark">
@@ -48,7 +45,7 @@ function PendingRow({ r }: { r: FeatureRequest }) {
       <span className="text-brand-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-accent">
         →
       </span>
-    </a>
+    </Link>
   );
 }
 
@@ -101,19 +98,18 @@ export default async function PendingFeatureRequestsPage() {
         {!isGitHubConfigured && (
           <div className="rounded-xl border border-brand-border bg-brand-surface/60 p-4 text-sm text-brand-muted">
             <p className="font-semibold text-brand-text">
-              Not connected to GitHub yet
+              The tracker isn&apos;t connected yet
             </p>
             <p className="mt-1">
-              An admin needs to set <code>GITHUB_TOKEN</code> and{" "}
-              <code>GITHUB_REPO</code> before requests appear here.
+              An admin needs to finish setting up the tracker before requests
+              appear here.
             </p>
           </div>
         )}
 
         {loadError && (
           <p className="text-sm text-brand-danger">
-            Couldn&apos;t load requests from GitHub right now — try again in a
-            moment.
+            Couldn&apos;t load requests right now — try again in a moment.
           </p>
         )}
 
@@ -144,20 +140,6 @@ export default async function PendingFeatureRequestsPage() {
                 ))}
               </div>
             )}
-
-            <p className="pt-4 text-xs text-brand-muted">
-              Tracked on{" "}
-              <a
-                href={`https://github.com/${GITHUB_REPO}/issues?q=is:open label:feature-request`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-brand-text"
-              >
-                github.com/{GITHUB_REPO}
-              </a>
-              . A maintainer or the person who filed it can comment{" "}
-              <code>/close</code> to close a request.
-            </p>
           </div>
         )}
       </main>

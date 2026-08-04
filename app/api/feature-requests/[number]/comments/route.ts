@@ -53,7 +53,7 @@ export async function POST(
   }
   if (!isGitHubConfigured) {
     return NextResponse.json(
-      { error: "The tracker isn't connected to GitHub yet." },
+      { error: "The tracker isn't connected yet." },
       { status: 503 }
     );
   }
