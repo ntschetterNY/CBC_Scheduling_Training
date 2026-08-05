@@ -39,7 +39,7 @@ export async function GET() {
   }
 }
 
-/** POST /api/feature-requests — file a new request (opens a GitHub issue). */
+/** POST /api/feature-requests — file a new request as a tracked ticket. */
 export async function POST(request: Request) {
   const actor = await getActor();
   if (!actor) {
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "The tracker isn't connected to GitHub yet. An admin needs to set GITHUB_TOKEN and GITHUB_REPO.",
+          "The tracker isn't connected yet. An admin needs to finish setting it up.",
       },
       { status: 503 }
     );
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("Feature request issue creation failed:", err);
     return NextResponse.json(
-      { error: "Could not create the GitHub issue. Please try again later." },
+      { error: "Could not file your request. Please try again later." },
       { status: 502 }
     );
   }

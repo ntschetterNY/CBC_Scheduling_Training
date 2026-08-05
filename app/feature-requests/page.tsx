@@ -3,12 +3,12 @@ import { AppHeader } from "@/components/AppHeader";
 import { FeatureRequestDashboard } from "@/components/FeatureRequestDashboard";
 import { PageHero } from "@/components/PageHero";
 import { createClient } from "@/lib/supabase/server";
-import { GITHUB_REPO, isGitHubConfigured } from "@/lib/github";
+import { isGitHubConfigured } from "@/lib/github";
 import { getActor, loadDashboardData, type DashboardData } from "@/lib/fr-server";
 
 export const metadata = { title: "Feature Requests" };
 
-// Always read fresh issue state from GitHub.
+// Always read fresh ticket state.
 export const dynamic = "force-dynamic";
 
 export default async function FeatureRequestsPage() {
@@ -52,42 +52,27 @@ export default async function FeatureRequestsPage() {
         {!isGitHubConfigured && (
           <div className="mb-6 rounded-xl border border-brand-border bg-brand-surface/60 p-4 text-sm text-brand-muted">
             <p className="font-semibold text-brand-text">
-              Not connected to GitHub yet
+              The tracker isn&apos;t connected yet
             </p>
             <p className="mt-1">
-              To turn on the tracker, an admin needs to set{" "}
-              <code>GITHUB_TOKEN</code> (a token with <code>issues</code> scope)
-              and <code>GITHUB_REPO</code> in the deployment&apos;s environment
-              variables.
+              An admin needs to finish setting up the tracker before requests
+              appear here.
             </p>
           </div>
         )}
 
         {loadError && (
           <p className="mb-6 text-sm text-brand-danger">
-            Couldn&apos;t load existing requests from GitHub right now. Filing a
-            new one still works.
+            Couldn&apos;t load existing requests right now. Filing a new one
+            still works.
           </p>
         )}
 
         <FeatureRequestDashboard
           initial={data}
           isAdmin={isAdmin}
-          githubConfigured={isGitHubConfigured}
+          trackerConnected={isGitHubConfigured}
         />
-
-        <p className="pt-6 text-xs text-brand-muted">
-          Tracked on{" "}
-          <a
-            href={`https://github.com/${GITHUB_REPO}/issues?q=label:feature-request`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-brand-text"
-          >
-            github.com/{GITHUB_REPO}
-          </a>
-          .
-        </p>
       </main>
     </div>
   );
