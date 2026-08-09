@@ -141,7 +141,7 @@ export const curriculum: Module[] = [
     sections: [
       {
         heading: "Physical routing: stage to console",
-        body: "Every audio problem is easier to solve when you can picture the path a signal takes. At CBC the physical path is:\n\n1. Sound source — someone sings, speaks, or plays.\n2. Microphone / DI on stage — plugs into a stage box (the stage boxes are labeled by area, e.g. RFS, LRS, BCK for the drums).\n3. Stage box → back panel → SLink → the SQ-6 console.\n4. Our main mic inputs come in this way; the wireless handhelds are local inputs at the console.\n\nSo when a stage source is dead, the first question is: is it plugged into the right stage box socket, and is that socket patched to the channel you expect?",
+        body: "Every audio problem is easier to solve when you can picture the path a signal takes. At CBC the physical path is:\n\n1. Sound source — someone sings, speaks, or plays.\n2. Microphone / DI (Direct Input) on stage — plugs into a stage box (the stage boxes are labeled by area, e.g. RFS, LRS, BCK for the drums). A DI, or Direct Input, is the small box that lets an instrument like a keyboard or acoustic guitar plug straight into the stage box.\n3. Stage box → back panel → SLink → the SQ-6 console.\n4. Our main mic inputs come in this way; the wireless handhelds are local inputs at the console.\n\nSo when a stage source is dead, the first question is: is it plugged into the right stage box socket, and is that socket patched to the channel you expect?",
         tip: "Most stage inputs reach the board through the AR2412 stage box over SLink. If a whole stage box goes quiet, suspect the SLink connection before any single channel.",
         control: "SLink / AR2412",
         visual: "physical-routing",
@@ -155,7 +155,7 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Digital routing: inside the console",
-        body: "Once a signal is inside the SQ-6, it flows: Input → processing → out to the mixes.\n\n- Every INPUT channel can be sent to a GROUP (which adds shared processing) and is controlled by a DCA (which sets mute and level, with no processing).\n- From there it reaches the outputs: the main L/R (house), the AUX mixes (monitors and stream feeds), and the streaming/hallway outputs.\n\nThe short version we teach: Board → Input → Group → L/R. Groups and DCAs each do a specific job — you'll learn both in their own module.",
+        body: "Once a signal is inside the SQ-6, it flows: Input → processing → out to the mixes.\n\n- Every INPUT channel can be sent to a GROUP (which adds shared processing) and is controlled by a DCA — a Digitally Controlled Amplifier — which sets mute and level, with no processing.\n- From there it reaches the outputs: the main L/R (house), the AUX mixes (monitors and stream feeds), and the streaming/hallway outputs.\n\nThe short version we teach: Board → Input → Group → L/R. Groups and DCAs each do a specific job — you'll learn both in their own module.",
         control: "Groups / DCAs",
         visual: "digital-routing",
       },

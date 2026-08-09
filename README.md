@@ -40,37 +40,19 @@ Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
    [`lib/access.ts`](lib/access.ts) (`SUPER_ADMIN_EMAILS`) before running.
 3. In **Project Settings → API**, copy your **Project URL** and **anon public
    key**.
-4. **Enable authenticator-app MFA.** In **Authentication → Providers**, make
-   sure **TOTP / Authenticator app** is enabled (it is by default on new
-   projects). That's all the setup the app's two-factor login needs — see
-   [Authenticator (2-step) login](#authenticator-2-step-login) below.
-5. *(Recommended)* In **Authentication → Providers → Email**, uncheck
-   **"Confirm email"**. Password sign-in never sends email, and with the
-   authenticator as the real security layer there's no need for the
-   confirmation email — this keeps you clear of the 2-emails-per-hour limit
-   entirely. New accounts then go straight into authenticator setup.
+4. *(Recommended)* In **Authentication → Providers → Email**, uncheck
+   **"Confirm email"**. Password sign-in never sends email, so unchecking this
+   keeps you clear of the 2-emails-per-hour limit entirely and new accounts go
+   straight into the app.
 
-### Authenticator (2-step) login
+### Login
 
-Login is **email + password, then a 6-digit authenticator code** — the same
-scheme banks use. It's built on Supabase's [MFA](https://supabase.com/docs/guides/auth/auth-mfa)
-(TOTP), so **Supabase sends no email at any point** and the 2-emails-per-hour
-limit never applies.
+Login is **email + password** — nothing else to set up. A signed-in user goes
+straight to the dashboard; middleware bounces anyone not signed in to `/login`.
 
-How it works for a volunteer:
-
-1. They sign in with email and password.
-2. **First time only:** the app shows a QR code. They open **Microsoft
-   Authenticator** (or Google Authenticator, Authy, 1Password — any
-   authenticator app), tap **Add account → Scan a QR code**, scan it, and
-   type the 6-digit code to confirm.
-3. **Every login after:** they just enter the current 6-digit code from the
-   app.
-
-Middleware enforces this — a signed-in user can't reach the dashboard until
-they've completed the authenticator step. If someone loses their device, an
-admin can clear their factor in Supabase (**Authentication → Users →** the
-user **→ remove the MFA factor**) so they can set up a new one on next login.
+> **Roadmap:** the authenticator-app (TOTP) second factor has been removed for
+> now. The plan is to add a **magic-link email from CrossBridge** as the login
+> method later; when that lands, this section will document it.
 
 ### Make yourself an admin
 
@@ -115,7 +97,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
 4. Deploy. 🎉
 5. Back in Supabase, set your Vercel URL as the **Site URL** under
    **Authentication → URL Configuration** so the project points at the right
-   host. The authenticator login needs no extra redirect setup.
+   host. Email + password login needs no extra redirect setup.
 
 ---
 
