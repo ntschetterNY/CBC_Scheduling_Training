@@ -1,8 +1,17 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { curriculum } from "@/lib/curriculum";
+import { safetyCurriculum } from "@/lib/safety-curriculum";
 import { programs, STATUS_LABEL, type ProgramStatus } from "@/lib/programs";
 import { createClient } from "@/lib/supabase/server";
+
+/** Compact "N modules · ~a–b hours" meta line for a set of modules. */
+function programMeta(modules: { estMinutes: number }[]): string {
+  const totalMin = modules.reduce((a, m) => a + m.estMinutes, 0);
+  return `${modules.length} modules · ~${Math.floor(totalMin / 60)}–${Math.ceil(
+    totalMin / 60
+  )} hours`;
+}
 
 export default async function Home() {
   const supabase = await createClient();
@@ -12,10 +21,10 @@ export default async function Home() {
 
   const primaryHref = user ? "/dashboard" : "/login";
   const primaryLabel = user ? "Go to dashboard" : "Start training";
-  const totalMin = curriculum.reduce((a, m) => a + m.estMinutes, 0);
-  const soundMeta = `${curriculum.length} modules · ~${Math.floor(
-    totalMin / 60
-  )}–${Math.ceil(totalMin / 60)} hours`;
+  const metaBySlug: Record<string, string> = {
+    "sound-tech": programMeta(curriculum),
+    "physical-security": programMeta(safetyCurriculum),
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -121,6 +130,13 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {programs.map((p) => {
               const available = p.status === "available";
+              // Where an available card sends the volunteer. Route through
+              // /login (preserving the destination) when they're not signed in.
+              const dest = p.href ?? "/dashboard";
+              const cardHref = user
+                ? dest
+                : `/login?redirectedFrom=${encodeURIComponent(dest)}`;
+              const metaLine = metaBySlug[p.slug];
               const meta = (
                 <>
                   <div className="flex items-start gap-3">
@@ -137,9 +153,9 @@ export default async function Home() {
                   <p className="mt-3 flex-1 font-serif text-sm leading-relaxed text-brand-text/75">
                     {p.description}
                   </p>
-                  {available && (
+                  {available && metaLine && (
                     <p className="mt-3 font-sans text-xs text-brand-muted">
-                      {soundMeta}
+                      {metaLine}
                     </p>
                   )}
                   <div className="mt-4 flex items-center justify-between gap-2">
@@ -158,7 +174,7 @@ export default async function Home() {
               return available ? (
                 <Link
                   key={p.slug}
-                  href={primaryHref}
+                  href={cardHref}
                   className="card group flex flex-col p-5 transition-colors hover:border-brand-accent/40"
                 >
                   {meta}

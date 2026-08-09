@@ -167,8 +167,10 @@ app/
   page.tsx              Landing page (public)
   login/                Sign in / create account
   dashboard/            Trainee home + progress
-  learn/                Module list
-  learn/[slug]/         A single module (lessons + quiz)
+  learn/                Sound Tech module list
+  learn/[slug]/         A single Sound Tech module (lessons + quiz)
+  safety/               Safety & Security module list (draft track)
+  safety/[slug]/        A single Safety & Security module (lessons + quiz)
   feature-requests/     Feedback page: file a request → opens a GitHub issue
   api/feature-requests/ Route handler that creates the GitHub issue
   admin/                Team progress (admins only)
@@ -179,7 +181,8 @@ components/             UI: header, board explorer, module runner, quiz, auth fo
                         lesson visuals, knowledge search, user directory,
                         feature-request form
 lib/
-  curriculum.ts         ← All training content lives here
+  curriculum.ts         ← Sound Tech training content lives here
+  safety-curriculum.ts  Safety & Security track content (draft)
   access.ts             Super-admin list + time formatting helpers
   progress.ts           Progress fetch helpers
   github.ts             Server-only GitHub issue helpers (feature tracker)
