@@ -23,8 +23,8 @@ export default async function DashboardPage() {
 
   const progress = await getMyProgress();
 
-  const completedCount = Object.values(progress).filter(
-    (p) => p.status === "completed"
+  const completedCount = curriculum.filter(
+    (m) => progress[m.slug]?.status === "completed"
   ).length;
   const pct = Math.round((completedCount / curriculum.length) * 100);
 
