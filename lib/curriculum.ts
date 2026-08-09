@@ -1335,3 +1335,82 @@ export const moduleOrder = curriculum
   .slice()
   .sort((a, b) => a.order - b.order)
   .map((m) => m.slug);
+
+/**
+ * Training phases — the curriculum grouped into ordered stages so a volunteer
+ * can work through it a phase at a time. Each phase lists module slugs in the
+ * order they should be taken. Edit the groupings here; the /learn page renders
+ * whatever this defines.
+ */
+export type TrainingPhase = {
+  id: string;
+  name: string;
+  /** One-line description of what the phase gets you to. */
+  tagline: string;
+  moduleSlugs: string[];
+};
+
+export const trainingPhases: TrainingPhase[] = [
+  {
+    id: "foundations",
+    name: "Foundations",
+    tagline: "Get oriented — what the system is and how it's wired.",
+    moduleSlugs: ["welcome", "signal-flow", "board-layout"],
+  },
+  {
+    id: "setup",
+    name: "Setup & Service Start",
+    tagline: "Power on, set up the mics, and get the stage clean.",
+    moduleSlugs: ["startup", "mics-colors", "mutes-blue"],
+  },
+  {
+    id: "mix",
+    name: "Building the Mix",
+    tagline: "Shape and control the sound — groups, monitors, EQ, compression.",
+    moduleSlugs: ["groups-dcas", "monitors-aux", "eq", "compression"],
+  },
+  {
+    id: "sunday",
+    name: "Running a Sunday",
+    tagline: "Scenes, running the service live, and shutting down safely.",
+    moduleSlugs: ["scenes", "service-workflow", "shutdown"],
+  },
+  {
+    id: "reference",
+    name: "When Things Go Wrong & Reference",
+    tagline: "Calm fixes under pressure and the input-patch reference.",
+    moduleSlugs: ["troubleshooting", "input-patch"],
+  },
+];
+
+export type ResolvedPhase = TrainingPhase & { modules: Module[] };
+
+/**
+ * Resolve `trainingPhases` to their actual module objects, in phase order. Any
+ * module not assigned to a phase is appended in a trailing "More Modules" group
+ * so a newly added module can never silently disappear from the curriculum view.
+ */
+export function getTrainingPhases(): ResolvedPhase[] {
+  const assigned = new Set<string>();
+  const resolved: ResolvedPhase[] = trainingPhases.map((phase) => {
+    const modules = phase.moduleSlugs
+      .map((slug) => getModule(slug))
+      .filter((m): m is Module => Boolean(m));
+    modules.forEach((m) => assigned.add(m.slug));
+    return { ...phase, modules };
+  });
+
+  const orphans = curriculum
+    .filter((m) => !assigned.has(m.slug))
+    .sort((a, b) => a.order - b.order);
+  if (orphans.length) {
+    resolved.push({
+      id: "more",
+      name: "More Modules",
+      tagline: "Additional modules not yet assigned to a phase.",
+      moduleSlugs: orphans.map((m) => m.slug),
+      modules: orphans,
+    });
+  }
+  return resolved;
+}
