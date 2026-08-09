@@ -18,11 +18,20 @@ export function ModuleRunner({
   userId,
   nextSlug,
   alreadyCompleted,
+  basePath = "/learn",
+  homeHref = "/dashboard",
+  homeLabel = "Back to dashboard",
 }: {
   module: Module;
   userId: string;
   nextSlug: string | null;
   alreadyCompleted: boolean;
+  /** Route prefix for this track's module pages (e.g. "/learn" or "/safety"). */
+  basePath?: string;
+  /** Where the "back" button on the completion screen links. */
+  homeHref?: string;
+  /** Label for the "back" button on the completion screen. */
+  homeLabel?: string;
 }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -416,15 +425,15 @@ export function ModuleRunner({
         with a score of {scorePct}%. Your progress has been saved.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Link href="/dashboard" className="btn-secondary">
-          Back to dashboard
+        <Link href={homeHref} className="btn-secondary">
+          {homeLabel}
         </Link>
         {nextSlug ? (
-          <Link href={`/learn/${nextSlug}`} className="btn-primary">
+          <Link href={`${basePath}/${nextSlug}`} className="btn-primary">
             Next module →
           </Link>
         ) : (
-          <Link href="/learn" className="btn-primary">
+          <Link href={basePath} className="btn-primary">
             All modules
           </Link>
         )}

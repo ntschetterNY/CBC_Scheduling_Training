@@ -2,8 +2,9 @@
  * CrossBridge Training Center — the list of volunteer training programs shown
  * on the public home page (app/page.tsx).
  *
- * Only "Sound Tech Training" is live today; it links into the existing SQ-6
- * curriculum under /learn. The rest are placeholders that render as
+ * "Sound Tech Training" links into the SQ-6 curriculum (resolved at render to
+ * /dashboard or /login) and "Physical Security" links into the Safety &
+ * Security curriculum at /safety. The rest are placeholders that render as
  * "Coming soon" / "In progress" cards until their curriculum is built. To add
  * a real program later: build its lessons, then flip `status` to "available"
  * and point `href` at its entry route.
@@ -45,7 +46,8 @@ export const programs: Program[] = [
     icon: "🛡️",
     description:
       "Situational awareness, access control, de-escalation, and emergency response for the CrossBridge safety team — so every gathering stays safe and welcoming.",
-    status: "coming_soon",
+    status: "available",
+    href: "/safety",
   },
   {
     slug: "bible-teaching",
