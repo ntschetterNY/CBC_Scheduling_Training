@@ -25,8 +25,9 @@ import type {
   TrainingPhase,
   ResolvedPhase,
 } from "./curriculum";
+import { safetySlides } from "./safety-slides";
 
-export const safetyCurriculum: Module[] = [
+const safetyCurriculumBase: Module[] = [
   // ── Chapter 1 · Operating Framework ──────────────────────────────────────
   {
     slug: "sec-team-framework",
@@ -1054,6 +1055,15 @@ export const safetyCurriculum: Module[] = [
     ],
   },
 ];
+
+/**
+ * The safety curriculum, with each module's source slide deck attached from
+ * lib/safety-slides.ts (keyed by slug). Modules without slides are unchanged.
+ */
+export const safetyCurriculum: Module[] = safetyCurriculumBase.map((m) => {
+  const slides = safetySlides[m.slug];
+  return slides && slides.length ? { ...m, slides } : m;
+});
 
 /** Total number of safety modules — handy for progress math. */
 export const SAFETY_TOTAL_MODULES = safetyCurriculum.length;
