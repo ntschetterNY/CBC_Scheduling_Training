@@ -43,6 +43,15 @@ export type QuizQuestion = {
   explanation: string;
 };
 
+/**
+ * A source slide shown alongside a module (e.g. the Safety & Security lesson
+ * decks). `src` is a path under /public; `alt` is the slide's caption/title.
+ */
+export type ModuleSlide = {
+  src: string;
+  alt: string;
+};
+
 export type Module = {
   slug: string;
   order: number;
@@ -54,6 +63,11 @@ export type Module = {
   objectives: string[];
   sections: LessonSection[];
   quiz: QuizQuestion[];
+  /**
+   * Optional source slides for this module, shown as a slide deck under the
+   * lessons (populated for Safety & Security modules from lib/safety-slides.ts).
+   */
+  slides?: ModuleSlide[];
 };
 
 export const curriculum: Module[] = [

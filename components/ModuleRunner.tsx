@@ -10,6 +10,7 @@ import { RichText } from "./RichText";
 import { BoardExplorer } from "./BoardExplorer";
 import { GearGallery } from "./GearGallery";
 import { LessonVisual } from "./LessonVisual";
+import { SlideDeck } from "./SlideDeck";
 
 type Phase = "lesson" | "quiz" | "result";
 
@@ -255,6 +256,11 @@ export function ModuleRunner({
 
         {/* Show the real-gear photo gallery on the welcome module */}
         {module.slug === "welcome" && <GearGallery />}
+
+        {/* Show this module's source slide deck (e.g. Safety & Security lessons) */}
+        {module.slides && module.slides.length > 0 && (
+          <SlideDeck slides={module.slides} />
+        )}
 
         <div className="flex items-center justify-between">
           <button
