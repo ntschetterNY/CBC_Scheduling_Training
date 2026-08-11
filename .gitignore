@@ -32,3 +32,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local-only raw slide source art (the app serves rendered copies from
+# public/safety-slides/ — the originals do not belong in git history)
+/Safety & Security Source Material/
+
+# unrelated nested tooling repo that lives in this folder locally
+/firstmate/
