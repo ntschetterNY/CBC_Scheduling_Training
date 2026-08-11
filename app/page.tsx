@@ -31,11 +31,10 @@ export default async function Home() {
       {/* Top nav */}
       <header className="border-b border-brand-border">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Logo />
+          <Link href="/" aria-label="CrossBridge Training Center home">
+            <Logo />
+          </Link>
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/login" className="btn-ghost">
-              {user ? "Dashboard" : "Sign in"}
-            </Link>
             <Link href={primaryHref} className="btn-primary">
               {primaryLabel}
             </Link>
@@ -318,7 +317,9 @@ export default async function Home() {
             </div>
           </div>
           <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-6 sm:flex-row">
-            <Logo tone="light" />
+            <Link href="/" aria-label="CrossBridge Training Center home">
+              <Logo tone="light" />
+            </Link>
             <p className="font-serif text-xs text-white/60">
               CrossBridge Training Center · Equipping volunteers to serve
             </p>
