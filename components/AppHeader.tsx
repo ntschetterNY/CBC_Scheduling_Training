@@ -18,8 +18,8 @@ export function AppHeader({
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4">
           <Link
-            href="/dashboard"
-            aria-label="CrossBridge Sound Training home"
+            href="/"
+            aria-label="CrossBridge Training Center home"
             className="flex items-center gap-3"
           >
             <Logo />

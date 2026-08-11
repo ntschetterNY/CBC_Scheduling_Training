@@ -59,13 +59,13 @@ export const programs: Program[] = [
     status: "coming_soon",
   },
   {
-    slug: "sound-tech-it",
-    name: "Sound-Tech IT",
-    category: "Tech · Systems",
-    icon: "🖥️",
+    slug: "slides-lights",
+    name: "Slides & Lights",
+    category: "Tech · Stage",
+    icon: "💡",
     description:
-      "The systems behind the booth — networking, ProPresenter, streaming, Dante/AVB routing, and troubleshooting when something goes quiet mid-service.",
-    status: "in_progress",
+      "Run the visuals and lighting for a service — building and cueing ProPresenter slides, lyric and scripture flow, and setting stage and house lighting looks.",
+    status: "coming_soon",
   },
   {
     slug: "hospitality",
