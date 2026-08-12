@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { isSuperAdmin } from "@/lib/access";
 import {
   buildRequestFromNotes,
   describeElement,
@@ -60,36 +58,20 @@ export function LavishOverlay() {
    * Gate: only admins / super admins ever see the tool.
    * --------------------------------------------------------------- */
   useEffect(() => {
-    const supabase = createClient();
     let mounted = true;
-
-    async function check() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!mounted) return;
-      if (!user) {
-        setEligible(false);
-        return;
-      }
-      if (isSuperAdmin(user.email)) {
-        setEligible(true);
-        return;
-      }
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (!mounted) return;
-      setEligible(profile?.role === "admin");
-    }
-
-    check();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => check());
+    // Server decides eligibility from the session cookie (same reliable path
+    // the rest of the app uses for roles), rather than checking auth in the
+    // browser. See app/api/lavish-access/route.ts.
+    fetch("/api/lavish-access", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { canMarkup: false }))
+      .then((d) => {
+        if (mounted) setEligible(Boolean(d.canMarkup));
+      })
+      .catch(() => {
+        if (mounted) setEligible(false);
+      });
     return () => {
       mounted = false;
-      sub.subscription.unsubscribe();
     };
   }, []);
 
