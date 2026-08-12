@@ -14,6 +14,26 @@ import {
   loadDashboardData,
   sanitizePhotoUrls,
 } from "@/lib/fr-server";
+import type { MarkupNote } from "@/lib/markup";
+
+/** Coerce an untrusted `markup` payload into safe MarkupNotes (or []). */
+function sanitizeMarkup(v: unknown): MarkupNote[] {
+  if (!Array.isArray(v)) return [];
+  const str = (x: unknown) => (typeof x === "string" ? x.slice(0, 1000) : "");
+  return v
+    .slice(0, 50)
+    .map((n) => {
+      const o = (n ?? {}) as Record<string, unknown>;
+      return {
+        route: str(o.route),
+        selector: str(o.selector),
+        tag: str(o.tag),
+        text: str(o.text),
+        change: str(o.change),
+      };
+    })
+    .filter((n) => n.change || n.selector);
+}
 
 /** GET /api/feature-requests — dashboard payload (tickets + upvotes). */
 export async function GET() {
@@ -80,6 +100,7 @@ export async function POST(request: Request) {
     ? (payload.type as FrType)
     : "adjustment";
   const photoUrls = sanitizePhotoUrls(payload.photoUrls);
+  const markup = sanitizeMarkup(payload.markup);
 
   if (!title || !details) {
     return NextResponse.json(
@@ -104,6 +125,7 @@ export async function POST(request: Request) {
       requester: actor.name,
       email: actor.email,
       photoUrls,
+      markup,
     });
     return NextResponse.json({ number: issue.number, url: issue.url });
   } catch (err) {
