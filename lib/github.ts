@@ -24,6 +24,7 @@ import {
   type FrStatus,
   type FrType,
 } from "./feature-requests";
+import type { MarkupNote } from "./markup";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -108,6 +109,31 @@ export function requesterMarker(name: string): string {
   return `<!-- fr-requester: ${safe(name)} -->`;
 }
 
+// Structured markup notes from the in-app Lavish tool. Base64-encoded so
+// arbitrary user text (which may contain `<`/`>`) can never terminate the HTML
+// comment. The human-readable version lives in the Details/Affected sections;
+// this marker is for precise machine consumption by a backend processing pass.
+const MARKUP_MARKER = /<!--\s*fr-markup:\s*([A-Za-z0-9+/=]+)\s*-->/i;
+
+export function markupMarker(notes: MarkupNote[]): string {
+  const b64 = Buffer.from(JSON.stringify(notes), "utf8").toString("base64");
+  return `<!-- fr-markup: ${b64} -->`;
+}
+
+export function parseMarkup(
+  body: string | null | undefined
+): MarkupNote[] | null {
+  const m = body?.match(MARKUP_MARKER);
+  if (!m) return null;
+  try {
+    const json = Buffer.from(m[1], "base64").toString("utf8");
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? (parsed as MarkupNote[]) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function parseRequester(body: string | null | undefined): string | null {
   const m = body?.match(REQUESTER_MARKER);
   return m ? m[1].trim() : null;
@@ -147,6 +173,7 @@ export function buildIssueBody(input: {
   email?: string | null;
   company?: string | null;
   photoUrls: string[];
+  markup?: MarkupNote[];
 }): string {
   const parts: string[] = [
     // Hidden markers the tracker reads back.
@@ -158,6 +185,10 @@ export function buildIssueBody(input: {
     `**Priority:** ${input.priority}`,
     `**Details:**\n${input.details.trim()}`,
   ];
+
+  if (input.markup?.length) {
+    parts.push(markupMarker(input.markup));
+  }
 
   if (input.affected.trim()) {
     parts.push(`**Affected area:**\n${input.affected.trim()}`);
@@ -358,6 +389,7 @@ export async function createFeatureRequestIssue(input: {
   email?: string | null;
   company?: string | null;
   photoUrls: string[];
+  markup?: MarkupNote[];
 }): Promise<{ number: number; url: string }> {
   const body = buildIssueBody(input);
   const res = await fetch(`${GITHUB_API}/repos/${GITHUB_REPO}/issues`, {
