@@ -160,6 +160,53 @@ form is disabled — everything else in the app keeps working. Photos are
 uploaded from the browser to Supabase Storage; only their public URLs (from
 that one bucket) are sent to the server, which opens the issue with the token.
 
+## Serve Team Scheduling
+
+Rotational Sunday scheduling for serve teams — seeded with the Deacons (five
+roles, five deacons) and Safety & Security, with Sound Tech pre-created but
+inactive until the Breeze roster sync is connected.
+
+1. Run [`supabase/migrations/0005_scheduling.sql`](supabase/migrations/0005_scheduling.sql)
+   in the Supabase SQL Editor. It creates the tables + RLS and seeds the
+   teams, the five deacon roles, and the five deacons.
+2. Visit **/admin/schedule** (admins only) to manage rosters/roles and
+   generate a rotation. Everyone can view **/schedule** and manage their own
+   blackout dates at **/schedule/availability** (their login email must be on
+   their roster entry — set it from the admin page).
+
+The generator (in `lib/scheduling/engine.ts`) balances load evenly using the
+last six months of history and honors blackout dates. For the deacons it also
+enforces: never opening *and* closing for one person in a week, never two
+speaking roles, the reserve deacon never speaks (they're the backup speaker,
+though they may open or close), and it aims to pair each opening/closing slot
+with one speaking slot.
+
+### Email reminders & availability polls (Resend — prepped, dormant)
+
+The notify flow works end-to-end today but skips actual delivery until the
+Resend domain DNS is verified. Then set:
+
+```
+RESEND_API_KEY=re_...
+SCHEDULE_FROM_EMAIL="CrossBridge Scheduling <scheduling@yourdomain.org>"
+NEXT_PUBLIC_APP_URL=https://your-production-url
+```
+
+Polls email each person a tokenized yes/no link (`/schedule/confirm`) that
+works without signing in and flips their assignment to confirmed/declined.
+Every send (including skipped ones) is recorded in `email_log`.
+
+### Breeze ChMS tie-in (prepped, dormant)
+
+`lib/breeze.ts` is a ready Breeze API client with a dry-run roster matcher
+(`planPeopleSync`), and `people.breeze_person_id` is already in the schema.
+When the API key exists, set:
+
+```
+BREEZE_SUBDOMAIN=crossbridge        # crossbridge.breezechms.com
+BREEZE_API_KEY=...
+```
+
 ## Project structure
 
 ```
@@ -173,7 +220,12 @@ app/
   safety/[slug]/        A single Safety & Security module (lessons + quiz)
   feature-requests/     Feedback page: file a request → opens a GitHub issue
   api/feature-requests/ Route handler that creates the GitHub issue
+  schedule/             Serve schedule (all teams + "my assignments")
+  schedule/availability Self-service blackout dates
+  schedule/confirm      Tokenized availability-poll response (no login)
+  api/schedule/         Route handlers: generate rotation, send notifications
   admin/                Team progress (admins only)
+  admin/schedule/       Scheduling admin: rosters, roles, generate, notify
   admin/analytics/      Time-on-task analytics (super admin only)
   admin/users/          User directory + admin seeding (super admin only)
   auth/signout/         Sign-out route handler
@@ -188,8 +240,11 @@ lib/
   github.ts             Server-only GitHub issue helpers (feature tracker)
   feature-requests.ts   Shared, non-secret tracker constants
   supabase/             Browser / server / middleware Supabase clients
+  scheduling/           Fair-rotation engine + server helpers
+  email.ts              Resend sending + templates (dormant until DNS)
+  breeze.ts             Breeze ChMS client (dormant until API key)
 supabase/migrations/    Database schema + RLS (0001 base, 0002 analytics,
-                        0003 feature-request photo bucket)
+                        0003 feature-request photo bucket, 0005 scheduling)
 .github/                Issue template + /close-comment workflow
 middleware.ts           Refreshes auth session, guards protected routes
 ```
