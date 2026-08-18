@@ -387,8 +387,8 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
       )}
       {currentTeam && !currentTeam.active && (
         <p className="rounded-xl bg-brand-surface px-4 py-3 font-sans text-sm text-brand-muted">
-          This team is inactive (hidden from the schedule page). Sound Tech
-          turns on once the Breeze roster sync is connected.
+          This team is inactive (hidden from the schedule page). You can still
+          set up its roster and roles here.
         </p>
       )}
 
