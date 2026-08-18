@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { NavMenu } from "@/components/NavMenu";
+import { isSuperAdmin } from "@/lib/access";
 import { curriculum } from "@/lib/curriculum";
 import { safetyCurriculum } from "@/lib/safety-curriculum";
 import { programs, STATUS_LABEL, type ProgramStatus } from "@/lib/programs";
@@ -19,6 +21,10 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
+    : { data: null };
+
   const primaryHref = user ? "/dashboard" : "/login";
   const primaryLabel = user ? "Go to dashboard" : "Start training";
   const metaBySlug: Record<string, string> = {
@@ -30,11 +36,18 @@ export default async function Home() {
     <div className="min-h-screen bg-white">
       {/* Top nav */}
       <header className="border-b border-brand-border">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <Link href="/" aria-label="CrossBridge Training Center home">
             <Logo />
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            {user && (
+              <NavMenu
+                email={user.email}
+                isAdmin={profile?.role === "admin"}
+                superAdmin={isSuperAdmin(user.email)}
+              />
+            )}
             <Link href={primaryHref} className="btn-primary">
               {primaryLabel}
             </Link>

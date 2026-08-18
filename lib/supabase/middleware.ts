@@ -40,10 +40,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const protectedPaths = ["/dashboard", "/learn", "/safety", "/admin", "/feature-requests"];
+  const protectedPaths = ["/dashboard", "/learn", "/safety", "/admin", "/feature-requests", "/schedule"];
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
+
+  // The availability-poll response page is token-authenticated by design —
+  // it must work straight from an email link without signing in.
+  if (request.nextUrl.pathname.startsWith("/schedule/confirm")) {
+    return supabaseResponse;
+  }
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
