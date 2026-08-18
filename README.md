@@ -162,13 +162,15 @@ that one bucket) are sent to the server, which opens the issue with the token.
 
 ## Serve Team Scheduling
 
-Rotational Sunday scheduling for serve teams — seeded with the Deacons (five
-roles, five deacons) and Safety & Security, with Sound Tech pre-created but
-inactive until the Breeze roster sync is connected.
+Rotational Sunday scheduling for serve teams - the Deacons (five roles, five
+deacons), Safety & Security, Sound Tech, and Slides / Lights.
 
 1. Run [`supabase/migrations/0005_scheduling.sql`](supabase/migrations/0005_scheduling.sql)
-   in the Supabase SQL Editor. It creates the tables + RLS and seeds the
-   teams, the five deacon roles, and the five deacons.
+   in the Supabase SQL Editor (tables + RLS, seeds the teams, the five deacon
+   roles, and the five deacons), then
+   [`0006_sound_tech_roles.sql`](supabase/migrations/0006_sound_tech_roles.sql)
+   and [`0007_slides_lights_team.sql`](supabase/migrations/0007_slides_lights_team.sql)
+   (activate Sound Tech and split Slides / Lights into its own team).
 2. Visit **/admin/schedule** (admins only) to manage rosters/roles and
    generate a rotation. Everyone can view **/schedule** and manage their own
    blackout dates at **/schedule/availability** (their login email must be on
@@ -243,8 +245,8 @@ lib/
   scheduling/           Fair-rotation engine + server helpers
   email.ts              Resend sending + templates (dormant until DNS)
   breeze.ts             Breeze ChMS client (dormant until API key)
-supabase/migrations/    Database schema + RLS (0001 base, 0002 analytics,
-                        0003 feature-request photo bucket, 0005 scheduling)
+supabase/migrations/    Database schema + RLS (run in numeric order; each
+                        file's header comment says what it adds)
 .github/                Issue template + /close-comment workflow
 middleware.ts           Refreshes auth session, guards protected routes
 ```
