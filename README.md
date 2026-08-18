@@ -170,14 +170,21 @@ deacons), Safety & Security, Sound Tech, and Slides / Lights.
    roles, and the five deacons), then
    [`0006_sound_tech_roles.sql`](supabase/migrations/0006_sound_tech_roles.sql)
    and [`0007_slides_lights_team.sql`](supabase/migrations/0007_slides_lights_team.sql)
-   (activate Sound Tech and split Slides / Lights into its own team).
+   (activate Sound Tech and split Slides / Lights into its own team). Then run
+   [`0008_role_capabilities.sql`](supabase/migrations/0008_role_capabilities.sql)
+   (per-person role capabilities) and
+   [`0009_sync_deactivation_flag.sql`](supabase/migrations/0009_sync_deactivation_flag.sql)
+   (marks sync-driven deactivations apart from manual pauses).
 2. Visit **/admin/schedule** (admins only) to manage rosters/roles and
    generate a rotation. Everyone can view **/schedule** and manage their own
    blackout dates at **/schedule/availability** (their login email must be on
    their roster entry — set it from the admin page).
 
 The generator (in `lib/scheduling/engine.ts`) balances load evenly using the
-last six months of history and honors blackout dates. For the deacons it also
+last six months of history and honors blackout dates. It also enforces per-role
+capabilities set from the admin roster: once anyone is checked for a role, only
+those people are eligible for it; a role with nobody checked stays open to every
+member. For the deacons it also
 enforces: never opening *and* closing for one person in a week, never two
 speaking roles, the reserve deacon never speaks (they're the backup speaker,
 though they may open or close), and it aims to pair each opening/closing slot
@@ -198,16 +205,26 @@ Polls email each person a tokenized yes/no link (`/schedule/confirm`) that
 works without signing in and flips their assignment to confirmed/declined.
 Every send (including skipped ones) is recorded in `email_log`.
 
-### Breeze ChMS tie-in (prepped, dormant)
+### Breeze ChMS directory sync (read-only)
 
-`lib/breeze.ts` is a ready Breeze API client with a dry-run roster matcher
-(`planPeopleSync`), and `people.breeze_person_id` is already in the schema.
-When the API key exists, set:
+`lib/breeze.ts` imports the whole Breeze directory into the app's `people`
+table as a **one-way, read-only** sync - the app never writes back to Breeze.
+Breeze owns names and emails; team membership and role capabilities stay in the
+app. Set both to enable it:
 
 ```
 BREEZE_SUBDOMAIN=crossbridge        # crossbridge.breezechms.com
 BREEZE_API_KEY=...
 ```
+
+Until both are set, `isBreezeConfigured` is false and the sync panel is
+disabled. The sync is manual and two-step from the Scheduling admin: **Preview
+sync** dry-runs `planDirectoryImport` (one Breeze read, writes nothing) and
+shows what would change; **Apply** recomputes against fresh Breeze data and
+writes. People Breeze no longer lists are flagged inactive (never deleted, so
+history is preserved) and reactivated automatically if Breeze lists them again;
+a manual pause is left untouched. See `app/api/schedule/breeze/preview` and
+`/apply`.
 
 ## Project structure
 
@@ -225,7 +242,8 @@ app/
   schedule/             Serve schedule (all teams + "my assignments")
   schedule/availability Self-service blackout dates
   schedule/confirm      Tokenized availability-poll response (no login)
-  api/schedule/         Route handlers: generate rotation, send notifications
+  api/schedule/         Route handlers: generate rotation, send notifications,
+                        Breeze directory sync (breeze/preview + breeze/apply)
   admin/                Team progress (admins only)
   admin/schedule/       Scheduling admin: rosters, roles, generate, notify
   admin/analytics/      Time-on-task analytics (super admin only)
@@ -244,7 +262,7 @@ lib/
   supabase/             Browser / server / middleware Supabase clients
   scheduling/           Fair-rotation engine + server helpers
   email.ts              Resend sending + templates (dormant until DNS)
-  breeze.ts             Breeze ChMS client (dormant until API key)
+  breeze.ts             Breeze ChMS client + read-only directory sync planner
 supabase/migrations/    Database schema + RLS (run in numeric order; each
                         file's header comment says what it adds)
 .github/                Issue template + /close-comment workflow

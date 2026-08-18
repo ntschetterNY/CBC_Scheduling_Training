@@ -1,5 +1,5 @@
 /**
- * Breeze ChMS API client — prepped but dormant until an API key exists.
+ * Breeze ChMS API client - read-only source of truth for the people directory.
  *
  * Configure by setting:
  *   BREEZE_SUBDOMAIN  the church's Breeze subdomain, e.g. "crossbridge" for
@@ -7,10 +7,10 @@
  *   BREEZE_API_KEY    from Breeze: Account Settings → Extensions → API
  *
  * Until both are set, `isBreezeConfigured` is false and every call returns
- * a clear "not configured" error instead of hitting the network. The
- * `people.breeze_person_id` column is already in place, so once the key
- * lands, `syncPeopleFromBreeze` can link existing rows by email and pull in
- * the Sound Tech roster.
+ * a clear "not configured" error instead of hitting the network. Once the key
+ * lands, `planDirectoryImport` fetches the whole Breeze directory in one call
+ * and links existing `people` rows by email / imports the rest. The sync is
+ * one-way: nothing is ever written back to Breeze.
  *
  * Breeze API docs: https://app.breezechms.com/api
  */
