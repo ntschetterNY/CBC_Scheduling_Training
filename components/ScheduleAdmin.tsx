@@ -53,6 +53,7 @@ type BreezeSummary = {
   link: number;
   update: number;
   deactivate: number;
+  reactivate: number;
   conflicts: number;
   unlinked: number;
 };
@@ -325,6 +326,7 @@ export function ScheduleAdmin({
           `• Import ${s.import} new\n` +
           `• Link ${s.link} by email\n` +
           `• Refresh ${s.update} changed\n` +
+          `• Reactivate ${s.reactivate} back in Breeze\n` +
           `• Flag inactive ${s.deactivate} no longer in Breeze\n\n` +
           `Left untouched: ${s.conflicts} email conflict(s), ${s.unlinked} hand-added.`
       )
@@ -338,7 +340,7 @@ export function ScheduleAdmin({
       if (!res.ok) throw new Error(data.error ?? "Apply failed.");
       const a = data.applied;
       flash(
-        `Imported ${a.imported}, linked ${a.linked}, refreshed ${a.updated}, deactivated ${a.deactivated}.`
+        `Imported ${a.imported}, linked ${a.linked}, refreshed ${a.updated}, reactivated ${a.reactivated}, deactivated ${a.deactivated}.`
       );
       setSyncPreview(null);
       await load();
@@ -574,6 +576,10 @@ export function ScheduleAdmin({
               </li>
               <li className="chip">
                 Refresh <strong className="text-brand-text">{syncPreview.update}</strong> changed
+              </li>
+              <li className="chip">
+                Reactivate{" "}
+                <strong className="text-brand-text">{syncPreview.reactivate}</strong> returning
               </li>
               <li className="chip">
                 Deactivate{" "}

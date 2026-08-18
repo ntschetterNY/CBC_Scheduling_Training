@@ -75,6 +75,7 @@ export interface AppPersonRow {
   email: string | null;
   breeze_person_id: string | null;
   active: boolean;
+  deactivated_by_sync: boolean;
 }
 
 export interface BreezeDirectoryPlan {
@@ -86,6 +87,8 @@ export interface BreezeDirectoryPlan {
   toUpdate: { personId: string; fullName: string; email: string | null; changes: string[] }[];
   /** Linked app rows Breeze no longer lists — flag inactive (never deleted, history kept). */
   toDeactivate: { personId: string; fullName: string; breezePersonId: string }[];
+  /** Linked rows back in Breeze that sync had deactivated — reactivate (never touches manual pauses). */
+  toReactivate: { personId: string; fullName: string; breezePersonId: string }[];
   /** Breeze people whose email is already owned by a *different* linked app row — reported, untouched. */
   conflicts: { breezePersonId: string; fullName: string; email: string; ownerPersonId: string }[];
   /** App rows with no Breeze link and no email match — hand-added; reported, untouched. */
@@ -124,6 +127,7 @@ export async function planDirectoryImport(
     toLink: [],
     toUpdate: [],
     toDeactivate: [],
+    toReactivate: [],
     conflicts: [],
     unlinked: [],
   };
@@ -136,6 +140,13 @@ export async function planDirectoryImport(
     const fullName = breezeFullName(b);
     const linked = appByBreezeId.get(b.id);
     if (linked) {
+      // A row paused by hand (inactive without the sync flag) is off-limits to
+      // sync entirely — leave name, email, and active state alone.
+      if (!linked.active && !linked.deactivated_by_sync) continue;
+      // Sync-deactivated row that's back in Breeze — reactivate it.
+      if (!linked.active && linked.deactivated_by_sync) {
+        plan.toReactivate.push({ personId: linked.id, fullName, breezePersonId: b.id });
+      }
       const changes: string[] = [];
       if (fullName && fullName !== linked.full_name) changes.push("name");
       if (b.email && b.email.toLowerCase() !== (linked.email ?? "").toLowerCase())
@@ -147,13 +158,14 @@ export async function planDirectoryImport(
     }
 
     const match = b.email ? appByEmail.get(b.email.toLowerCase()) : undefined;
-    if (match && !match.breeze_person_id) {
+    if (match && !match.breeze_person_id && !linkedPersonIds.has(match.id)) {
       plan.toLink.push({ personId: match.id, breezePersonId: b.id, fullName, email: b.email });
       linkedPersonIds.add(match.id);
       continue;
     }
-    if (match && match.breeze_person_id) {
-      // Email already tied to a different Breeze person — don't create a dup.
+    if (match && (match.breeze_person_id || linkedPersonIds.has(match.id))) {
+      // Email already tied to a different Breeze person (or claimed by an
+      // earlier Breeze row this pass) — report the conflict, don't create a dup.
       plan.conflicts.push({
         breezePersonId: b.id,
         fullName,
@@ -194,6 +206,7 @@ export function summarizeDirectoryPlan(plan: BreezeDirectoryPlan) {
     link: plan.toLink.length,
     update: plan.toUpdate.length,
     deactivate: plan.toDeactivate.length,
+    reactivate: plan.toReactivate.length,
     conflicts: plan.conflicts.length,
     unlinked: plan.unlinked.length,
   };

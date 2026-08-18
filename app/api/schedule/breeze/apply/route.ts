@@ -29,7 +29,7 @@ export async function POST() {
   const { supabase } = actor;
   const { data, error } = await supabase
     .from("people")
-    .select("id, full_name, email, breeze_person_id, active");
+    .select("id, full_name, email, breeze_person_id, active, deactivated_by_sync");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   let plan;
@@ -66,20 +66,39 @@ export async function POST() {
     if (e) return fail(`link failed for ${l.fullName}: ${e.message}`);
   }
 
-  // Updates: refresh drifted name/email on already-linked rows.
+  // Updates: refresh only the fields that actually drifted. A null Breeze email
+  // is never in `changes`, so it can't overwrite an existing app email.
   for (const u of plan.toUpdate) {
+    const payload: { full_name?: string; email?: string | null } = {};
+    if (u.changes.includes("name")) payload.full_name = u.fullName;
+    if (u.changes.includes("email")) payload.email = u.email;
+    if (Object.keys(payload).length === 0) continue;
     const { error: e } = await supabase
       .from("people")
-      .update({ full_name: u.fullName, email: u.email })
+      .update(payload)
       .eq("id", u.personId);
     if (e) return fail(`update failed for ${u.fullName}: ${e.message}`);
   }
 
-  // Deactivations: one update for everyone Breeze dropped.
+  // Reactivations: rows sync had deactivated that Breeze lists again. Clear the
+  // sync flag so a later manual pause can be told apart from a sync deactivation.
+  if (plan.toReactivate.length > 0) {
+    const { error: e } = await supabase
+      .from("people")
+      .update({ active: true, deactivated_by_sync: false })
+      .in(
+        "id",
+        plan.toReactivate.map((r) => r.personId)
+      );
+    if (e) return fail(`reactivate failed: ${e.message}`);
+  }
+
+  // Deactivations: one update for everyone Breeze dropped. Flag it as a sync
+  // deactivation so it can be reactivated later without clobbering manual pauses.
   if (plan.toDeactivate.length > 0) {
     const { error: e } = await supabase
       .from("people")
-      .update({ active: false })
+      .update({ active: false, deactivated_by_sync: true })
       .in(
         "id",
         plan.toDeactivate.map((d) => d.personId)
@@ -93,6 +112,7 @@ export async function POST() {
       linked: plan.toLink.length,
       updated: plan.toUpdate.length,
       deactivated: plan.toDeactivate.length,
+      reactivated: plan.toReactivate.length,
     },
     skipped: {
       conflicts: plan.conflicts.length,

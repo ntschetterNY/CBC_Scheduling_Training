@@ -31,7 +31,7 @@ export async function POST() {
   const { supabase } = actor;
   const { data, error } = await supabase
     .from("people")
-    .select("id, full_name, email, breeze_person_id, active");
+    .select("id, full_name, email, breeze_person_id, active, deactivated_by_sync");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   try {
