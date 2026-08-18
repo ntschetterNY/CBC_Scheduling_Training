@@ -324,6 +324,34 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
   const activeRoles = roles.filter((r) => r.active);
   const currentTeam = teams.find((t) => t.id === teamId);
 
+  /** Person picker for one assignment cell — shared by table and mobile cards. */
+  const assignmentSelect = (a: Assignment) => (
+    <select
+      value={a.person_id ?? ""}
+      onChange={(e) => void reassign(a, e.target.value)}
+      className={`input py-1.5 ${
+        !a.person_id
+          ? "border-red-300 bg-red-50"
+          : a.status === "declined"
+            ? "border-red-300"
+            : ""
+      }`}
+    >
+      <option value="">— unassigned —</option>
+      {members
+        .filter((m) => m.active || m.personId === a.person_id)
+        .map((m) => (
+          <option key={m.personId} value={m.personId}>
+            {m.fullName}
+            {a.person_id === m.personId && a.status === "confirmed" ? " ✓" : ""}
+            {a.person_id === m.personId && a.status === "declined"
+              ? " ✗ declined"
+              : ""}
+          </option>
+        ))}
+    </select>
+  );
+
   return (
     <div className="space-y-8">
       {/* team tabs */}
@@ -368,9 +396,9 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
               {members.map((m) => (
                 <li
                   key={m.membershipId}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-brand-border px-4 py-2.5"
+                  className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border border-brand-border px-4 py-2.5"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1 basis-40">
                     <p className="font-sans text-sm font-semibold text-brand-text">
                       {m.fullName}
                       {!m.active && (
@@ -398,12 +426,12 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
               ))}
             </ul>
           )}
-          <form onSubmit={addMember} className="flex flex-wrap gap-2">
+          <form onSubmit={addMember} className="grid gap-2 sm:flex sm:flex-wrap">
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Full name"
-              className="input flex-1"
+              className="input sm:flex-1"
               required
             />
             <input
@@ -411,9 +439,9 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="Email (optional)"
               type="email"
-              className="input flex-1"
+              className="input sm:flex-1"
             />
-            <button type="submit" disabled={busy} className="btn-primary">
+            <button type="submit" disabled={busy} className="btn-primary w-full sm:w-auto">
               Add
             </button>
           </form>
@@ -447,18 +475,18 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
               ))}
             </ul>
           )}
-          <form onSubmit={addRole} className="flex flex-wrap gap-2">
+          <form onSubmit={addRole} className="grid gap-2 sm:flex sm:flex-wrap">
             <input
               value={newRoleName}
               onChange={(e) => setNewRoleName(e.target.value)}
               placeholder="Role name"
-              className="input flex-1"
+              className="input sm:flex-1"
               required
             />
             <select
               value={newRoleCategory}
               onChange={(e) => setNewRoleCategory(e.target.value)}
-              className="input w-auto"
+              className="input sm:w-auto"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -466,7 +494,7 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
                 </option>
               ))}
             </select>
-            <button type="submit" disabled={busy} className="btn-primary">
+            <button type="submit" disabled={busy} className="btn-primary w-full sm:w-auto">
               Add
             </button>
           </form>
@@ -499,45 +527,51 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
       {/* generate + notify */}
       <section className="card p-5">
         <h2 className="section-title mb-4">Generate schedule</h2>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="block">
-            <span className="mb-1 block font-sans text-xs font-semibold text-brand-muted">
-              First Sunday on/after
-            </span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="input w-auto"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block font-sans text-xs font-semibold text-brand-muted">
-              Weeks
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={52}
-              value={weeks}
-              onChange={(e) => setWeeks(Number(e.target.value))}
-              className="input w-24"
-            />
-          </label>
-          <button onClick={() => void generate()} disabled={busy} className="btn-primary">
+        <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-end">
+          <div className="grid grid-cols-2 gap-3 sm:contents">
+            <label className="block">
+              <span className="mb-1 block font-sans text-xs font-semibold text-brand-muted">
+                First Sunday on/after
+              </span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="input sm:w-auto"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block font-sans text-xs font-semibold text-brand-muted">
+                Weeks
+              </span>
+              <input
+                type="number"
+                min={1}
+                max={52}
+                value={weeks}
+                onChange={(e) => setWeeks(Number(e.target.value))}
+                className="input sm:w-24"
+              />
+            </label>
+          </div>
+          <button
+            onClick={() => void generate()}
+            disabled={busy}
+            className="btn-primary w-full sm:w-auto"
+          >
             {busy ? "Working…" : "Generate rotation"}
           </button>
           <button
             onClick={() => void notify("availability_poll")}
             disabled={busy}
-            className="btn-secondary"
+            className="btn-secondary w-full sm:w-auto"
           >
             Send availability poll
           </button>
           <button
             onClick={() => void notify("reminder")}
             disabled={busy}
-            className="btn-secondary"
+            className="btn-secondary w-full sm:w-auto"
           >
             Send reminders
           </button>
@@ -558,65 +592,70 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
             Nothing scheduled yet — generate a rotation above.
           </p>
         ) : (
-          <div className="card overflow-x-auto">
-            <table className="w-full min-w-[640px] font-sans text-sm">
-              <thead>
-                <tr className="border-b border-brand-border text-left">
-                  <th className="px-4 py-3 font-semibold text-brand-muted">Sunday</th>
-                  {activeRoles.map((r) => (
-                    <th key={r.id} className="px-4 py-3 font-semibold text-brand-muted">
-                      {r.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {dates.map((date) => (
-                  <tr key={date} className="border-b border-brand-border/60 last:border-0">
-                    <td className="whitespace-nowrap px-4 py-2.5 font-semibold text-brand-text">
-                      {prettyDate(date)}
-                    </td>
+          <>
+            {/* Phones: one card per Sunday */}
+            <div className="space-y-3 sm:hidden">
+              {dates.map((date) => (
+                <div key={date} className="card overflow-hidden">
+                  <p className="border-b border-brand-border bg-brand-surface/60 px-4 py-2.5 font-sans text-sm font-bold text-brand-text">
+                    {prettyDate(date)}
+                  </p>
+                  <div className="space-y-3 p-4">
                     {activeRoles.map((r) => {
                       const a = assignments.find(
                         (x) => x.service_date === date && x.role_id === r.id
                       );
-                      if (!a) return <td key={r.id} className="px-4 py-2.5">—</td>;
+                      if (!a) return null;
                       return (
-                        <td key={r.id} className="px-2 py-1.5">
-                          <select
-                            value={a.person_id ?? ""}
-                            onChange={(e) => void reassign(a, e.target.value)}
-                            className={`input py-1.5 ${
-                              !a.person_id
-                                ? "border-red-300 bg-red-50"
-                                : a.status === "declined"
-                                  ? "border-red-300"
-                                  : ""
-                            }`}
-                          >
-                            <option value="">— unassigned —</option>
-                            {members
-                              .filter((m) => m.active || m.personId === a.person_id)
-                              .map((m) => (
-                                <option key={m.personId} value={m.personId}>
-                                  {m.fullName}
-                                  {a.person_id === m.personId && a.status === "confirmed"
-                                    ? " ✓"
-                                    : ""}
-                                  {a.person_id === m.personId && a.status === "declined"
-                                    ? " ✗ declined"
-                                    : ""}
-                                </option>
-                              ))}
-                          </select>
-                        </td>
+                        <div key={r.id}>
+                          <p className="mb-1 font-sans text-xs font-semibold text-brand-muted">
+                            {r.name}
+                          </p>
+                          {assignmentSelect(a)}
+                        </div>
                       );
                     })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tablet & desktop: roles as columns */}
+            <div className="card hidden overflow-x-auto sm:block">
+              <table className="w-full min-w-[640px] font-sans text-sm">
+                <thead>
+                  <tr className="border-b border-brand-border text-left">
+                    <th className="px-4 py-3 font-semibold text-brand-muted">Sunday</th>
+                    {activeRoles.map((r) => (
+                      <th key={r.id} className="px-4 py-3 font-semibold text-brand-muted">
+                        {r.name}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {dates.map((date) => (
+                    <tr key={date} className="border-b border-brand-border/60 last:border-0">
+                      <td className="whitespace-nowrap px-4 py-2.5 font-semibold text-brand-text">
+                        {prettyDate(date)}
+                      </td>
+                      {activeRoles.map((r) => {
+                        const a = assignments.find(
+                          (x) => x.service_date === date && x.role_id === r.id
+                        );
+                        if (!a) return <td key={r.id} className="px-4 py-2.5">—</td>;
+                        return (
+                          <td key={r.id} className="px-2 py-1.5">
+                            {assignmentSelect(a)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
     </div>
