@@ -43,6 +43,15 @@ export interface EngineBlackout {
   endsOn: string;
 }
 
+/**
+ * A person is capable of filling a role. Drives eligibility: see
+ * `generateSchedule` for the restrict-when-configured fallback.
+ */
+export interface EngineCapability {
+  personId: string;
+  roleId: string;
+}
+
 /** A past (or already-saved) assignment that should count toward fairness. */
 export interface EngineHistoryEntry {
   personId: string;
@@ -113,13 +122,30 @@ export function generateSchedule({
   members,
   blackouts,
   history,
+  capabilities = [],
 }: {
   sundays: string[];
   roles: EngineRole[];
   members: EngineMember[];
   blackouts: EngineBlackout[];
   history: EngineHistoryEntry[];
+  /**
+   * Which people can fill which roles. A role that appears in at least one
+   * capability row is "restricted" — only the people listed for it are
+   * candidates. A role with no capability rows stays open to every member, so
+   * teams that haven't set capabilities yet keep working unchanged.
+   */
+  capabilities?: EngineCapability[];
 }): GeneratedAssignment[] {
+  const restrictedRoles = new Set<string>();
+  const capablePairs = new Set<string>();
+  for (const c of capabilities) {
+    restrictedRoles.add(c.roleId);
+    capablePairs.add(`${c.personId}::${c.roleId}`);
+  }
+  const isEligible = (personId: string, roleId: string) =>
+    !restrictedRoles.has(roleId) || capablePairs.has(`${personId}::${roleId}`);
+
   const state = new Map<string, PersonState>();
   for (const m of members) {
     state.set(m.id, { daysServed: 0, byCategory: emptyCategoryCounts(), lastServed: null });
@@ -172,6 +198,7 @@ export function generateSchedule({
       let bestScore = Infinity;
 
       for (const m of sortedMembers) {
+        if (!isEligible(m.id, role.id)) continue;
         if (isBlackedOut(m.id, date)) continue;
         const held = heldToday.get(m.id) ?? new Set<RoleCategory>();
         if (!allowedWith(role.category, held)) continue;

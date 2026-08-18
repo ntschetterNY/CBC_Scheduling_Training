@@ -48,16 +48,38 @@ const cardDate = (iso: string) =>
     day: "numeric",
   });
 
-export function ScheduleAdmin({ teams }: { teams: Team[] }) {
+type BreezeSummary = {
+  import: number;
+  link: number;
+  update: number;
+  deactivate: number;
+  reactivate: number;
+  conflicts: number;
+  unlinked: number;
+};
+
+export function ScheduleAdmin({
+  teams,
+  breezeConfigured,
+}: {
+  teams: Team[];
+  breezeConfigured: boolean;
+}) {
   const supabase = useMemo(() => createClient(), []);
   const [teamId, setTeamId] = useState(teams[0]?.id ?? "");
   const [roles, setRoles] = useState<Role[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [caps, setCaps] = useState<Set<string>>(new Set());
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Breeze directory sync
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncPreview, setSyncPreview] = useState<BreezeSummary | null>(null);
 
   // form state
   const [newName, setNewName] = useState("");
@@ -96,7 +118,27 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
       );
       return;
     }
-    setRoles((rolesRes.data ?? []) as Role[]);
+    const roleRows = (rolesRes.data ?? []) as Role[];
+    setRoles(roleRows);
+
+    // Role capabilities for this team's roles ("who can do what").
+    const roleIds = roleRows.map((r) => r.id);
+    if (roleIds.length > 0) {
+      const { data: capRows } = await supabase
+        .from("person_roles")
+        .select("person_id, role_id")
+        .in("role_id", roleIds);
+      setCaps(
+        new Set(
+          (capRows ?? []).map(
+            (c) => `${c.person_id as string}::${c.role_id as string}`
+          )
+        )
+      );
+    } else {
+      setCaps(new Set());
+    }
+
     const mem = (membersRes.data ?? []).map((m) => {
       const p = m.people as unknown as {
         id: string;
@@ -222,6 +264,91 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
       .eq("id", m.membershipId);
     if (error) setError(error.message);
     else await load();
+  }
+
+  async function toggleCapability(personId: string, roleId: string, has: boolean) {
+    const key = `${personId}::${roleId}`;
+    if (has) {
+      const { error } = await supabase
+        .from("person_roles")
+        .delete()
+        .eq("person_id", personId)
+        .eq("role_id", roleId);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      setCaps((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    } else {
+      const { error } = await supabase
+        .from("person_roles")
+        .insert({ person_id: personId, role_id: roleId });
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      setCaps((prev) => new Set(prev).add(key));
+    }
+  }
+
+  /* ---------------- breeze directory sync ---------------- */
+
+  // Step 1 — the confirmed "pull": one read-only call to Breeze that returns a
+  // dry-run diff. Writes nothing.
+  async function breezePreview() {
+    setSyncBusy(true);
+    setSyncError(null);
+    setSyncPreview(null);
+    try {
+      const res = await fetch("/api/schedule/breeze/preview", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Preview failed.");
+      setSyncPreview(data.summary as BreezeSummary);
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSyncBusy(false);
+    }
+  }
+
+  // Step 2 — the confirmed "push": recomputes against fresh Breeze data and
+  // writes people (import / link / update / deactivate).
+  async function breezeApply() {
+    if (!syncPreview) return;
+    const s = syncPreview;
+    if (
+      !confirm(
+        `Apply Breeze directory import?\n\n` +
+          `• Import ${s.import} new\n` +
+          `• Link ${s.link} by email\n` +
+          `• Refresh ${s.update} changed\n` +
+          `• Reactivate ${s.reactivate} back in Breeze\n` +
+          `• Flag inactive ${s.deactivate} no longer in Breeze\n\n` +
+          `Left untouched: ${s.conflicts} email conflict(s), ${s.unlinked} hand-added.`
+      )
+    )
+      return;
+    setSyncBusy(true);
+    setSyncError(null);
+    try {
+      const res = await fetch("/api/schedule/breeze/apply", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Apply failed.");
+      const a = data.applied;
+      flash(
+        `Imported ${a.imported}, linked ${a.linked}, refreshed ${a.updated}, reactivated ${a.reactivated}, deactivated ${a.deactivated}.`
+      );
+      setSyncPreview(null);
+      await load();
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSyncBusy(false);
+    }
   }
 
   /* ---------------- roles ---------------- */
@@ -392,10 +519,99 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
         </p>
       )}
 
+      {/* breeze directory sync (whole directory, not per-team) */}
+      <section className="card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="section-title mb-1">Breeze directory</h2>
+            <p className="prose-body text-sm">
+              Read-only import of everyone in Breeze into the people directory.
+              Team membership and role capabilities stay here in the app — this
+              only keeps names and emails in sync and never writes back to
+              Breeze.
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button
+              onClick={() => void breezePreview()}
+              disabled={!breezeConfigured || syncBusy}
+              className="btn-secondary"
+            >
+              {syncBusy ? "Working…" : "Preview sync"}
+            </button>
+            {syncPreview && (
+              <button
+                onClick={() => void breezeApply()}
+                disabled={syncBusy}
+                className="btn-primary"
+              >
+                Apply
+              </button>
+            )}
+          </div>
+        </div>
+
+        {!breezeConfigured && (
+          <p className="mt-3 rounded-xl bg-brand-surface px-4 py-3 font-sans text-sm text-brand-muted">
+            Breeze isn&apos;t configured yet. Set <code>BREEZE_SUBDOMAIN</code>{" "}
+            and <code>BREEZE_API_KEY</code> to enable the sync.
+          </p>
+        )}
+        {syncError && (
+          <p className="mt-3 rounded-xl bg-brand-danger/10 px-4 py-3 font-sans text-sm text-brand-danger">
+            {syncError}
+          </p>
+        )}
+        {syncPreview && (
+          <div className="mt-4">
+            <p className="mb-2 font-sans text-xs font-semibold text-brand-muted">
+              Preview — nothing has been written yet. Review, then Apply.
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              <li className="chip">
+                Import <strong className="text-brand-text">{syncPreview.import}</strong> new
+              </li>
+              <li className="chip">
+                Link <strong className="text-brand-text">{syncPreview.link}</strong> by email
+              </li>
+              <li className="chip">
+                Refresh <strong className="text-brand-text">{syncPreview.update}</strong> changed
+              </li>
+              <li className="chip">
+                Reactivate{" "}
+                <strong className="text-brand-text">{syncPreview.reactivate}</strong> returning
+              </li>
+              <li className="chip">
+                Deactivate{" "}
+                <strong className="text-brand-text">{syncPreview.deactivate}</strong> stale
+              </li>
+              {syncPreview.conflicts > 0 && (
+                <li className="chip">
+                  <span className="text-brand-muted">
+                    {syncPreview.conflicts} email conflict(s) — skipped
+                  </span>
+                </li>
+              )}
+              {syncPreview.unlinked > 0 && (
+                <li className="chip">
+                  <span className="text-brand-muted">
+                    {syncPreview.unlinked} hand-added — untouched
+                  </span>
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* roster */}
         <section className="card p-5">
-          <h2 className="section-title mb-4">Roster</h2>
+          <h2 className="section-title mb-1">Roster</h2>
+          <p className="prose-body mb-4 text-xs">
+            Check the roles each person can run. A role with nobody checked stays
+            open to every member.
+          </p>
           {members.length === 0 ? (
             <p className="prose-body mb-4 text-sm">No members yet.</p>
           ) : (
@@ -429,6 +645,29 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
                       Remove
                     </button>
                   </div>
+                  {activeRoles.length > 0 && (
+                    <div className="flex w-full flex-wrap gap-x-4 gap-y-1.5 border-t border-brand-border/60 pt-2">
+                      {activeRoles.map((r) => {
+                        const has = caps.has(`${m.personId}::${r.id}`);
+                        return (
+                          <label
+                            key={r.id}
+                            className="flex items-center gap-1.5 font-sans text-xs text-brand-muted"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={has}
+                              onChange={() =>
+                                void toggleCapability(m.personId, r.id, has)
+                              }
+                              className="h-3.5 w-3.5 accent-brand-teal"
+                            />
+                            {r.name}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

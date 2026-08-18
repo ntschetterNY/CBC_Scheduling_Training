@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { PageHero } from "@/components/PageHero";
 import { ScheduleAdmin } from "@/components/ScheduleAdmin";
 import { isSuperAdmin } from "@/lib/access";
+import { isBreezeConfigured } from "@/lib/breeze";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Scheduling Admin" };
@@ -40,7 +41,7 @@ export default async function ScheduleAdminPage() {
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <ScheduleAdmin teams={teams ?? []} />
+        <ScheduleAdmin teams={teams ?? []} breezeConfigured={isBreezeConfigured} />
       </main>
     </div>
   );
