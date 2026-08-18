@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { PageHero } from "@/components/PageHero";
+import { TeamScheduleView } from "@/components/TeamScheduleView";
 import { isSuperAdmin } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
 
@@ -146,65 +147,19 @@ export default async function SchedulePage() {
         {teamList.map((team) => {
           const teamRoles = roleList.filter((r) => r.team_id === team.id);
           const teamAssignments = allAssignments.filter((a) => a.team_id === team.id);
-          const dates = [...new Set(teamAssignments.map((a) => a.service_date))].sort();
           return (
             <section key={team.id} className="mb-10">
               <h2 className="section-title mb-3">{team.name}</h2>
-              {dates.length === 0 ? (
+              {teamAssignments.length === 0 ? (
                 <p className="prose-body text-sm">
                   No schedule generated yet{isAdmin ? " — generate one from the Manage page." : "."}
                 </p>
               ) : (
-                <div className="card overflow-x-auto">
-                  <table className="w-full min-w-[640px] font-sans text-sm">
-                    <thead>
-                      <tr className="border-b border-brand-border text-left">
-                        <th className="px-4 py-3 font-semibold text-brand-muted">Sunday</th>
-                        {teamRoles.map((r) => (
-                          <th key={r.id} className="px-4 py-3 font-semibold text-brand-muted">
-                            {r.name}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dates.map((date) => (
-                        <tr key={date} className="border-b border-brand-border/60 last:border-0">
-                          <td className="whitespace-nowrap px-4 py-3 font-semibold text-brand-text">
-                            {prettyDate(date)}
-                          </td>
-                          {teamRoles.map((r) => {
-                            const a = teamAssignments.find(
-                              (x) => x.service_date === date && x.role_id === r.id
-                            );
-                            const isMe =
-                              a?.people?.email &&
-                              a.people.email.toLowerCase() === myEmail;
-                            return (
-                              <td key={r.id} className="px-4 py-3">
-                                {a?.people ? (
-                                  <span
-                                    className={
-                                      isMe
-                                        ? "rounded-full bg-brand-accent/15 px-2 py-0.5 font-semibold text-brand-accentDark"
-                                        : "text-brand-text/90"
-                                    }
-                                  >
-                                    {a.people.full_name}
-                                    {a.status === "confirmed" && " ✓"}
-                                    {a.status === "declined" && " ✗"}
-                                  </span>
-                                ) : (
-                                  <span className="text-brand-muted/60">—</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <TeamScheduleView
+                  roles={teamRoles}
+                  assignments={teamAssignments}
+                  myEmail={myEmail}
+                />
               )}
             </section>
           );
