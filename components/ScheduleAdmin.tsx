@@ -338,9 +338,9 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
       onChange={(e) => void reassign(a, e.target.value)}
       className={`input py-1.5 ${
         !a.person_id
-          ? "border-red-300 bg-red-50"
+          ? "border-brand-danger/40 bg-brand-danger/10"
           : a.status === "declined"
-            ? "border-red-300"
+            ? "border-brand-danger/40"
             : ""
       }`}
     >
@@ -381,7 +381,7 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
         </p>
       )}
       {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-3 font-sans text-sm text-red-700">
+        <p className="rounded-xl bg-brand-danger/10 px-4 py-3 font-sans text-sm text-brand-danger">
           {error}
         </p>
       )}

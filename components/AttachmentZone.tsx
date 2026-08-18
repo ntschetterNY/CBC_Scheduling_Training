@@ -116,7 +116,7 @@ export function AttachmentZone({
           {files.map((f, i) => (
             <li
               key={`${f.name}-${i}`}
-              className="group relative h-16 w-16 overflow-hidden rounded-lg border border-brand-border bg-white"
+              className="group relative h-16 w-16 overflow-hidden rounded-lg border border-brand-border bg-brand-card"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

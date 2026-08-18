@@ -83,9 +83,12 @@ export default async function SchedulePage() {
         title="Serve Schedule"
         description="Upcoming Sunday assignments for every serve team. Need time off? Add blackout dates and the next schedule will work around them."
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href="/schedule/availability" className="btn-primary">
               My availability
+            </Link>
+            <Link href="/schedule/day" className="btn-secondary">
+              Day sheet
             </Link>
             {isAdmin && (
               <Link href="/admin/schedule" className="btn-secondary">
@@ -127,7 +130,7 @@ export default async function SchedulePage() {
                             className={
                               a.status === "confirmed"
                                 ? " text-brand-success"
-                                : " text-red-600"
+                                : " text-brand-danger"
                             }
                           >
                             {" "}

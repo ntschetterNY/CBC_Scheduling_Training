@@ -443,7 +443,7 @@ export function BoardExplorer({ showModuleLinks = true }: { showModuleLinks?: bo
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   h.id === active
                     ? "bg-brand-accent text-white"
-                    : "border border-brand-border bg-white text-brand-muted hover:text-brand-text"
+                    : "border border-brand-border bg-brand-card text-brand-muted hover:text-brand-text"
                 }`}
               >
                 {h.label}

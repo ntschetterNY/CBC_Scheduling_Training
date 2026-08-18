@@ -128,7 +128,7 @@ export function NavMenu({
             role="menu"
             className="fixed inset-x-3 top-[4.25rem] z-50 max-h-[calc(100dvh-5.25rem)]
               overflow-y-auto overscroll-contain rounded-2xl border border-brand-border
-              bg-white py-2 shadow-card
+              bg-brand-card py-2 shadow-card
               sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none
               sm:w-72 sm:overflow-visible"
           >

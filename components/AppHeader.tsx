@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { NavMenu } from "./NavMenu";
+import { ThemeToggle } from "./ThemeToggle";
 import { isSuperAdmin } from "@/lib/access";
 
 /**
@@ -17,7 +18,7 @@ export function AppHeader({
 }) {
   const superAdmin = isSuperAdmin(email);
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-border bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-brand-border bg-brand-card/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-6">
           <Link
@@ -47,10 +48,11 @@ export function AppHeader({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {email && (
-            <span className="hidden max-w-[220px] truncate text-xs text-brand-muted xl:inline">
+            <span className="hidden max-w-[220px] truncate text-xs text-brand-muted 2xl:inline">
               {email}
             </span>
           )}
+          <ThemeToggle />
           <NavMenu email={email} isAdmin={isAdmin} superAdmin={superAdmin} />
           <form action="/auth/signout" method="post" className="hidden sm:block">
             <button type="submit" className="btn-secondary">
