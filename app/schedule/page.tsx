@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { PageHero } from "@/components/PageHero";
-import { TeamScheduleView } from "@/components/TeamScheduleView";
+import { ScheduleBrowser } from "@/components/ScheduleBrowser";
 import { isSuperAdmin } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
 
@@ -143,27 +143,17 @@ export default async function SchedulePage() {
           )}
         </section>
 
-        {/* Per-team grids */}
-        {teamList.map((team) => {
-          const teamRoles = roleList.filter((r) => r.team_id === team.id);
-          const teamAssignments = allAssignments.filter((a) => a.team_id === team.id);
-          return (
-            <section key={team.id} className="mb-10">
-              <h2 className="section-title mb-3">{team.name}</h2>
-              {teamAssignments.length === 0 ? (
-                <p className="prose-body text-sm">
-                  No schedule generated yet{isAdmin ? " — generate one from the Manage page." : "."}
-                </p>
-              ) : (
-                <TeamScheduleView
-                  roles={teamRoles}
-                  assignments={teamAssignments}
-                  myEmail={myEmail}
-                />
-              )}
-            </section>
-          );
-        })}
+        {/* Team-tabbed schedule, mirroring the admin scheduling page */}
+        <section className="mb-10">
+          <h2 className="section-title mb-3">Upcoming schedule</h2>
+          <ScheduleBrowser
+            teams={teamList}
+            roles={roleList}
+            assignments={allAssignments}
+            myEmail={myEmail}
+            isAdmin={isAdmin}
+          />
+        </section>
       </main>
     </div>
   );
