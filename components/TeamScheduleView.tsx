@@ -15,15 +15,16 @@ const shortDate = (iso: string) =>
 
 const cardDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
-    weekday: "short",
+    weekday: "long",
     month: "long",
     day: "numeric",
   });
 
 /**
  * One team's upcoming schedule. Desktop (`sm+`) gets the roles-as-columns
- * table; phones get one card per Sunday with role → person rows, so nothing
- * needs horizontal scrolling.
+ * table; phones get one card per Sunday laid out like the admin scheduling
+ * form — each role as a labeled field with the person underneath — so
+ * nothing scrolls sideways and both pages read the same way.
  */
 export function TeamScheduleView({
   roles,
@@ -41,7 +42,7 @@ export function TeamScheduleView({
   const isMe = (a?: Assignment) =>
     !!a?.people?.email && a.people.email.toLowerCase() === myEmail;
 
-  const personLabel = (a?: Assignment) =>
+  const tablePersonLabel = (a?: Assignment) =>
     a?.people ? (
       <span
         className={
@@ -60,26 +61,59 @@ export function TeamScheduleView({
 
   return (
     <>
-      {/* Phones: one card per Sunday */}
-      <div className="space-y-3 sm:hidden">
-        {dates.map((date) => (
+      {/* Phones: one card per Sunday, formatted like the admin scheduling form */}
+      <div className="space-y-4 sm:hidden">
+        {dates.map((date, i) => (
           <div key={date} className="card overflow-hidden">
-            <p className="border-b border-brand-border bg-brand-surface/60 px-4 py-2.5 font-sans text-sm font-bold text-brand-text">
-              {cardDate(date)}
-            </p>
-            <ul className="divide-y divide-brand-border/60">
-              {roles.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-center justify-between gap-3 px-4 py-2.5 font-sans text-sm"
-                >
-                  <span className="shrink-0 text-xs font-semibold text-brand-muted">
-                    {r.name}
-                  </span>
-                  {personLabel(cell(date, r.id))}
-                </li>
-              ))}
-            </ul>
+            <div className="flex items-center justify-between gap-2 border-b border-brand-border bg-brand-teal px-4 py-3">
+              <p className="font-sans text-sm font-semibold text-white">
+                {cardDate(date)}
+              </p>
+              {i === 0 && (
+                <span className="rounded-full bg-brand-accent px-2.5 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wider text-white">
+                  Next up
+                </span>
+              )}
+            </div>
+            <div className="space-y-3 p-4">
+              {roles.map((r) => {
+                const a = cell(date, r.id);
+                const mine = isMe(a);
+                return (
+                  <div key={r.id}>
+                    <p className="mb-0.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-brand-muted">
+                      {r.name}
+                    </p>
+                    {a?.people ? (
+                      <p
+                        className={`font-sans text-base ${
+                          mine
+                            ? "font-bold text-brand-accentDark"
+                            : "font-medium text-brand-text"
+                        }`}
+                      >
+                        {a.people.full_name}
+                        {mine && " (you)"}
+                        {a.status === "confirmed" && (
+                          <span className="ml-1.5 text-sm font-semibold text-brand-success">
+                            ✓ confirmed
+                          </span>
+                        )}
+                        {a.status === "declined" && (
+                          <span className="ml-1.5 text-sm font-semibold text-red-600">
+                            ✗ declined
+                          </span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="font-sans text-base text-brand-muted/70">
+                        Unassigned
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>
@@ -105,7 +139,7 @@ export function TeamScheduleView({
                 </td>
                 {roles.map((r) => (
                   <td key={r.id} className="px-4 py-3">
-                    {personLabel(cell(date, r.id))}
+                    {tablePersonLabel(cell(date, r.id))}
                   </td>
                 ))}
               </tr>

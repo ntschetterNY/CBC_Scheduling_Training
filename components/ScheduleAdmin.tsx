@@ -41,6 +41,13 @@ const prettyDate = (iso: string) =>
     day: "numeric",
   });
 
+const cardDate = (iso: string) =>
+  new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
 export function ScheduleAdmin({ teams }: { teams: Team[] }) {
   const supabase = useMemo(() => createClient(), []);
   const [teamId, setTeamId] = useState(teams[0]?.id ?? "");
@@ -597,8 +604,8 @@ export function ScheduleAdmin({ teams }: { teams: Team[] }) {
             <div className="space-y-3 sm:hidden">
               {dates.map((date) => (
                 <div key={date} className="card overflow-hidden">
-                  <p className="border-b border-brand-border bg-brand-surface/60 px-4 py-2.5 font-sans text-sm font-bold text-brand-text">
-                    {prettyDate(date)}
+                  <p className="border-b border-brand-border bg-brand-teal px-4 py-3 font-sans text-sm font-semibold text-white">
+                    {cardDate(date)}
                   </p>
                   <div className="space-y-3 p-4">
                     {activeRoles.map((r) => {
