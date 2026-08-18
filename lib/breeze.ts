@@ -68,33 +68,133 @@ export async function listPeople(): Promise<BreezePerson[]> {
   }));
 }
 
-export interface BreezeSyncPlan {
-  /** Breeze people whose email matches an app person missing a breeze_person_id */
-  matches: { personId: string; breezePersonId: string; email: string }[];
-  /** Breeze people with no matching app person (candidates to import) */
-  unmatched: BreezePerson[];
+/** An app `people` row as the planner needs to see it. */
+export interface AppPersonRow {
+  id: string;
+  full_name: string;
+  email: string | null;
+  breeze_person_id: string | null;
+  active: boolean;
 }
 
+export interface BreezeDirectoryPlan {
+  /** New Breeze people with no app row — insert them. */
+  toImport: { breezePersonId: string; fullName: string; email: string | null }[];
+  /** Unlinked app rows matched to a Breeze person by email — set breeze_person_id + refresh name/email. */
+  toLink: { personId: string; breezePersonId: string; fullName: string; email: string | null }[];
+  /** Already-linked app rows whose name/email drifted from Breeze — refresh them. */
+  toUpdate: { personId: string; fullName: string; email: string | null; changes: string[] }[];
+  /** Linked app rows Breeze no longer lists — flag inactive (never deleted, history kept). */
+  toDeactivate: { personId: string; fullName: string; breezePersonId: string }[];
+  /** Breeze people whose email is already owned by a *different* linked app row — reported, untouched. */
+  conflicts: { breezePersonId: string; fullName: string; email: string; ownerPersonId: string }[];
+  /** App rows with no Breeze link and no email match — hand-added; reported, untouched. */
+  unlinked: { personId: string; fullName: string; email: string | null }[];
+}
+
+const breezeFullName = (p: BreezePerson) =>
+  `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
+
 /**
- * Dry-run matcher between Breeze and the app's `people` table. Pass the
- * current people rows in; returns what a sync would link/import. Kept as a
- * pure planner so the caller decides what to write back to Supabase.
+ * Dry-run planner for a full read-only directory import from Breeze. Pass the
+ * current `people` rows in; it fetches the whole Breeze directory (one call)
+ * and classifies every person into import / link / update / deactivate, plus
+ * reports conflicts and untouched hand-added rows. Pure planner — the caller
+ * decides whether to write. Deterministic and side-effect free apart from the
+ * single Breeze read, so preview and apply can each recompute against fresh
+ * Breeze data instead of trusting a client round-trip.
  */
-export async function planPeopleSync(
-  appPeople: { id: string; email: string | null; breeze_person_id: string | null }[]
-): Promise<BreezeSyncPlan> {
+export async function planDirectoryImport(
+  appPeople: AppPersonRow[]
+): Promise<BreezeDirectoryPlan> {
   const breezePeople = await listPeople();
-  const byEmail = new Map(
-    appPeople
-      .filter((p) => p.email && !p.breeze_person_id)
-      .map((p) => [p.email!.toLowerCase(), p])
+  const breezeIds = new Set(breezePeople.map((b) => b.id));
+
+  const appByBreezeId = new Map(
+    appPeople.filter((p) => p.breeze_person_id).map((p) => [p.breeze_person_id!, p])
   );
-  const matches: BreezeSyncPlan["matches"] = [];
-  const unmatched: BreezePerson[] = [];
-  for (const bp of breezePeople) {
-    const app = bp.email ? byEmail.get(bp.email.toLowerCase()) : undefined;
-    if (app) matches.push({ personId: app.id, breezePersonId: bp.id, email: bp.email! });
-    else unmatched.push(bp);
+  // Every app email (linked or not) — used both to link and to spot conflicts.
+  const appByEmail = new Map<string, AppPersonRow>();
+  for (const p of appPeople) {
+    if (p.email) appByEmail.set(p.email.toLowerCase(), p);
   }
-  return { matches, unmatched };
+
+  const plan: BreezeDirectoryPlan = {
+    toImport: [],
+    toLink: [],
+    toUpdate: [],
+    toDeactivate: [],
+    conflicts: [],
+    unlinked: [],
+  };
+  const linkedPersonIds = new Set<string>();
+  // Guard the people.email UNIQUE constraint against two Breeze rows sharing an
+  // email: the first claims it, later ones import name-only.
+  const claimedImportEmails = new Set<string>();
+
+  for (const b of breezePeople) {
+    const fullName = breezeFullName(b);
+    const linked = appByBreezeId.get(b.id);
+    if (linked) {
+      const changes: string[] = [];
+      if (fullName && fullName !== linked.full_name) changes.push("name");
+      if (b.email && b.email.toLowerCase() !== (linked.email ?? "").toLowerCase())
+        changes.push("email");
+      if (changes.length) {
+        plan.toUpdate.push({ personId: linked.id, fullName, email: b.email, changes });
+      }
+      continue;
+    }
+
+    const match = b.email ? appByEmail.get(b.email.toLowerCase()) : undefined;
+    if (match && !match.breeze_person_id) {
+      plan.toLink.push({ personId: match.id, breezePersonId: b.id, fullName, email: b.email });
+      linkedPersonIds.add(match.id);
+      continue;
+    }
+    if (match && match.breeze_person_id) {
+      // Email already tied to a different Breeze person — don't create a dup.
+      plan.conflicts.push({
+        breezePersonId: b.id,
+        fullName,
+        email: b.email!,
+        ownerPersonId: match.id,
+      });
+      continue;
+    }
+
+    // Brand new person. Only carry the email if nothing else has claimed it.
+    const key = b.email?.toLowerCase();
+    const email = key && !claimedImportEmails.has(key) ? b.email : null;
+    if (key && email) claimedImportEmails.add(key);
+    plan.toImport.push({ breezePersonId: b.id, fullName, email });
+  }
+
+  for (const p of appPeople) {
+    if (p.breeze_person_id && !breezeIds.has(p.breeze_person_id)) {
+      if (p.active) {
+        plan.toDeactivate.push({
+          personId: p.id,
+          fullName: p.full_name,
+          breezePersonId: p.breeze_person_id,
+        });
+      }
+    } else if (!p.breeze_person_id && !linkedPersonIds.has(p.id)) {
+      plan.unlinked.push({ personId: p.id, fullName: p.full_name, email: p.email });
+    }
+  }
+
+  return plan;
+}
+
+/** Bucket counts for a directory plan — the headline the admin confirms against. */
+export function summarizeDirectoryPlan(plan: BreezeDirectoryPlan) {
+  return {
+    import: plan.toImport.length,
+    link: plan.toLink.length,
+    update: plan.toUpdate.length,
+    deactivate: plan.toDeactivate.length,
+    conflicts: plan.conflicts.length,
+    unlinked: plan.unlinked.length,
+  };
 }

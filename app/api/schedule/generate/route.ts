@@ -78,7 +78,8 @@ export async function POST(req: Request) {
   }
 
   const memberIds = members.map((m) => m.id);
-  const [blackoutsRes, historyRes] = await Promise.all([
+  const roleIds = roles.map((r) => r.id);
+  const [blackoutsRes, historyRes, capsRes] = await Promise.all([
     supabase
       .from("blackout_dates")
       .select("person_id, starts_on, ends_on")
@@ -91,10 +92,14 @@ export async function POST(req: Request) {
       .gte("service_date", historyStart.toISOString().slice(0, 10))
       .lt("service_date", sundays[0])
       .not("person_id", "is", null),
+    supabase
+      .from("person_roles")
+      .select("person_id, role_id")
+      .in("role_id", roleIds),
   ]);
-  if (blackoutsRes.error || historyRes.error) {
+  if (blackoutsRes.error || historyRes.error || capsRes.error) {
     return NextResponse.json(
-      { error: (blackoutsRes.error ?? historyRes.error)!.message },
+      { error: (blackoutsRes.error ?? historyRes.error ?? capsRes.error)!.message },
       { status: 500 }
     );
   }
@@ -110,7 +115,19 @@ export async function POST(req: Request) {
     category: (h.schedule_roles as unknown as { category: RoleCategory }).category,
   }));
 
-  const generated = generateSchedule({ sundays, roles, members, blackouts, history });
+  const capabilities = (capsRes.data ?? []).map((c) => ({
+    personId: c.person_id as string,
+    roleId: c.role_id as string,
+  }));
+
+  const generated = generateSchedule({
+    sundays,
+    roles,
+    members,
+    blackouts,
+    history,
+    capabilities,
+  });
 
   // Replace the window being regenerated.
   const del = await supabase
