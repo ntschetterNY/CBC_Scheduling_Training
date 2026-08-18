@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { NavMenu } from "@/components/NavMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { isSuperAdmin } from "@/lib/access";
 import { curriculum } from "@/lib/curriculum";
 import { safetyCurriculum } from "@/lib/safety-curriculum";
@@ -33,7 +34,7 @@ export default async function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-brand-bg">
       {/* Top nav */}
       <header className="border-b border-brand-border">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
@@ -41,6 +42,7 @@ export default async function Home() {
             <Logo />
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             {user && (
               <NavMenu
                 email={user.email}

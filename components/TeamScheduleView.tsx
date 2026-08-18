@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Role = { id: string; name: string };
 type Assignment = {
   id: string;
@@ -66,9 +68,12 @@ export function TeamScheduleView({
         {dates.map((date, i) => (
           <div key={date} className="card overflow-hidden">
             <div className="flex items-center justify-between gap-2 border-b border-brand-border bg-brand-teal px-4 py-3">
-              <p className="font-sans text-sm font-semibold text-white">
+              <Link
+                href={`/schedule/day/${date}`}
+                className="font-sans text-sm font-semibold text-white underline-offset-2 hover:underline"
+              >
                 {cardDate(date)}
-              </p>
+              </Link>
               {i === 0 && (
                 <span className="rounded-full bg-brand-accent px-2.5 py-0.5 font-sans text-[10px] font-bold uppercase tracking-wider text-white">
                   Next up
@@ -100,7 +105,7 @@ export function TeamScheduleView({
                           </span>
                         )}
                         {a.status === "declined" && (
-                          <span className="ml-1.5 text-sm font-semibold text-red-600">
+                          <span className="ml-1.5 text-sm font-semibold text-brand-danger">
                             ✗ declined
                           </span>
                         )}
@@ -135,7 +140,13 @@ export function TeamScheduleView({
             {dates.map((date) => (
               <tr key={date} className="border-b border-brand-border/60 last:border-0">
                 <td className="whitespace-nowrap px-4 py-3 font-semibold text-brand-text">
-                  {shortDate(date)}
+                  <Link
+                    href={`/schedule/day/${date}`}
+                    className="underline-offset-2 hover:text-brand-accentDark hover:underline"
+                    title="Open day sheet"
+                  >
+                    {shortDate(date)}
+                  </Link>
                 </td>
                 {roles.map((r) => (
                   <td key={r.id} className="px-4 py-3">

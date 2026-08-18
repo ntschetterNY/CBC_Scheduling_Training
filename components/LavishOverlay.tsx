@@ -270,7 +270,7 @@ export function LavishOverlay() {
       {pending && (
         <div
           data-lavish
-          className="fixed z-[62] w-[320px] rounded-xl border border-brand-border bg-white p-3 shadow-2xl"
+          className="fixed z-[62] w-[320px] rounded-xl border border-brand-border bg-brand-card p-3 shadow-2xl"
           style={{ top: popTop, left: popLeft }}
         >
           <p className="text-xs font-semibold text-brand-text">
@@ -317,7 +317,7 @@ export function LavishOverlay() {
       {(notes.length > 0 || submitState === "done") && (
         <div
           data-lavish
-          className="fixed bottom-3 right-3 z-[61] w-[320px] rounded-xl border border-brand-border bg-white shadow-2xl"
+          className="fixed bottom-3 right-3 z-[61] w-[320px] rounded-xl border border-brand-border bg-brand-card shadow-2xl"
         >
           <div className="flex items-center justify-between border-b border-brand-border px-3.5 py-2.5">
             <p className="text-sm font-semibold text-brand-text">

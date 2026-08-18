@@ -126,7 +126,7 @@ export function BlackoutManager({ personId }: { personId: string }) {
           />
         </label>
         {error && (
-          <p className="mt-3 font-sans text-sm text-red-600">{error}</p>
+          <p className="mt-3 font-sans text-sm text-brand-danger">{error}</p>
         )}
         <button type="submit" disabled={saving || !startsOn} className="btn-primary mt-4">
           {saving ? "Saving..." : "Add blackout dates"}

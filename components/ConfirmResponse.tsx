@@ -135,7 +135,7 @@ export function ConfirmResponse() {
                 </>
               ) : (
                 <>
-                  <span className="font-semibold text-red-600">
+                  <span className="font-semibold text-brand-danger">
                     Marked unavailable.
                   </span>{" "}
                   Your team lead will arrange a substitute.

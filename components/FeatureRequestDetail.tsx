@@ -263,7 +263,7 @@ export function FeatureRequestDetail({
                 {comments.map((c) => (
                   <li
                     key={c.id}
-                    className="rounded-xl border border-brand-border bg-white p-3"
+                    className="rounded-xl border border-brand-border bg-brand-card p-3"
                   >
                     <p className="text-xs font-semibold text-brand-text">
                       {c.author ?? "Team"}{" "}

@@ -174,7 +174,7 @@ export function KnowledgeSearch() {
                 <button
                   key={s}
                   onClick={() => setQuery(s)}
-                  className="rounded-full border border-brand-border bg-white px-3 py-1 text-xs font-medium text-brand-muted transition-colors hover:border-brand-accent/50 hover:text-brand-text"
+                  className="rounded-full border border-brand-border bg-brand-card px-3 py-1 text-xs font-medium text-brand-muted transition-colors hover:border-brand-accent/50 hover:text-brand-text"
                 >
                   {s}
                 </button>
@@ -191,7 +191,7 @@ export function KnowledgeSearch() {
               <li key={h.slug}>
                 <Link
                   href={`/learn/${h.slug}`}
-                  className="group flex items-start gap-3 rounded-xl border border-brand-border bg-white p-3 transition-colors hover:border-brand-accent/50"
+                  className="group flex items-start gap-3 rounded-xl border border-brand-border bg-brand-card p-3 transition-colors hover:border-brand-accent/50"
                 >
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-surface text-lg">
                     {h.icon}

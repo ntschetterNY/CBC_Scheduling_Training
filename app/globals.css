@@ -8,12 +8,50 @@
   --font-display: "Helvetica Neue", "Segoe UI", system-ui, Arial, sans-serif;
   --font-body: Georgia, "Iowan Old Style", "Palatino Linotype",
     "Times New Roman", serif;
+
+  /* Brand palette as RGB triplets so Tailwind alpha modifiers keep working.
+     Dark values live under `.dark` below; a small inline script in the root
+     layout applies that class before first paint. */
+  --brand-bg: 255 255 255;
+  --brand-surface: 238 240 239;
+  --brand-card: 255 255 255;
+  --brand-border: 226 229 228;
+  --brand-muted: 93 107 112;
+  --brand-text: 35 43 46;
+  --brand-accent: 216 162 60;
+  --brand-accent-dark: 185 138 44;
+  --brand-accent2: 44 99 115;
+  --brand-teal: 30 81 98;
+  --brand-teal-dark: 22 62 74;
+  --brand-teal-light: 47 106 123;
+  --brand-success: 61 139 107;
+  --brand-danger: 191 70 64;
+  --scrollbar-thumb: #cfd6d5;
+  color-scheme: light;
+}
+
+.dark {
+  /* Teal-tinted dark theme. The deep-teal hero/footer bands keep their light
+     values so branded surfaces look the same in both themes. */
+  --brand-bg: 19 27 30;
+  --brand-surface: 28 39 43;
+  --brand-card: 23 34 38;
+  --brand-border: 45 59 64;
+  --brand-muted: 146 163 169;
+  --brand-text: 228 234 236;
+  --brand-accent: 223 171 74;
+  --brand-accent-dark: 231 188 102;
+  --brand-accent2: 109 157 172;
+  --brand-success: 89 165 131;
+  --brand-danger: 224 131 123;
+  --scrollbar-thumb: #3a4a50;
+  color-scheme: dark;
 }
 
 html,
 body {
-  background-color: #ffffff;
-  color: #232b2e;
+  background-color: rgb(var(--brand-bg));
+  color: rgb(var(--brand-text));
   -webkit-font-smoothing: antialiased;
 }
 
@@ -33,17 +71,17 @@ body {
   }
 }
 
-/* Light, on-brand scrollbars */
+/* Slim, on-brand scrollbars (thumb color follows the theme) */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cfd6d5 transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #cfd6d5;
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
 
@@ -58,7 +96,7 @@ body {
     @apply btn bg-brand-accent text-white hover:bg-brand-accentDark;
   }
   .btn-secondary {
-    @apply btn border border-brand-border bg-white text-brand-text
+    @apply btn border border-brand-border bg-brand-card text-brand-text
       hover:border-brand-accent/60 hover:text-brand-accentDark;
   }
   .btn-teal {
@@ -72,11 +110,11 @@ body {
   }
   .chip {
     @apply inline-flex items-center gap-1.5 rounded-full border border-brand-border
-      bg-white px-3 py-1 font-sans text-xs font-medium text-brand-muted;
+      bg-brand-card px-3 py-1 font-sans text-xs font-medium text-brand-muted;
   }
   /* 16px on phones — anything smaller makes iOS Safari auto-zoom on focus. */
   .input {
-    @apply w-full rounded-xl border border-brand-border bg-white px-3.5
+    @apply w-full rounded-xl border border-brand-border bg-brand-card px-3.5
       py-2.5 font-sans text-base text-brand-text placeholder:text-brand-muted/60
       focus:border-brand-accent/60 focus:outline-none focus:ring-2
       focus:ring-brand-accent/20 sm:text-sm;
@@ -95,5 +133,33 @@ body {
   /* Gold circular date/number badge, like the CrossBridge event badges */
   .date-badge {
     @apply grid place-items-center rounded-full bg-brand-accent text-white;
+  }
+}
+
+/* Printable day sheet — keep the teal team headers when printing and give
+   the page sensible margins so "Print / Save PDF" produces a clean sheet. */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 12mm;
+  }
+  .print-sheet {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  /* Always print the light palette, even when the app is in dark mode. */
+  :root.dark {
+    --brand-bg: 255 255 255;
+    --brand-surface: 238 240 239;
+    --brand-card: 255 255 255;
+    --brand-border: 226 229 228;
+    --brand-muted: 93 107 112;
+    --brand-text: 35 43 46;
+    --brand-accent: 216 162 60;
+    --brand-accent-dark: 185 138 44;
+    --brand-accent2: 44 99 115;
+    --brand-success: 61 139 107;
+    --brand-danger: 191 70 64;
+    color-scheme: light;
   }
 }

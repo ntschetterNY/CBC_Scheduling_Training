@@ -1356,7 +1356,7 @@ function CompControls() {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
         {controls.map((c) => (
-          <div key={c.name} className="rounded-xl border border-brand-border bg-white p-3 text-center">
+          <div key={c.name} className="rounded-xl border border-brand-border bg-brand-card p-3 text-center">
             <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-full" style={{ backgroundColor: `${c.color}22` }}>
               <span className="text-lg font-bold" style={{ color: c.color }}>
                 {c.name === "Ratio" ? "2:1" : c.name === "Threshold" ? "▼" : "＋"}
