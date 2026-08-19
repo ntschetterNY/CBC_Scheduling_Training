@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * UserDirectory — super-admin UI for seeding admins.
+ * UserDirectory — super-admin UI for approving users and seeding admins.
  *
- * Lists every user and lets the super admin grant or revoke the `admin` role
- * entirely from the app (no Supabase table editing). Role writes are allowed
- * by the `profiles_update_superadmin` RLS policy.
+ * New sign-ups arrive unapproved and locked out of the app; they show first
+ * here with an Approve button. Approved users can be granted/revoked the
+ * `admin` role or have their access revoked entirely. All changes go through
+ * the `set_user_access` RPC, which is super-admin only and writes to the
+ * audit log.
  */
 
 import { useMemo, useState } from "react";
@@ -15,6 +17,7 @@ export type DirUser = {
   id: string;
   full_name: string | null;
   role: string;
+  approved: boolean;
 };
 
 export function UserDirectory({
@@ -34,17 +37,26 @@ export function UserDirectory({
     .filter((u) =>
       (u.full_name || "Unnamed tech").toLowerCase().includes(query.trim().toLowerCase())
     )
-    .sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+    .sort((a, b) => {
+      // Pending approvals float to the top — they're the action items.
+      if (a.approved !== b.approved) return a.approved ? 1 : -1;
+      return (a.full_name || "").localeCompare(b.full_name || "");
+    });
 
   const adminCount = rows.filter((u) => u.role === "admin").length;
+  const pendingCount = rows.filter((u) => !u.approved).length;
 
-  async function setRole(id: string, role: "admin" | "trainee") {
+  async function setAccess(id: string, role: "admin" | "trainee", approved: boolean) {
     setBusyId(id);
     setError(null);
     const prev = rows;
     // optimistic
-    setRows((rs) => rs.map((u) => (u.id === id ? { ...u, role } : u)));
-    const { error } = await supabase.from("profiles").update({ role }).eq("id", id);
+    setRows((rs) => rs.map((u) => (u.id === id ? { ...u, role, approved } : u)));
+    const { error } = await supabase.rpc("set_user_access", {
+      p_user_id: id,
+      p_role: role,
+      p_approved: approved,
+    });
     setBusyId(null);
     if (error) {
       setRows(prev); // revert
@@ -70,12 +82,17 @@ export function UserDirectory({
         </div>
         <p className="text-xs text-brand-muted">
           {rows.length} people · {adminCount} admin{adminCount === 1 ? "" : "s"}
+          {pendingCount > 0 && (
+            <span className="ml-2 rounded-full bg-brand-danger/10 px-2 py-0.5 font-bold text-brand-danger">
+              {pendingCount} awaiting approval
+            </span>
+          )}
         </p>
       </div>
 
       {error && (
         <p className="mt-3 rounded-lg border border-brand-danger/40 bg-brand-danger/10 px-3 py-2 text-xs text-brand-danger">
-          Couldn’t update role: {error}
+          Couldn&rsquo;t update user: {error}
         </p>
       )}
 
@@ -88,6 +105,7 @@ export function UserDirectory({
         {filtered.map((u) => {
           const isSelf = u.id === selfId;
           const isAdmin = u.role === "admin";
+          const busy = busyId === u.id;
           return (
             <div key={u.id} className="flex items-center gap-3 px-4 py-3">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-surface text-sm font-bold text-brand-accentDark">
@@ -103,36 +121,61 @@ export function UserDirectory({
                   )}
                 </p>
                 <p className="text-xs text-brand-muted">
-                  {isSelf ? "Super admin" : isAdmin ? "Admin" : "Trainee"}
+                  {isSelf
+                    ? "Super admin"
+                    : !u.approved
+                      ? "Awaiting approval — no app access"
+                      : isAdmin
+                        ? "Admin"
+                        : "Trainee"}
                 </p>
               </div>
-
-              {isAdmin && (
-                <span className="rounded-full bg-brand-accent/15 px-2.5 py-1 text-[10px] font-bold text-brand-accent">
-                  admin
-                </span>
-              )}
 
               {isSelf ? (
                 <span className="rounded-full bg-brand-teal/10 px-2.5 py-1 text-[10px] font-bold text-brand-teal">
                   super admin
                 </span>
-              ) : isAdmin ? (
-                <button
-                  className="btn-secondary text-xs"
-                  disabled={busyId === u.id}
-                  onClick={() => setRole(u.id, "trainee")}
-                >
-                  {busyId === u.id ? "…" : "Revoke admin"}
-                </button>
-              ) : (
+              ) : !u.approved ? (
                 <button
                   className="btn-primary text-xs"
-                  disabled={busyId === u.id}
-                  onClick={() => setRole(u.id, "admin")}
+                  disabled={busy}
+                  onClick={() => setAccess(u.id, "trainee", true)}
                 >
-                  {busyId === u.id ? "…" : "Make admin"}
+                  {busy ? "…" : "Approve"}
                 </button>
+              ) : (
+                <>
+                  {isAdmin && (
+                    <span className="rounded-full bg-brand-accent/15 px-2.5 py-1 text-[10px] font-bold text-brand-accent">
+                      admin
+                    </span>
+                  )}
+                  {isAdmin ? (
+                    <button
+                      className="btn-secondary text-xs"
+                      disabled={busy}
+                      onClick={() => setAccess(u.id, "trainee", true)}
+                    >
+                      {busy ? "…" : "Revoke admin"}
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-primary text-xs"
+                      disabled={busy}
+                      onClick={() => setAccess(u.id, "admin", true)}
+                    >
+                      {busy ? "…" : "Make admin"}
+                    </button>
+                  )}
+                  <button
+                    className="btn-ghost text-xs text-brand-danger"
+                    disabled={busy}
+                    onClick={() => setAccess(u.id, "trainee", false)}
+                    title="Locks this user out of the app until re-approved"
+                  >
+                    {busy ? "…" : "Revoke access"}
+                  </button>
+                </>
               )}
             </div>
           );

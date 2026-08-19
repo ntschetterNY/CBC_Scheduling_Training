@@ -13,7 +13,8 @@ first look at the board to confidently mixing a Sunday service on the
 - **Knowledge-check quizzes** — 70% to complete each module
 - **Accounts & progress tracking** — sign in and pick up where you left off
 - **Admin view** — leads see the whole team's progress; the super admin also
-  sees time-on-task analytics and manages admins from the app
+  sees time-on-task analytics, approves new accounts, manages admins, reviews
+  the activity audit log, and controls Breeze API access from the app
 
 Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
 **Vercel**.
@@ -42,13 +43,20 @@ Built with **Next.js (App Router)** + **Supabase** and designed to deploy to
    key**.
 4. *(Recommended)* In **Authentication → Providers → Email**, uncheck
    **"Confirm email"**. Password sign-in never sends email, so unchecking this
-   keeps you clear of the 2-emails-per-hour limit entirely and new accounts go
-   straight into the app.
+   keeps you clear of the 2-emails-per-hour limit entirely.
 
-### Login
+### Login & account approval
 
-Login is **email + password** — nothing else to set up. A signed-in user goes
-straight to the dashboard; middleware bounces anyone not signed in to `/login`.
+Login is **email + password** — nothing else to set up. Middleware bounces
+anyone not signed in to `/login`.
+
+New sign-ups start **unapproved** (run
+[`supabase/migrations/0011_audit_and_approval.sql`](supabase/migrations/0011_audit_and_approval.sql)
+- it also adds the `audit_log` table): until the super admin approves them
+from **Users** (`/admin/users`), they're held at a `/pending` page and can't
+reach any app page, API, or data (middleware and RLS both enforce it).
+Approved users go straight to the dashboard. The super admin can review page
+views, load times, clicks, and admin actions at **Audit Log** (`/admin/audit`).
 
 > **Roadmap:** the authenticator-app (TOTP) second factor has been removed for
 > now. The plan is to add a **magic-link email from CrossBridge** as the login
@@ -62,8 +70,9 @@ There are two levels:
   `SUPER_ADMIN_EMAILS` (`lib/access.ts`) and `is_super_admin()`
   (`0002_admin_analytics.sql`). No table edit needed — it's email-based, so you
   get it automatically on your first sign-in. The super admin sees **Time
-  Analytics** (time spent per person on each module and each test) and the
-  **Users** directory.
+  Analytics** (time spent per person on each module and each test), the
+  **Users** directory (including account approval), the **Audit Log**, and
+  **API Access** (Breeze permissions).
 - **Admins** — everyone else you promote. Once you're the super admin, open the
   **Users** page in the app and click **Make admin** next to anyone. They then
   get the **Team Progress** view. No Supabase editing required — it's all in the
@@ -163,7 +172,7 @@ that one bucket) are sent to the server, which opens the issue with the token.
 ## Serve Team Scheduling
 
 Rotational Sunday scheduling for serve teams - the Deacons (five roles, five
-deacons), Safety & Security, Sound Tech, and Slides / Lights.
+deacons), Safety & Security, and the Tech Booth (sound board + slides/lights).
 
 1. Run [`supabase/migrations/0005_scheduling.sql`](supabase/migrations/0005_scheduling.sql)
    in the Supabase SQL Editor (tables + RLS, seeds the teams, the five deacon
@@ -172,9 +181,12 @@ deacons), Safety & Security, Sound Tech, and Slides / Lights.
    and [`0007_slides_lights_team.sql`](supabase/migrations/0007_slides_lights_team.sql)
    (activate Sound Tech and split Slides / Lights into its own team). Then run
    [`0008_role_capabilities.sql`](supabase/migrations/0008_role_capabilities.sql)
-   (per-person role capabilities) and
+   (per-person role capabilities),
    [`0009_sync_deactivation_flag.sql`](supabase/migrations/0009_sync_deactivation_flag.sql)
-   (marks sync-driven deactivations apart from manual pauses).
+   (marks sync-driven deactivations apart from manual pauses), and
+   [`0010_merge_tech_booth.sql`](supabase/migrations/0010_merge_tech_booth.sql)
+   (merges Sound Tech and Slides / Lights back into one "Tech Booth" team -
+   per-person capabilities now cover who runs which position).
 2. Visit **/admin/schedule** (admins only) to manage rosters/roles and
    generate a rotation. Everyone can view **/schedule** and manage their own
    blackout dates at **/schedule/availability** (their login email must be on
@@ -226,6 +238,20 @@ history is preserved) and reactivated automatically if Breeze lists them again;
 a manual pause is left untouched. See `app/api/schedule/breeze/preview` and
 `/apply`.
 
+#### Breeze API permission gate
+
+Breeze API keys have no scoping on Breeze's side - one key can read and write
+the whole account. So every Breeze call the app makes is checked against an
+app-side permission matrix first (run
+[`supabase/migrations/0012_breeze_gateway.sql`](supabase/migrations/0012_breeze_gateway.sql)).
+The super admin manages it at **API Access** (`/admin/api-keys`): a master
+on/off switch for all Breeze traffic plus per-endpoint allow flags, and a
+read-only probe that shows what the raw key can reach. The gate fails closed -
+an endpoint that isn't explicitly allowed is blocked, and Breeze-backed pages
+degrade to their friendly "couldn't reach Breeze" states. Details live in
+`lib/breeze-gateway.ts` (enforcement) and `lib/breeze-endpoints.ts` (the
+endpoint catalog).
+
 ## Project structure
 
 ```
@@ -244,14 +270,20 @@ app/
   schedule/confirm      Tokenized availability-poll response (no login)
   api/schedule/         Route handlers: generate rotation, send notifications,
                         Breeze directory sync (breeze/preview + breeze/apply)
+  pending/              Holding page for signed-in but unapproved accounts
+  api/audit/            Route handler that records page views / clicks
+  api/admin/            Breeze gateway probe (super admin only)
   admin/                Team progress (admins only)
   admin/schedule/       Scheduling admin: rosters, roles, generate, notify
   admin/analytics/      Time-on-task analytics (super admin only)
-  admin/users/          User directory + admin seeding (super admin only)
+  admin/users/          User directory, approvals + admin seeding (super admin only)
+  admin/audit/          Activity audit log viewer (super admin only)
+  admin/api-keys/       Breeze API permission matrix + probe (super admin only)
   auth/signout/         Sign-out route handler
 components/             UI: header, board explorer, module runner, quiz, auth form,
                         lesson visuals, knowledge search, user directory,
-                        feature-request form
+                        feature-request form, audit log viewer, Breeze
+                        gateway manager, activity tracker
 lib/
   curriculum.ts         ← Sound Tech training content lives here
   safety-curriculum.ts  Safety & Security track content (draft)
@@ -263,10 +295,13 @@ lib/
   scheduling/           Fair-rotation engine + server helpers
   email.ts              Resend sending + templates (dormant until DNS)
   breeze.ts             Breeze ChMS client + read-only directory sync planner
+  breeze-gateway.ts     App-side permission gate for every Breeze call
+  breeze-endpoints.ts   Static catalog of the full Breeze API surface
 supabase/migrations/    Database schema + RLS (run in numeric order; each
                         file's header comment says what it adds)
 .github/                Issue template + /close-comment workflow
-middleware.ts           Refreshes auth session, guards protected routes
+middleware.ts           Refreshes auth session, guards protected routes,
+                        holds unapproved accounts at /pending
 ```
 
 ## Notes

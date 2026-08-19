@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ActivityTracker } from "@/components/ActivityTracker";
 import { LavishOverlay } from "@/components/LavishOverlay";
 import "./globals.css";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-brand-bg font-serif text-brand-text antialiased">
         {children}
+        <ActivityTracker />
         <LavishOverlay />
         <SpeedInsights />
       </body>

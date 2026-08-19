@@ -19,7 +19,7 @@ export default async function UsersPage() {
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, full_name, role");
+    .select("id, full_name, role, approved");
 
   const users = (profiles ?? []) as DirUser[];
 
@@ -34,7 +34,8 @@ export default async function UsersPage() {
         title={<>Users &amp; Admins</>}
         description={
           <>
-            Everyone on the team. Grant <strong>admin</strong> access to give
+            Everyone on the team. New sign-ups land here <strong>locked out</strong>{" "}
+            until you approve them. Grant <strong>admin</strong> access to give
             someone the Team Progress view, or revoke it — all from here, no
             Supabase needed. Time Analytics stays limited to you (the super
             admin).

@@ -12,8 +12,16 @@
  * and links existing `people` rows by email / imports the rest. The sync is
  * one-way: nothing is ever written back to Breeze.
  *
+ * Every request goes through `breezeFetch`, which checks the endpoint's key
+ * against the app-side permission gate (lib/breeze-gateway.ts, managed at
+ * /admin/api-keys) before touching the network - Breeze API keys have no
+ * scoping of their own, so this gate is the only thing standing between the
+ * app and the full account surface (including giving data).
+ *
  * Breeze API docs: https://app.breezechms.com/api
  */
+
+import { assertBreezeAllowed } from "@/lib/breeze-gateway";
 
 export const isBreezeConfigured = Boolean(
   process.env.BREEZE_SUBDOMAIN && process.env.BREEZE_API_KEY
@@ -36,17 +44,23 @@ export interface BreezePerson {
   email: string | null;
 }
 
+function breezeUrl(path: string, params: Record<string, string>): URL {
+  const url = new URL(
+    `https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com/api${path}`
+  );
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  return url;
+}
+
 async function breezeFetch<T>(
+  endpointKey: string,
   path: string,
   params: Record<string, string> = {},
   opts: { revalidate?: number } = {}
 ): Promise<T> {
   if (!isBreezeConfigured) throw new BreezeNotConfiguredError();
-  const url = new URL(
-    `https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com/api${path}`
-  );
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const res = await fetch(url, {
+  await assertBreezeAllowed(endpointKey);
+  const res = await fetch(breezeUrl(path, params), {
     headers: { "Api-Key": process.env.BREEZE_API_KEY! },
     ...(opts.revalidate !== undefined ? { next: { revalidate: opts.revalidate } } : {}),
   });
@@ -54,6 +68,92 @@ async function breezeFetch<T>(
     throw new Error(`Breeze API ${res.status} on ${path}: ${(await res.text()).slice(0, 300)}`);
   }
   return (await res.json()) as T;
+}
+
+export interface BreezeProbeResult {
+  status: number | null;
+  ok: boolean;
+  /** Row count for array responses, so the probe can report reach without echoing data. */
+  count: number | null;
+  error: string | null;
+}
+
+/**
+ * Diagnostic request used ONLY by the super-admin probe on /admin/api-keys.
+ * Deliberately bypasses the permission gate (the point of a probe is to show
+ * what the raw key can reach, including blocked endpoints) - so its caller
+ * must be super-admin gated, and it must only ever hit read endpoints.
+ * Returns reach/shape info, never the response body.
+ */
+export async function breezeProbeRequest(
+  path: string,
+  params: Record<string, string> = {}
+): Promise<BreezeProbeResult> {
+  if (!isBreezeConfigured) throw new BreezeNotConfiguredError();
+  try {
+    const res = await fetch(breezeUrl(path, params), {
+      headers: { "Api-Key": process.env.BREEZE_API_KEY! },
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      return {
+        status: res.status,
+        ok: false,
+        count: null,
+        error: (await res.text()).slice(0, 200),
+      };
+    }
+    const body: unknown = await res.json().catch(() => null);
+    // Breeze signals some failures inside a 200 body: {"success": false} or
+    // {"errors": [...]}.
+    if (body && typeof body === "object" && !Array.isArray(body)) {
+      const o = body as { success?: unknown; errors?: unknown };
+      if (o.success === false || Array.isArray(o.errors)) {
+        return {
+          status: res.status,
+          ok: false,
+          count: null,
+          error: JSON.stringify(o.errors ?? body).slice(0, 200),
+        };
+      }
+    }
+    return {
+      status: res.status,
+      ok: true,
+      count: Array.isArray(body) ? body.length : null,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      status: null,
+      ok: false,
+      count: null,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/** Pull an id off the first element of a Breeze list response, for chained probes. */
+export async function breezeProbeFirstId(
+  path: string,
+  params: Record<string, string> = {}
+): Promise<string | null> {
+  if (!isBreezeConfigured) return null;
+  try {
+    const res = await fetch(breezeUrl(path, params), {
+      headers: { "Api-Key": process.env.BREEZE_API_KEY! },
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) return null;
+    const body: unknown = await res.json().catch(() => null);
+    if (!Array.isArray(body) || body.length === 0) return null;
+    const first = body[0] as { id?: unknown };
+    return first && first.id != null ? String(first.id) : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -87,7 +187,7 @@ export async function listPeople(opts: { revalidate?: number } = {}): Promise<Br
     last_name: string;
     details?: Record<string, unknown> | null;
   };
-  const raw = await breezeFetch<Raw[]>("/people", { details: "1" }, opts);
+  const raw = await breezeFetch<Raw[]>("people.list", "/people", { details: "1" }, opts);
   return raw.map((p) => ({
     id: String(p.id),
     first_name: p.first_name,
@@ -340,7 +440,7 @@ export async function getVolunteerSchedule(
 
   const cache = { revalidate: SCHEDULE_REVALIDATE_SECONDS };
   const [events, people] = await Promise.all([
-    breezeFetch<RawEvent[] | null>("/events", { start, end }, cache),
+    breezeFetch<RawEvent[] | null>("events.list", "/events", { start, end }, cache),
     listPeople(cache),
   ]);
   const personById = new Map(people.map((p) => [p.id, p]));
@@ -355,8 +455,14 @@ export async function getVolunteerSchedule(
       instances.slice(i, i + BATCH).map(async (ev) => {
         const instanceId = String(ev.id);
         const [volunteers, roles] = await Promise.all([
-          breezeFetch<RawVolunteer[] | null>("/volunteers/list", { instance_id: instanceId }, cache),
+          breezeFetch<RawVolunteer[] | null>(
+            "volunteers.list",
+            "/volunteers/list",
+            { instance_id: instanceId },
+            cache
+          ),
           breezeFetch<RawRole[] | null>(
+            "volunteers.list_roles",
             "/volunteers/list_roles",
             { instance_id: instanceId, show_quantity: "1" },
             cache
