@@ -17,11 +17,23 @@
 -- ---------------------------------------------------------------------------
 -- 1. approval flag
 -- ---------------------------------------------------------------------------
-alter table public.profiles
-  add column if not exists approved boolean not null default false;
-
--- Grandfather everyone who already has an account.
-update public.profiles set approved = true;
+-- Grandfather existing accounts as approved, but only when the column is
+-- first created - re-running this file must not re-approve users the super
+-- admin has since revoked or left pending.
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'approved'
+  ) then
+    alter table public.profiles
+      add column approved boolean not null default false;
+    update public.profiles set approved = true;
+  end if;
+end;
+$$;
 
 create or replace function public.is_approved()
 returns boolean

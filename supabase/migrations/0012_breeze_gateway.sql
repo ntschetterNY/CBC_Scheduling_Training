@@ -8,8 +8,10 @@
 --      traffic from this app.
 --   2. breeze_endpoint_permissions - one row per Breeze endpoint (the catalog
 --      lives in lib/breeze-endpoints.ts); a missing or false row means the
---      endpoint is blocked. Only the four endpoints the app uses today are
---      seeded as allowed.
+--      endpoint is blocked. Ten read endpoints are seeded as allowed: the
+--      four the app uses today plus the six reads Nathan approved on
+--      2026-08-18 (events.show/calendars/locations, tags.list_tags/
+--      list_folders, account.summary).
 --   3. set_breeze_access() RPC - the only write path. Super-admin only, and
 --      every change lands in audit_log as an admin_action.
 -- Enforcement happens in lib/breeze.ts before any request leaves the server;

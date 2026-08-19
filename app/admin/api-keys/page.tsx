@@ -4,6 +4,7 @@ import { PageHero } from "@/components/PageHero";
 import { BreezeGatewayManager } from "@/components/BreezeGatewayManager";
 import { isSuperAdmin } from "@/lib/access";
 import { isBreezeConfigured } from "@/lib/breeze";
+import { getBreezeGatewayState } from "@/lib/breeze-gateway";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "API Access" };
@@ -24,18 +25,13 @@ export default async function ApiKeysPage() {
   if (!user) redirect("/login?redirectedFrom=/admin/api-keys");
   if (!isSuperAdmin(user.email)) redirect("/admin");
 
-  const [{ data: settings }, { data: permissions }] = await Promise.all([
-    supabase
-      .from("breeze_gateway_settings")
-      .select("enabled")
-      .eq("id", 1)
-      .maybeSingle(),
-    supabase.from("breeze_endpoint_permissions").select("endpoint_key, allowed"),
-  ]);
+  // Fails closed: a load error yields enabled=false and an empty permission
+  // map, so the page renders everything as blocked.
+  const { enabled, permissions } = await getBreezeGatewayState();
 
   const initialPermissions: Record<string, boolean> = {};
-  for (const row of permissions ?? []) {
-    initialPermissions[row.endpoint_key as string] = row.allowed === true;
+  for (const [endpointKey, allowed] of permissions) {
+    initialPermissions[endpointKey] = allowed;
   }
 
   return (
@@ -61,7 +57,7 @@ export default async function ApiKeysPage() {
         <BreezeGatewayManager
           configured={isBreezeConfigured}
           subdomain={process.env.BREEZE_SUBDOMAIN ?? null}
-          initialEnabled={settings?.enabled === true}
+          initialEnabled={enabled}
           initialPermissions={initialPermissions}
         />
       </main>
