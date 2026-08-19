@@ -58,6 +58,17 @@ type BreezeSummary = {
   unlinked: number;
 };
 
+/** One Breeze directory hit from the roster typeahead, pre-joined to the app. */
+type BreezeMatch = {
+  breezeId: string;
+  name: string;
+  email: string | null;
+  /** Existing app person to reuse (matched by Breeze link, then email). */
+  appPersonId: string | null;
+  /** True when picking this match should write breeze_person_id. */
+  needsLink: boolean;
+};
+
 export function ScheduleAdmin({
   teams,
   breezeConfigured,
@@ -84,6 +95,9 @@ export function ScheduleAdmin({
   // form state
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  // Breeze typeahead on the add-member form
+  const [breezeMatches, setBreezeMatches] = useState<BreezeMatch[]>([]);
+  const [breezeLink, setBreezeLink] = useState<BreezeMatch | null>(null);
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleCategory, setNewRoleCategory] = useState("general");
   const [weeks, setWeeks] = useState(12);
@@ -183,6 +197,42 @@ export function ScheduleAdmin({
 
   /* ---------------- roster ---------------- */
 
+  // Breeze typeahead: as the admin types a name, offer matching Breeze people
+  // to link against instead of creating an unlinked row. Best-effort — a
+  // Breeze hiccup just means no suggestions.
+  useEffect(() => {
+    if (!breezeConfigured) return;
+    const q = newName.trim();
+    if (breezeLink || q.length < 2) {
+      setBreezeMatches([]);
+      return;
+    }
+    const controller = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/schedule/breeze/people/search?q=${encodeURIComponent(q)}`,
+          { signal: controller.signal }
+        );
+        const data = await res.json();
+        if (res.ok) setBreezeMatches((data.matches ?? []) as BreezeMatch[]);
+      } catch {
+        /* typeahead only */
+      }
+    }, 350);
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
+  }, [newName, breezeLink, breezeConfigured]);
+
+  function pickBreezeMatch(m: BreezeMatch) {
+    setBreezeLink(m);
+    setNewName(m.name);
+    if (m.email) setNewEmail(m.email);
+    setBreezeMatches([]);
+  }
+
   async function addMember(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -191,9 +241,30 @@ export function ScheduleAdmin({
     const email = newEmail.trim().toLowerCase() || null;
     setBusy(true);
     try {
-      // Reuse an existing person (matched by email, then name) or create one.
       let personId: string | null = null;
-      if (email) {
+      if (breezeLink) {
+        // Linked add: reuse the app person Breeze already maps to, writing the
+        // Breeze id where it's missing; otherwise create a pre-linked row.
+        personId = breezeLink.appPersonId;
+        if (personId && breezeLink.needsLink) {
+          const { error } = await supabase
+            .from("people")
+            .update({ breeze_person_id: breezeLink.breezeId })
+            .eq("id", personId);
+          if (error) throw error;
+        }
+        if (!personId) {
+          const { data, error } = await supabase
+            .from("people")
+            .insert({ full_name: name, email, breeze_person_id: breezeLink.breezeId })
+            .select("id")
+            .single();
+          if (error) throw error;
+          personId = data.id;
+        }
+      }
+      // Reuse an existing person (matched by email, then name) or create one.
+      if (!personId && email) {
         const { data } = await supabase
           .from("people")
           .select("id")
@@ -227,6 +298,7 @@ export function ScheduleAdmin({
       if (linkErr && !linkErr.message.includes("duplicate")) throw linkErr;
       setNewName("");
       setNewEmail("");
+      setBreezeLink(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -428,6 +500,33 @@ export function ScheduleAdmin({
           ? `Sent ${data.sent} email(s); ${data.errors} error(s); ${data.noEmail} member(s) have no email on file.`
           : `Email isn't configured yet (waiting on the Resend DNS setup) — ${data.skipped} send(s) were prepped and logged, ${data.noEmail} member(s) have no email on file.`
       );
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function clearSchedule() {
+    const teamName = teams.find((t) => t.id === teamId)?.name ?? "this team";
+    if (
+      !confirm(
+        `Clear the schedule for ${teamName}?\n\nThis deletes all ${assignments.length} upcoming assignment(s) from today forward. Past Sundays are kept for rotation history.`
+      )
+    )
+      return;
+    setBusy(true);
+    setError(null);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const { error } = await supabase
+        .from("assignments")
+        .delete()
+        .eq("team_id", teamId)
+        .gte("service_date", today);
+      if (error) throw error;
+      flash(`Cleared the upcoming schedule for ${teamName}.`);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -673,13 +772,41 @@ export function ScheduleAdmin({
             </ul>
           )}
           <form onSubmit={addMember} className="grid gap-2 sm:flex sm:flex-wrap">
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Full name"
-              className="input sm:flex-1"
-              required
-            />
+            <div className="relative sm:flex-1">
+              <input
+                value={newName}
+                onChange={(e) => {
+                  setNewName(e.target.value);
+                  setBreezeLink(null);
+                }}
+                placeholder="Full name"
+                className="input w-full"
+                required
+              />
+              {breezeMatches.length > 0 && (
+                <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-64 overflow-y-auto rounded-xl border border-brand-border bg-brand-bg shadow-lg">
+                  {breezeMatches.map((m) => (
+                    <li key={m.breezeId}>
+                      <button
+                        type="button"
+                        onClick={() => pickBreezeMatch(m)}
+                        className="w-full px-3 py-2 text-left font-sans text-sm hover:bg-brand-surface"
+                      >
+                        <span className="font-semibold text-brand-text">{m.name}</span>
+                        <span className="ml-2 text-xs text-brand-muted">
+                          {m.email ?? "no email"}
+                          {m.appPersonId && !m.needsLink && " · already linked"}
+                          {m.appPersonId && m.needsLink && " · matches existing person"}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                  <li className="border-t border-brand-border/60 px-3 py-1.5 font-sans text-[11px] text-brand-muted">
+                    From Breeze — pick one to link, or keep typing to add without a link.
+                  </li>
+                </ul>
+              )}
+            </div>
             <input
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
@@ -690,6 +817,19 @@ export function ScheduleAdmin({
             <button type="submit" disabled={busy} className="btn-primary w-full sm:w-auto">
               Add
             </button>
+            {breezeLink && (
+              <p className="w-full font-sans text-xs text-brand-success sm:basis-full">
+                Will link to Breeze person {breezeLink.name}
+                {breezeLink.appPersonId && " (reusing their existing entry)"}.{" "}
+                <button
+                  type="button"
+                  onClick={() => setBreezeLink(null)}
+                  className="text-brand-muted underline underline-offset-2"
+                >
+                  Undo
+                </button>
+              </p>
+            )}
           </form>
         </section>
 
@@ -832,7 +972,18 @@ export function ScheduleAdmin({
 
       {/* schedule grid with reassignment */}
       <section>
-        <h2 className="section-title mb-3">Upcoming schedule</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="section-title">Upcoming schedule</h2>
+          {dates.length > 0 && (
+            <button
+              onClick={() => void clearSchedule()}
+              disabled={busy}
+              className="btn-ghost text-xs text-brand-danger"
+            >
+              Clear schedule
+            </button>
+          )}
+        </div>
         {dates.length === 0 ? (
           <p className="prose-body text-sm">
             Nothing scheduled yet — generate a rotation above.
