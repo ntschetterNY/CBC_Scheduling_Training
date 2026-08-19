@@ -63,7 +63,7 @@ export default async function AdminPage() {
       />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {superAdmin && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/admin/analytics"
               className="card group flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"
@@ -91,7 +91,41 @@ export default async function AdminPage() {
               <div>
                 <p className="font-semibold text-brand-text">Users &amp; Admins</p>
                 <p className="text-xs text-brand-muted">
-                  Manage the team and grant admin access from here.
+                  Approve new sign-ups and grant admin access from here.
+                </p>
+              </div>
+              <span className="ml-auto text-brand-muted group-hover:text-brand-accent">
+                →
+              </span>
+            </Link>
+            <Link
+              href="/admin/api-keys"
+              className="card group flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-surface text-xl">
+                🔑
+              </span>
+              <div>
+                <p className="font-semibold text-brand-text">API Access</p>
+                <p className="text-xs text-brand-muted">
+                  Control exactly what the app may read or write in Breeze.
+                </p>
+              </div>
+              <span className="ml-auto text-brand-muted group-hover:text-brand-accent">
+                →
+              </span>
+            </Link>
+            <Link
+              href="/admin/audit"
+              className="card group flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-surface text-xl">
+                🔍
+              </span>
+              <div>
+                <p className="font-semibold text-brand-text">Audit Log</p>
+                <p className="text-xs text-brand-muted">
+                  Page views, load times, clicks, and admin actions.
                 </p>
               </div>
               <span className="ml-auto text-brand-muted group-hover:text-brand-accent">

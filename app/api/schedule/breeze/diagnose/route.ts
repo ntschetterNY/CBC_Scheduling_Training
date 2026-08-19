@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getScheduleActor } from "@/lib/scheduling/server";
 import { isBreezeConfigured } from "@/lib/breeze";
+import { assertBreezeAllowed } from "@/lib/breeze-gateway";
 
 /**
  * GET /api/schedule/breeze/diagnose — raw health check of the Breeze calls the
@@ -13,7 +14,22 @@ import { isBreezeConfigured } from "@/lib/breeze";
  * never returns credentials.
  */
 
-async function rawBreeze(path: string, params: Record<string, string>) {
+async function rawBreeze(
+  endpointKey: string,
+  path: string,
+  params: Record<string, string>
+) {
+  // Same app-side gate as every other Breeze call (managed at /admin/api-keys);
+  // a blocked endpoint shows up in the diagnostic output as the denial itself.
+  try {
+    await assertBreezeAllowed(endpointKey);
+  } catch (err) {
+    return {
+      path,
+      status: 0,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
   const url = new URL(`https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com/api${path}`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   try {
@@ -60,7 +76,7 @@ export async function GET(req: Request) {
   horizon.setDate(horizon.getDate() + 42);
   const end = horizon.toISOString().slice(0, 10);
 
-  const events = await rawBreeze("/events", { start, end });
+  const events = await rawBreeze("events.list", "/events", { start, end });
   const firstInstances = (Array.isArray(events.sample) ? events.sample : [])
     .concat()
     .slice(0, 2) as { id?: string | number }[];
@@ -70,8 +86,10 @@ export async function GET(req: Request) {
       .filter((e) => e?.id != null)
       .map(async (e) => ({
         instanceId: String(e.id),
-        volunteers: await rawBreeze("/volunteers/list", { instance_id: String(e.id) }),
-        roles: await rawBreeze("/volunteers/list_roles", {
+        volunteers: await rawBreeze("volunteers.list", "/volunteers/list", {
+          instance_id: String(e.id),
+        }),
+        roles: await rawBreeze("volunteers.list_roles", "/volunteers/list_roles", {
           instance_id: String(e.id),
           show_quantity: "1",
         }),
