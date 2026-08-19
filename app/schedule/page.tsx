@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import {
+  BreezeScheduleSection,
+  BreezeScheduleSkeleton,
+} from "@/components/BreezeScheduleSection";
 import { PageHero } from "@/components/PageHero";
 import { ScheduleBrowser } from "@/components/ScheduleBrowser";
 import { isSuperAdmin } from "@/lib/access";
+import { isBreezeConfigured } from "@/lib/breeze";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Serve Schedule" };
@@ -157,6 +163,14 @@ export default async function SchedulePage() {
             isAdmin={isAdmin}
           />
         </section>
+
+        {/* What Breeze itself has on the calendar — streams in behind Suspense
+            so a slow Breeze API never holds up the schedule above. */}
+        {isBreezeConfigured && (
+          <Suspense fallback={<BreezeScheduleSkeleton />}>
+            <BreezeScheduleSection myEmail={myEmail} />
+          </Suspense>
+        )}
       </main>
     </div>
   );

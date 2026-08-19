@@ -36,7 +36,11 @@ export interface BreezePerson {
   email: string | null;
 }
 
-async function breezeFetch<T>(path: string, params: Record<string, string> = {}): Promise<T> {
+async function breezeFetch<T>(
+  path: string,
+  params: Record<string, string> = {},
+  opts: { revalidate?: number } = {}
+): Promise<T> {
   if (!isBreezeConfigured) throw new BreezeNotConfiguredError();
   const url = new URL(
     `https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com/api${path}`
@@ -44,6 +48,7 @@ async function breezeFetch<T>(path: string, params: Record<string, string> = {})
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url, {
     headers: { "Api-Key": process.env.BREEZE_API_KEY! },
+    ...(opts.revalidate !== undefined ? { next: { revalidate: opts.revalidate } } : {}),
   });
   if (!res.ok) {
     throw new Error(`Breeze API ${res.status} on ${path}: ${(await res.text()).slice(0, 300)}`);
@@ -75,14 +80,14 @@ function extractPrimaryEmail(details: Record<string, unknown> | null | undefined
 }
 
 /** List everyone in Breeze with their primary email flattened out. */
-export async function listPeople(): Promise<BreezePerson[]> {
+export async function listPeople(opts: { revalidate?: number } = {}): Promise<BreezePerson[]> {
   type Raw = {
     id: string;
     first_name: string;
     last_name: string;
     details?: Record<string, unknown> | null;
   };
-  const raw = await breezeFetch<Raw[]>("/people", { details: "1" });
+  const raw = await breezeFetch<Raw[]>("/people", { details: "1" }, opts);
   return raw.map((p) => ({
     id: String(p.id),
     first_name: p.first_name,
@@ -246,6 +251,151 @@ export async function planDirectoryImport(
   }
 
   return plan;
+}
+
+/* ------------------------------------------------------------------ */
+/* Volunteer schedule (Breeze events + who's signed up to serve)      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The read-only volunteer schedule below is display-only and refreshes on a
+ * short cache instead of every request: one events call plus two calls per
+ * event instance (volunteers + roles), so caching keeps a page load from
+ * fanning out dozens of live Breeze requests.
+ */
+const SCHEDULE_REVALIDATE_SECONDS = 300;
+/** Hard cap on instances expanded per pull, so a busy calendar can't fan out unbounded. */
+const MAX_EVENT_INSTANCES = 60;
+
+export type BreezeVolunteerResponse = "accepted" | "declined" | "pending";
+
+export interface BreezeVolunteerAssignment {
+  personId: string;
+  name: string;
+  email: string | null;
+  response: BreezeVolunteerResponse;
+  roleIds: string[];
+}
+
+export interface BreezeEventVolunteers {
+  instanceId: string;
+  name: string;
+  /** Service date, YYYY-MM-DD (church-local, as Breeze stores it). */
+  date: string;
+  /** Formatted start time, e.g. "9:00 AM", or null for all-day events. */
+  time: string | null;
+  roles: { id: string; name: string; quantity: number | null }[];
+  volunteers: BreezeVolunteerAssignment[];
+}
+
+/** Breeze encodes volunteer replies as "1" yes / "2" no; anything else is still open. */
+function volunteerResponse(r: unknown): BreezeVolunteerResponse {
+  if (r === "1" || r === 1) return "accepted";
+  if (r === "2" || r === 2) return "declined";
+  return "pending";
+}
+
+/** Breeze returns role_ids as a JSON-encoded array string (or null). */
+function parseRoleIds(raw: unknown): string[] {
+  let value = raw;
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+  return Array.isArray(value) ? value.map(String) : [];
+}
+
+/**
+ * Breeze datetimes are church-local strings with no timezone
+ * ("2026-08-23 09:00:00"), so format by slicing rather than new Date(), which
+ * would shift them through the server's timezone.
+ */
+function formatEventTime(dt: string): string | null {
+  const m = /^\d{4}-\d{2}-\d{2}[ T](\d{2}):(\d{2})/.exec(dt);
+  if (!m) return null;
+  const hour = Number(m[1]);
+  return `${hour % 12 || 12}:${m[2]} ${hour >= 12 ? "PM" : "AM"}`;
+}
+
+/**
+ * Pull the volunteer schedule straight off the Breeze calendar for a date
+ * range: every event instance that has volunteer roles or sign-ups, with each
+ * volunteer's name, reply status, and role. Read-only and cached for
+ * SCHEDULE_REVALIDATE_SECONDS; events with no volunteer activity are dropped.
+ */
+export async function getVolunteerSchedule(
+  start: string,
+  end: string
+): Promise<BreezeEventVolunteers[]> {
+  type RawEvent = {
+    id: string | number;
+    name?: string | null;
+    start_datetime?: string | null;
+  };
+  type RawVolunteer = { person_id?: string | number; response?: unknown; role_ids?: unknown };
+  type RawRole = { id: string | number; name?: string | null; quantity?: string | number | null };
+
+  const cache = { revalidate: SCHEDULE_REVALIDATE_SECONDS };
+  const [events, people] = await Promise.all([
+    breezeFetch<RawEvent[] | null>("/events", { start, end }, cache),
+    listPeople(cache),
+  ]);
+  const personById = new Map(people.map((p) => [p.id, p]));
+  const instances = (events ?? []).filter((e) => e.start_datetime).slice(0, MAX_EVENT_INSTANCES);
+
+  const schedule: BreezeEventVolunteers[] = [];
+  // Small batches: enough parallelism to keep the page fast, without slamming
+  // Breeze with two requests per instance all at once.
+  const BATCH = 8;
+  for (let i = 0; i < instances.length; i += BATCH) {
+    const batch = await Promise.all(
+      instances.slice(i, i + BATCH).map(async (ev) => {
+        const instanceId = String(ev.id);
+        const [volunteers, roles] = await Promise.all([
+          breezeFetch<RawVolunteer[] | null>("/volunteers/list", { instance_id: instanceId }, cache),
+          breezeFetch<RawRole[] | null>(
+            "/volunteers/list_roles",
+            { instance_id: instanceId, show_quantity: "1" },
+            cache
+          ),
+        ]);
+        const entry: BreezeEventVolunteers = {
+          instanceId,
+          name: ev.name?.trim() || "Untitled event",
+          date: (ev.start_datetime ?? "").slice(0, 10),
+          time: formatEventTime(ev.start_datetime ?? ""),
+          roles: (roles ?? []).map((r) => ({
+            id: String(r.id),
+            name: r.name?.trim() || "Role",
+            quantity: r.quantity == null ? null : Number(r.quantity) || null,
+          })),
+          volunteers: (volunteers ?? []).flatMap((v) => {
+            if (v.person_id == null) return [];
+            const personId = String(v.person_id);
+            const person = personById.get(personId);
+            return [
+              {
+                personId,
+                name: person ? breezeFullName(person) || "Unknown volunteer" : "Unknown volunteer",
+                email: person?.email ?? null,
+                response: volunteerResponse(v.response),
+                roleIds: parseRoleIds(v.role_ids),
+              },
+            ];
+          }),
+        };
+        return entry;
+      })
+    );
+    schedule.push(...batch.filter((e) => e.volunteers.length > 0 || e.roles.length > 0));
+  }
+
+  return schedule.sort(
+    (a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name)
+  );
 }
 
 /** Bucket counts for a directory plan — the headline the admin confirms against. */
