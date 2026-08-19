@@ -90,6 +90,7 @@ export function NavMenu({
           ? [
               { href: "/admin/analytics", label: "Time Analytics", icon: "⏱️" },
               { href: "/admin/users", label: "Users", icon: "👥" },
+              { href: "/admin/audit", label: "Audit Log", icon: "🔍" },
             ]
           : []),
       ],

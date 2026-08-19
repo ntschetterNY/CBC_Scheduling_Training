@@ -52,7 +52,7 @@ export function AuthForm({ redirectTo = "/dashboard" }: { redirectTo?: string })
           return;
         }
         setNotice(
-          "Account created. Sign in with your email and password to continue."
+          "Account created. An administrator will approve your account before you can access the app — sign in with your email and password to check your status."
         );
         setPassword("");
         setMode("signin");
