@@ -175,7 +175,8 @@ export async function BreezeScheduleSection({ myEmail }: { myEmail: string }) {
   let events: BreezeEventVolunteers[];
   try {
     events = await getVolunteerSchedule(start, end);
-  } catch {
+  } catch (err) {
+    console.error("Breeze volunteer schedule failed:", err);
     return (
       <section className="mb-10">
         <h2 className="section-title mb-3">On the Breeze calendar</h2>
