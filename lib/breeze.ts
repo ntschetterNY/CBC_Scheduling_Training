@@ -51,20 +51,43 @@ async function breezeFetch<T>(path: string, params: Record<string, string> = {})
   return (await res.json()) as T;
 }
 
+/**
+ * Pull the primary email out of a Breeze `details` blob. Breeze keys `details`
+ * by per-church numeric profile-field ids, so the email can't be addressed by
+ * name; instead it's an array value whose entries carry
+ * `field_type: "email_primary"` and the address under `address`. Entries exist
+ * even when the address is blank, so empty strings collapse to null.
+ */
+function extractPrimaryEmail(details: Record<string, unknown> | null | undefined): string | null {
+  if (!details || typeof details !== "object") return null;
+  const candidates: { address: string; isPrimary: boolean }[] = [];
+  for (const value of Object.values(details)) {
+    if (!Array.isArray(value)) continue;
+    for (const entry of value) {
+      if (!entry || typeof entry !== "object") continue;
+      const e = entry as { field_type?: unknown; address?: unknown; is_primary?: unknown };
+      if (e.field_type !== "email_primary") continue;
+      if (typeof e.address !== "string" || !e.address.trim()) continue;
+      candidates.push({ address: e.address.trim(), isPrimary: e.is_primary === "1" });
+    }
+  }
+  return (candidates.find((c) => c.isPrimary) ?? candidates[0])?.address ?? null;
+}
+
 /** List everyone in Breeze with their primary email flattened out. */
 export async function listPeople(): Promise<BreezePerson[]> {
   type Raw = {
     id: string;
     first_name: string;
     last_name: string;
-    details?: { email_primary?: string } | null;
+    details?: Record<string, unknown> | null;
   };
   const raw = await breezeFetch<Raw[]>("/people", { details: "1" });
   return raw.map((p) => ({
     id: String(p.id),
     first_name: p.first_name,
     last_name: p.last_name,
-    email: p.details?.email_primary || null,
+    email: extractPrimaryEmail(p.details),
   }));
 }
 
@@ -89,7 +112,12 @@ export interface BreezeDirectoryPlan {
   toDeactivate: { personId: string; fullName: string; breezePersonId: string }[];
   /** Linked rows back in Breeze that sync had deactivated — reactivate (never touches manual pauses). */
   toReactivate: { personId: string; fullName: string; breezePersonId: string }[];
-  /** Breeze people whose email is already owned by a *different* linked app row — reported, untouched. */
+  /**
+   * Breeze people whose email is already owned by a different app row (or was
+   * claimed by an earlier Breeze row this pass) — reported, email not applied.
+   * `ownerPersonId` is the owning app row's id, or `import:<breezeId>` when the
+   * claimer is a new import from the same pass.
+   */
   conflicts: { breezePersonId: string; fullName: string; email: string; ownerPersonId: string }[];
   /** App rows with no Breeze link and no email match — hand-added; reported, untouched. */
   unlinked: { personId: string; fullName: string; email: string | null }[];
@@ -132,9 +160,15 @@ export async function planDirectoryImport(
     unlinked: [],
   };
   const linkedPersonIds = new Set<string>();
-  // Guard the people.email UNIQUE constraint against two Breeze rows sharing an
-  // email: the first claims it, later ones import name-only.
-  const claimedImportEmails = new Set<string>();
+  // Guard the people.email UNIQUE constraint everywhere an email can be
+  // written (update, link, import): lowercase email -> owning app row id, or
+  // `import:<breezeId>` for rows created this pass. Seeded with every current
+  // app email; Breeze rows claim emails as the pass hands them out, so two
+  // Breeze people sharing an address can never both write it.
+  const claimedEmails = new Map<string, string>();
+  for (const p of appPeople) {
+    if (p.email) claimedEmails.set(p.email.toLowerCase(), p.id);
+  }
 
   for (const b of breezePeople) {
     const fullName = breezeFullName(b);
@@ -149,8 +183,23 @@ export async function planDirectoryImport(
       }
       const changes: string[] = [];
       if (fullName && fullName !== linked.full_name) changes.push("name");
-      if (b.email && b.email.toLowerCase() !== (linked.email ?? "").toLowerCase())
-        changes.push("email");
+      if (b.email && b.email.toLowerCase() !== (linked.email ?? "").toLowerCase()) {
+        const key = b.email.toLowerCase();
+        const owner = claimedEmails.get(key);
+        if (owner !== undefined && owner !== linked.id) {
+          // Another row already holds this email — updating would violate the
+          // UNIQUE constraint. Report it; the name refresh (if any) still runs.
+          plan.conflicts.push({
+            breezePersonId: b.id,
+            fullName,
+            email: b.email,
+            ownerPersonId: owner,
+          });
+        } else {
+          claimedEmails.set(key, linked.id);
+          changes.push("email");
+        }
+      }
       if (changes.length) {
         plan.toUpdate.push({ personId: linked.id, fullName, email: b.email, changes });
       }
@@ -177,8 +226,8 @@ export async function planDirectoryImport(
 
     // Brand new person. Only carry the email if nothing else has claimed it.
     const key = b.email?.toLowerCase();
-    const email = key && !claimedImportEmails.has(key) ? b.email : null;
-    if (key && email) claimedImportEmails.add(key);
+    const email = key && !claimedEmails.has(key) ? b.email : null;
+    if (key && email) claimedEmails.set(key, `import:${b.id}`);
     plan.toImport.push({ breezePersonId: b.id, fullName, email });
   }
 
