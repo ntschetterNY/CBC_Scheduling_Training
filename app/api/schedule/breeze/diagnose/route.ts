@@ -14,7 +14,9 @@ import { assertBreezeAllowed } from "@/lib/breeze-gateway";
  * with all three against the volunteer endpoints, plus the event-detail
  * endpoint in case the roster is returned inline. Pass `?instance_id=<id>` to
  * probe one specific instance instead (e.g. the id from a staffed event's
- * Breeze URL).
+ * Breeze URL). Add `?guess=1` to also fire a curated list of guessed Api-Key
+ * endpoints (see `rawGuess`) hunting for one that returns the Volunteers 2
+ * roster; kept off the default run to stay under Breeze's rate limit.
  *
  * Auth: a signed-in admin, or `Authorization: Bearer $BREEZE_DIAG_TOKEN` so
  * the check can run from a terminal without a browser session. Read-only;
