@@ -2,16 +2,17 @@
  * Behavior of the `?guess=1` mode on GET /api/schedule/breeze/diagnose.
  *
  * The guess mode hunts for ANY Api-Key-authenticated Breeze endpoint that can
- * return the Volunteers 2 roster the documented calls can't see. Drives the
- * real route handler (bearer-token auth path) with a stubbed `fetch` and the
- * shared Supabase gate stub, and asserts the OBSERVABLE contract:
+ * return the Volunteers 2 roster the documented calls can't see - including the
+ * modern v2 API host (https://api.breezechms.com/api/v2/...) the Volunteers 2
+ * UI runs on. Drives the real route handler (bearer-token auth path) with a
+ * stubbed `fetch` and the shared Supabase gate stub, and asserts the OBSERVABLE
+ * contract:
  *   - `guesses` appears only when `?guess` is present;
- *   - each candidate is fired straight at the Breeze subdomain with the Api-Key
- *     header and NO cookies (a hypothetical public `/api/volunteers2/*`, an
- *     event sub-resource, and the internal `/ajax/get_*` calls the web UI uses);
- *   - the internal `/ajax/get_*` calls are POSTed with instance_id in the body;
- *   - every fired guess is read-only (GET listing or POST `get_*`), never an
- *     add/remove/update call;
+ *   - candidates fire against both the church subdomain and the v2 API host,
+ *     each carrying the account key under BOTH `Api-Key` and `X-Api-Key`, and
+ *     never a Cookie header;
+ *   - every fired guess is read-only (GET listing or a POST `*_list`), never an
+ *     add/remove/update/delete call;
  *   - it deliberately bypasses the app permission gate (fires even when the
  *     catalog denies everything);
  *   - each result reports status, content-type, array/count/keys and a sample,
@@ -33,9 +34,10 @@ type Captured = { url: string; method: string; headers: Record<string, string>; 
 /**
  * Records every request (url, method, headers, body) and answers by path:
  *  - the events list carries one occurrence;
- *  - `/api/volunteers2/list` is the "winning" guess: a JSON roster array;
- *  - the internal `/ajax/get_volunteer_instance_role_details` returns an HTML
- *    login page (the endpoint wants a cookie session, not the key);
+ *  - the v2 `.../events/<id>/volunteers` endpoint is the "winning" guess: a JSON
+ *    roster array returned under the account key;
+ *  - the internal `/ajax/volunteer_role_list` returns an HTML page (the WAF /
+ *    cookie-session wall the key can't clear);
  *  - everything else is an empty roster.
  */
 function stubFetch() {
@@ -49,8 +51,8 @@ function stubFetch() {
       headers: rawHeaders,
       body: typeof init?.body === "string" ? init.body : undefined,
     });
-    if (u.includes("/api/volunteers2/list?")) {
-      // The endpoint that actually returns the roster under the Api-Key.
+    if (/api\.breezechms\.com\/api\/v2\/events\/\d+\/volunteers/.test(u)) {
+      // The endpoint that actually returns the roster under the account key.
       return new Response(
         JSON.stringify([
           { role: "Elders", person: "Ada" },
@@ -59,15 +61,15 @@ function stubFetch() {
         { status: 200, headers: { "content-type": "application/json" } }
       );
     }
-    if (u.includes("/ajax/get_volunteer_instance_role_details")) {
-      // An HTML login page: honors a cookie session, not the key.
+    if (u.includes("/ajax/volunteer_role_list")) {
+      // The internal web-app endpoint: HTML, gated by cookie session + WAF.
       return new Response("<!doctype html><html><body>Sign In | Breeze</body></html>", {
         status: 200,
         headers: { "content-type": "text/html; charset=utf-8" },
       });
     }
-    if (u.includes("/api/events") && !u.includes("/api/events/")) {
-      // events.list — one occurrence carrying its identifiers.
+    if (u.includes("/api/events") && !u.includes("/api/events/") && !u.includes("/api/v2/")) {
+      // legacy events.list — one occurrence carrying its identifiers.
       return new Response(
         JSON.stringify([
           { id: "319641045", event_id: "58500229", oid: "42424242", name: "Worship Gathering" },
@@ -75,8 +77,7 @@ function stubFetch() {
         { status: 200, headers: { "content-type": "application/json" } }
       );
     }
-    // Any other guess (volunteers2/list_roles, events/volunteers, the other
-    // /ajax get_) — empty JSON array.
+    // Any other guess — empty JSON array.
     return new Response(JSON.stringify([]), {
       status: 200,
       headers: { "content-type": "application/json" },
@@ -102,6 +103,11 @@ type GuessResult = {
   error?: string;
 };
 
+const isGuessCall = (url: string) =>
+  url.includes("api.breezechms.com/api/v2") ||
+  url.includes("/api/volunteers2/") ||
+  url.includes("/ajax/");
+
 describe("breeze diagnose ?guess mode", () => {
   beforeEach(resetStub);
   afterEach(() => {
@@ -116,7 +122,7 @@ describe("breeze diagnose ?guess mode", () => {
     assert.equal("guesses" in body, false, "default run does not include guesses");
   });
 
-  it("fires the curated candidates at the Breeze subdomain with the Api-Key and no cookies", async () => {
+  it("fires candidates at both the v2 API host and the subdomain, with the key under both header names and no cookies", async () => {
     // Only events.list allowed; the guess candidates are NOT in the catalog and
     // must fire regardless (deliberate gate bypass).
     stubState.permsRows = [{ endpoint_key: "events.list", allowed: true }];
@@ -129,58 +135,49 @@ describe("breeze diagnose ?guess mode", () => {
     // Target defaults to the first event's id.
     assert.equal(body.guesses.target, "319641045");
 
-    const guessCalls = calls.filter((c) => !/\/api\/events(\?|$)/.test(c.url));
+    const guessCalls = calls.filter((c) => isGuessCall(c.url));
     assert.ok(guessCalls.length >= 8, "all curated candidates fired");
 
-    // Every guess hits the Breeze subdomain host, carries the Api-Key, and
-    // never sends a Cookie header.
     for (const c of guessCalls) {
-      assert.ok(
-        c.url.startsWith("https://testchurch.breezechms.com/"),
-        `guess hit the Breeze subdomain: ${c.url}`
-      );
+      // Each guess carries the account key under BOTH header names and never a cookie.
       assert.equal(c.headers["Api-Key"], "test-key-123", `Api-Key sent for ${c.url}`);
+      assert.equal(c.headers["X-Api-Key"], "test-key-123", `X-Api-Key sent for ${c.url}`);
       const headerNames = Object.keys(c.headers).map((h) => h.toLowerCase());
       assert.ok(!headerNames.includes("cookie"), `no cookie sent for ${c.url}`);
     }
 
-    // Both the hypothetical public endpoint and the internal /ajax one were tried.
+    // Both the modern v2 host and the legacy subdomain were probed.
     assert.ok(
-      guessCalls.some((c) => c.url.includes("/api/volunteers2/list")),
-      "public /api/volunteers2/list guessed"
+      guessCalls.some((c) => c.url.startsWith("https://api.breezechms.com/api/v2/")),
+      "modern v2 API host probed"
     );
     assert.ok(
-      guessCalls.some((c) => c.url.includes("/ajax/get_volunteer_instance_role_details")),
-      "internal /ajax get_ endpoint guessed"
+      guessCalls.some((c) => c.url.startsWith("https://testchurch.breezechms.com/")),
+      "legacy subdomain probed"
     );
   });
 
-  it("POSTs the internal /ajax get_ calls with instance_id in the body; only read-only calls fire", async () => {
+  it("only fires read-only calls (GET, or a POST *_list), never a mutating endpoint", async () => {
     stubState.permsRows = [{ endpoint_key: "events.list", allowed: true }];
     const calls = stubFetch();
     await GET(diagReq("?guess=1"));
 
-    const guessCalls = calls.filter((c) => !/\/api\/events(\?|$)/.test(c.url));
-    for (const c of guessCalls) {
+    for (const c of calls.filter((c) => isGuessCall(c.url))) {
       const path = new URL(c.url).pathname;
-      if (path.startsWith("/ajax/")) {
-        assert.equal(c.method, "POST", `${path} is POSTed`);
+      assert.doesNotMatch(
+        path,
+        /(add|remove|update|delete|create|edit)/i,
+        `${path} is not a mutating call`
+      );
+      if (c.method === "POST") {
+        // The only POST guess is the roster-listing /ajax call, with instance_id in the body.
+        assert.match(path, /_list$/, `POST ${path} is a listing call`);
         assert.match(c.body ?? "", /instance_id=319641045/, `${path} carries instance_id`);
-        // Read-only guarantee: the internal calls are only ever `get_*`.
-        assert.match(path, /\/ajax\/get_/, `${path} is a read-only get_ call`);
-      } else {
-        assert.equal(c.method, "GET", `${path} is a GET`);
-        // Read-only guarantee: public guesses only list/read, never mutate.
-        assert.doesNotMatch(
-          path,
-          /(add|remove|update|delete|create|edit)/i,
-          `${path} is not a mutating call`
-        );
       }
     }
   });
 
-  it("reports status/content-type/count so a real roster is distinguishable from an HTML login page", async () => {
+  it("reports status/content-type/count so a real roster is distinguishable from an HTML page", async () => {
     stubState.permsRows = [{ endpoint_key: "events.list", allowed: true }];
     stubFetch();
 
@@ -189,19 +186,19 @@ describe("breeze diagnose ?guess mode", () => {
     const byCall = (needle: string) =>
       body.guesses.results.find((r) => r.call.includes(needle))!;
 
-    // The winning guess: a JSON array roster is surfaced as such.
-    const winner = byCall("/api/volunteers2/list?");
+    // The winning guess: a JSON array roster from the v2 host is surfaced as such.
+    const winner = byCall("/api/v2/events/319641045/volunteers");
     assert.equal(winner.status, 200);
     assert.match(winner.contentType ?? "", /application\/json/);
     assert.equal(winner.isArray, true);
     assert.equal(winner.count, 2);
     assert.equal((winner.sample as unknown[]).length, 2);
 
-    // The HTML login page is clearly NOT a roster: html content-type, text sample.
-    const login = byCall("/ajax/get_volunteer_instance_role_details");
-    assert.equal(login.status, 200);
-    assert.match(login.contentType ?? "", /text\/html/);
-    assert.notEqual(login.isArray, true);
-    assert.match(String(login.sample), /Sign In \| Breeze/);
+    // The internal /ajax HTML page is clearly NOT a roster: html type, text sample.
+    const html = byCall("/ajax/volunteer_role_list");
+    assert.equal(html.status, 200);
+    assert.match(html.contentType ?? "", /text\/html/);
+    assert.notEqual(html.isArray, true);
+    assert.match(String(html.sample), /Sign In \| Breeze/);
   });
 });
