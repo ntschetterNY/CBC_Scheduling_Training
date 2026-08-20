@@ -86,13 +86,22 @@ async function rawGuess(
   path: string,
   opts: { params?: Record<string, string>; body?: Record<string, string> } = {}
 ) {
-  const url = new URL(`https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com${path}`);
+  // Absolute URLs (e.g. the modern https://api.breezechms.com/api/v2/... host)
+  // pass through; a bare path is resolved against the church subdomain.
+  const url = new URL(
+    path.startsWith("http")
+      ? path
+      : `https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com${path}`
+  );
   if (opts.params) for (const [k, v] of Object.entries(opts.params)) url.searchParams.set(k, v);
   try {
     const res = await fetch(url, {
       method,
       headers: {
+        // Send the account key under both header names: legacy Breeze uses
+        // `Api-Key`; the v2 API's CORS advertises `X-Api-Key`.
         "Api-Key": process.env.BREEZE_API_KEY!,
+        "X-Api-Key": process.env.BREEZE_API_KEY!,
         Accept: "application/json, text/javascript, */*",
         ...(method === "POST"
           ? { "Content-Type": "application/x-www-form-urlencoded" }
@@ -206,15 +215,23 @@ export async function GET(req: Request) {
       (Array.isArray(events.sample) ? events.sample : []) as { id?: unknown }[]
     )[0]?.id;
     const target = override ?? (firstId != null ? String(firstId) : "319641045");
+    // The modern v2 API host the Volunteers 2 UI talks to. If it honors the
+    // account key (its CORS advertises X-Api-Key), these expose the roster
+    // cleanly - no cookies/CSRF/WAF. Structure is unknown, so probe the root
+    // (for a resource index / auth error) and the most likely shapes.
+    const V2 = "https://api.breezechms.com/api/v2";
     const attempts: [("GET" | "POST"), string, { params?: Record<string, string>; body?: Record<string, string> }][] = [
+      ["GET", `${V2}/`, {}],
+      ["GET", `${V2}/events`, {}],
+      ["GET", `${V2}/events/${target}`, {}],
+      ["GET", `${V2}/events/${target}/volunteers`, {}],
+      ["GET", `${V2}/events/${target}/roles`, {}],
+      ["GET", `${V2}/volunteers`, { params: { event_instance_id: target } }],
+      ["GET", `${V2}/volunteer_roles`, { params: { event_instance_id: target } }],
+      ["GET", `${V2}/scheduling/volunteers`, { params: { instance_id: target } }],
+      // Legacy-host guesses kept for contrast (all previously empty/404/WAF).
       ["GET", "/api/volunteers2/list", { params: { instance_id: target } }],
-      ["GET", "/api/volunteers2/list_roles", { params: { instance_id: target, show_quantity: "1" } }],
-      ["GET", "/api/volunteers/list_roles", { params: { instance_id: target, show_quantity: "1", version: "2" } }],
-      ["GET", "/api/events/volunteers", { params: { instance_id: target } }],
-      ["GET", "/api/events/volunteers2", { params: { instance_id: target } }],
-      ["GET", "/api/events/list_event", { params: { instance_id: target, volunteers: "1", details: "1" } }],
-      ["POST", "/ajax/get_volunteer_instance_role_details", { body: { instance_id: target } }],
-      ["POST", "/ajax/get_volunteer_instance_roles", { body: { instance_id: target } }],
+      ["POST", "/ajax/volunteer_role_list", { body: { instance_id: target } }],
     ];
     const results = [];
     for (const [method, path, opts] of attempts) results.push(await rawGuess(method, path, opts));
