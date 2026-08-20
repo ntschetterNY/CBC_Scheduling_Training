@@ -6,10 +6,11 @@ import {
 } from "@/lib/breeze";
 
 /**
- * Read-only view of the volunteer schedule as it stands in Breeze — every
- * upcoming calendar event with volunteer roles or sign-ups, each volunteer
- * shown with their reply status. Server component: the Breeze pull happens
- * here so the page can stream it in behind a Suspense fallback.
+ * Read-only view of the Breeze calendar — every upcoming event, with any
+ * volunteer roles and sign-ups shown alongside each volunteer's reply status
+ * (events without a roster still appear, carrying just the event). Server
+ * component: the Breeze pull happens here so the page can stream it in behind
+ * a Suspense fallback.
  */
 
 const WEEKS_AHEAD = 6;
