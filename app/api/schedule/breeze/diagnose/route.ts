@@ -73,13 +73,16 @@ async function rawBreeze(
 }
 
 /**
- * Fire a guessed endpoint straight at the Breeze subdomain with the Api-Key
- * header and NO cookies - the point is to discover whether any Api-Key-
- * authenticated endpoint (public `/api/...` or the internal `/ajax/...` the
- * Volunteers 2 web UI uses) will return the roster our documented calls can't
- * see. Bypasses the app permission gate on purpose (these keys aren't in the
- * catalog) and is read-only: only ever call listing/`get_` endpoints here.
- * Reports status, content-type, and a small shape sample, never credentials.
+ * Fire a guessed endpoint with the account key under both `Api-Key` and
+ * `X-Api-Key` and NO cookies - the point is to discover whether any key-
+ * authenticated endpoint will return the roster our documented calls can't
+ * see. Targets either the church subdomain (bare path: public `/api/...` or
+ * the internal `/ajax/...` the Volunteers 2 web UI uses) or the modern
+ * `https://api.breezechms.com/api/v2/...` host (absolute URL) whose CORS
+ * advertises `X-Api-Key`. Bypasses the app permission gate on purpose (these
+ * keys aren't in the catalog) and is read-only: only ever call listing/`get_`
+ * endpoints here. Reports status, content-type, and a small shape sample,
+ * never credentials.
  */
 async function rawGuess(
   method: "GET" | "POST",
