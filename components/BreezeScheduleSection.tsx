@@ -79,6 +79,9 @@ function EventCard({
   const unroled = event.volunteers.filter(
     (v) => !v.roleIds.some((id) => roleIds.has(id))
   );
+  // Calendar events with no volunteer roles or sign-ups still show — the card
+  // just carries the event itself, with a quiet note in place of the roster.
+  const noVolunteerInfo = event.roles.length === 0 && event.volunteers.length === 0;
 
   return (
     <div className="card flex flex-col overflow-hidden">
@@ -100,6 +103,11 @@ function EventCard({
       </div>
 
       <div className="space-y-3 p-4">
+        {noVolunteerInfo && (
+          <p className="font-sans text-sm text-brand-muted/70">
+            No volunteer roles set for this event.
+          </p>
+        )}
         {event.roles.map((role) => {
           const assigned = byRole(role.id);
           return (
@@ -190,15 +198,24 @@ export async function BreezeScheduleSection({ myEmail }: { myEmail: string }) {
 
   if (events.length === 0) return null;
 
+  // The accepted/declined legend only means something once at least one event
+  // has volunteers; on a calendar with no sign-ups it's just noise.
+  const anyVolunteers = events.some((e) => e.volunteers.length > 0);
+
   return (
     <section className="mb-10">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="section-title">On the Breeze calendar</h2>
         <p className="font-sans text-xs text-brand-muted">
-          Next {WEEKS_AHEAD} weeks, straight from Breeze ·{" "}
-          <span className="text-brand-success">✓ accepted</span> ·{" "}
-          <span className="text-brand-danger">✗ declined</span> · no mark =
-          hasn&apos;t replied
+          Next {WEEKS_AHEAD} weeks, straight from Breeze
+          {anyVolunteers && (
+            <>
+              {" "}
+              · <span className="text-brand-success">✓ accepted</span> ·{" "}
+              <span className="text-brand-danger">✗ declined</span> · no mark =
+              hasn&apos;t replied
+            </>
+          )}
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

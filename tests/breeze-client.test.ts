@@ -88,6 +88,94 @@ describe("breeze client obeys the gate", () => {
   });
 });
 
+describe("getVolunteerSchedule shows the whole calendar", () => {
+  beforeEach(() => {
+    resetStub();
+    installFetchStub();
+    // Everything the schedule touches is allowed.
+    stubState.permsRows = [
+      { endpoint_key: "events.list", allowed: true },
+      { endpoint_key: "volunteers.list", allowed: true },
+      { endpoint_key: "volunteers.list_roles", allowed: true },
+      { endpoint_key: "people.list", allowed: true },
+    ];
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  it("keeps events with no volunteer roles or sign-ups, and skips the people directory", async () => {
+    fetchResponder = (url) => {
+      if (url.includes("/api/events")) {
+        return new Response(
+          JSON.stringify([
+            { id: 1, name: "Worship Gathering", start_datetime: "2026-08-23 11:00:00" },
+          ]),
+          { status: 200 }
+        );
+      }
+      // No volunteers, no roles on the event; /people must never be reached.
+      return new Response("[]", { status: 200 });
+    };
+
+    const schedule = await breeze.getVolunteerSchedule("2026-08-20", "2026-10-01");
+
+    assert.equal(schedule.length, 1, "the event shows even with no volunteer activity");
+    assert.equal(schedule[0].name, "Worship Gathering");
+    assert.equal(schedule[0].time, "11:00 AM");
+    assert.deepEqual(schedule[0].roles, []);
+    assert.deepEqual(schedule[0].volunteers, []);
+    assert.equal(
+      fetchCalls.some((c) => c.url.includes("/api/people")),
+      false,
+      "the large people directory is not fetched when nothing needs naming"
+    );
+  });
+
+  it("fetches the people directory to name volunteers when an event has sign-ups", async () => {
+    fetchResponder = (url) => {
+      if (url.includes("/api/events")) {
+        return new Response(
+          JSON.stringify([
+            { id: 7, name: "Youth Night", start_datetime: "2026-08-25 18:00:00" },
+          ]),
+          { status: 200 }
+        );
+      }
+      if (url.includes("/volunteers/list_roles")) {
+        return new Response("[]", { status: 200 });
+      }
+      if (url.includes("/volunteers/list")) {
+        return new Response(
+          JSON.stringify([{ person_id: 42, response: "1", role_ids: "[]" }]),
+          { status: 200 }
+        );
+      }
+      if (url.includes("/api/people")) {
+        return new Response(
+          JSON.stringify([
+            { id: 42, first_name: "Ada", last_name: "Lovelace", details: {} },
+          ]),
+          { status: 200 }
+        );
+      }
+      return new Response("[]", { status: 200 });
+    };
+
+    const schedule = await breeze.getVolunteerSchedule("2026-08-20", "2026-10-01");
+
+    assert.equal(schedule.length, 1);
+    assert.equal(schedule[0].volunteers.length, 1);
+    assert.equal(schedule[0].volunteers[0].name, "Ada Lovelace");
+    assert.equal(schedule[0].volunteers[0].response, "accepted");
+    assert.equal(
+      fetchCalls.some((c) => c.url.includes("/api/people")),
+      true,
+      "the people directory is fetched once a volunteer needs a name"
+    );
+  });
+});
+
 describe("breezeProbeRequest (super-admin probe)", () => {
   beforeEach(() => {
     resetStub();
