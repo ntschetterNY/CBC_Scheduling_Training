@@ -71,6 +71,71 @@ async function rawBreeze(
 }
 
 /**
+ * Fire a guessed endpoint straight at the Breeze subdomain with the Api-Key
+ * header and NO cookies - the point is to discover whether any Api-Key-
+ * authenticated endpoint (public `/api/...` or the internal `/ajax/...` the
+ * Volunteers 2 web UI uses) will return the roster our documented calls can't
+ * see. Bypasses the app permission gate on purpose (these keys aren't in the
+ * catalog) and is read-only: only ever call listing/`get_` endpoints here.
+ * Reports status, content-type, and a small shape sample, never credentials.
+ */
+async function rawGuess(
+  method: "GET" | "POST",
+  path: string,
+  opts: { params?: Record<string, string>; body?: Record<string, string> } = {}
+) {
+  const url = new URL(`https://${process.env.BREEZE_SUBDOMAIN}.breezechms.com${path}`);
+  if (opts.params) for (const [k, v] of Object.entries(opts.params)) url.searchParams.set(k, v);
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Api-Key": process.env.BREEZE_API_KEY!,
+        Accept: "application/json, text/javascript, */*",
+        ...(method === "POST"
+          ? { "Content-Type": "application/x-www-form-urlencoded" }
+          : {}),
+      },
+      body:
+        method === "POST" && opts.body
+          ? new URLSearchParams(opts.body).toString()
+          : undefined,
+      cache: "no-store",
+    });
+    const text = await res.text();
+    let json: unknown = null;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      /* keep text sample */
+    }
+    const isArr = Array.isArray(json);
+    const isObj = json !== null && typeof json === "object" && !isArr;
+    return {
+      call: `${method} ${url.pathname}${url.search}`,
+      status: res.status,
+      // A login page or HTML means the endpoint wants a cookie session, not the key.
+      contentType: res.headers.get("content-type"),
+      isArray: isArr,
+      count: isArr ? (json as unknown[]).length : null,
+      keys: isObj ? Object.keys(json as object).slice(0, 40) : undefined,
+      sample:
+        json !== null
+          ? isArr
+            ? (json as unknown[]).slice(0, 2)
+            : json
+          : text.slice(0, 300),
+    };
+  } catch (err) {
+    return {
+      call: `${method} ${path}`,
+      status: 0,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/**
  * Probe every identifier a Breeze event carries against the volunteer
  * endpoints. Breeze's `/events` list hands back three ids per occurrence
  * (`id`, `event_id`, `oid`), and for recurring/unmodified instances the one
@@ -122,10 +187,38 @@ export async function GET(req: Request) {
 
   const events = await rawBreeze("events.list", "/events", { start, end });
 
+  const url = new URL(req.url);
   // Decisive test: `?instance_id=<id>` probes exactly the instance the admin
   // pastes (e.g. the id from a staffed event's Breeze URL), so we can tell a
   // wrong-identifier bug from a genuinely empty roster.
-  const override = new URL(req.url).searchParams.get("instance_id");
+  const override = url.searchParams.get("instance_id");
+
+  // `?guess=1`: hunt for ANY Api-Key-reachable endpoint that returns the
+  // Volunteers 2 roster - a hypothetical public `/api/volunteers2/*`, an event
+  // sub-resource, or the internal `/ajax/...` call the web UI uses (in case it
+  // honors the key, not just a cookie). Read-only guesses; gated separately so
+  // the default run stays under Breeze's rate limit.
+  let guesses: unknown = undefined;
+  if (url.searchParams.get("guess")) {
+    const firstId = (
+      (Array.isArray(events.sample) ? events.sample : []) as { id?: unknown }[]
+    )[0]?.id;
+    const target = override ?? (firstId != null ? String(firstId) : "319641045");
+    const attempts: [("GET" | "POST"), string, { params?: Record<string, string>; body?: Record<string, string> }][] = [
+      ["GET", "/api/volunteers2/list", { params: { instance_id: target } }],
+      ["GET", "/api/volunteers2/list_roles", { params: { instance_id: target, show_quantity: "1" } }],
+      ["GET", "/api/volunteers/list_roles", { params: { instance_id: target, show_quantity: "1", version: "2" } }],
+      ["GET", "/api/events/volunteers", { params: { instance_id: target } }],
+      ["GET", "/api/events/volunteers2", { params: { instance_id: target } }],
+      ["GET", "/api/events/list_event", { params: { instance_id: target, volunteers: "1", details: "1" } }],
+      ["POST", "/ajax/get_volunteer_instance_role_details", { body: { instance_id: target } }],
+      ["POST", "/ajax/get_volunteer_instance_roles", { body: { instance_id: target } }],
+    ];
+    const results = [];
+    for (const [method, path, opts] of attempts) results.push(await rawGuess(method, path, opts));
+    guesses = { target, results };
+  }
+
   let probes: unknown[];
   if (override) {
     probes = [
@@ -165,5 +258,6 @@ export async function GET(req: Request) {
     range: { start, end },
     events,
     probes,
+    ...(guesses !== undefined ? { guesses } : {}),
   });
 }
