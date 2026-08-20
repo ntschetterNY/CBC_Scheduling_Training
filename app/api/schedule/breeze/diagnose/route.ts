@@ -5,9 +5,16 @@ import { assertBreezeAllowed } from "@/lib/breeze-gateway";
 
 /**
  * GET /api/schedule/breeze/diagnose — raw health check of the Breeze calls the
- * volunteer schedule depends on. Reports HTTP status and a truncated sample of
- * each response (events, volunteers, roles) so an empty schedule section can
- * be traced to "no events", "no volunteer sign-ups", or an API/shape problem.
+ * volunteer schedule depends on. Reports HTTP status, top-level object keys,
+ * and a truncated sample of each response so an empty schedule section can be
+ * traced to "no events", "no volunteer sign-ups", or an API/shape problem.
+ *
+ * Breeze hands back three ids per event occurrence (`id`, `event_id`, `oid`)
+ * and a roster may be keyed to any of them, so each sampled event is probed
+ * with all three against the volunteer endpoints, plus the event-detail
+ * endpoint in case the roster is returned inline. Pass `?instance_id=<id>` to
+ * probe one specific instance instead (e.g. the id from a staffed event's
+ * Breeze URL).
  *
  * Auth: a signed-in admin, or `Authorization: Bearer $BREEZE_DIAG_TOKEN` so
  * the check can run from a terminal without a browser session. Read-only;
