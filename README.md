@@ -6,6 +6,9 @@ first look at the board to confidently mixing a Sunday service on the
 
 - **Interactive lessons** — step-by-step walkthroughs for every core skill,
   with EQ/compression charts and diagrams for visual learners
+- **Live Streaming track** (`/streaming`) — running a Sunday on Ecamm Live and
+  the Stream Deck: the scene list, our two cameras and the slides source, audio
+  from the SQ-6, and calm fixes when something breaks
 - **Interactive SQ-6 Guide** — learn the console surface region by region, with
   a jump straight to the module that covers each part
 - **Searchable knowledge base** — type a live problem ("blue mic static", "no
@@ -263,6 +266,8 @@ app/
   learn/[slug]/         A single Sound Tech module (lessons + quiz)
   safety/               Safety & Security module list (draft track)
   safety/[slug]/        A single Safety & Security module (lessons + quiz)
+  streaming/            Live Streaming module list (Ecamm / Stream Deck)
+  streaming/[slug]/     A single Live Streaming module (lessons + quiz)
   feature-requests/     Feedback page: file a request → opens a GitHub issue
   api/feature-requests/ Route handler that creates the GitHub issue
   schedule/             Serve schedule (all teams + "my assignments")
@@ -287,6 +292,8 @@ components/             UI: header, board explorer, module runner, quiz, auth fo
 lib/
   curriculum.ts         ← Sound Tech training content lives here
   safety-curriculum.ts  Safety & Security track content (draft)
+  streaming-curriculum.ts  Live Streaming (Ecamm / Stream Deck) track (draft)
+  streaming-shots.ts    Optional booth screenshots per streaming module
   access.ts             Super-admin list + time formatting helpers
   progress.ts           Progress fetch helpers
   github.ts             Server-only GitHub issue helpers (feature tracker)

@@ -16,7 +16,10 @@
  *   Mics / color — "mic-colors" | "mic-tuning" | "color-families"
  *   Processing   — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
  *                  | "comp-limiter"
+ *   Streaming    — any "stream-…" key, drawn by components/StreamingVisual.tsx
  */
+
+import { StreamingVisual } from "./StreamingVisual";
 
 const GOLD = "#d8a23c";
 const TEAL = "#1e5162";
@@ -1443,6 +1446,10 @@ function CompLimiter() {
 /* ------------------------------------------------------------------ */
 
 export function LessonVisual({ name }: { name: string }) {
+  // The Live Streaming track's diagrams live in their own file — keys there are
+  // all prefixed "stream-", so hand them straight over.
+  if (name.startsWith("stream-")) return <StreamingVisual name={name} />;
+
   switch (name) {
     /* ---- signal flow ---- */
     case "system-overview":
