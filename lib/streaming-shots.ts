@@ -30,4 +30,22 @@
 
 import type { ModuleSlide } from "./curriculum";
 
-export const streamingShots: Record<string, ModuleSlide[]> = {};
+export const streamingShots: Record<string, ModuleSlide[]> = {
+  // The booth tablet we run the stream's audio from. The module already teaches
+  // from the annotated recreations ("stream-tablet-home" and
+  // "stream-mixing-station" in components/StreamingVisual.tsx). To show the raw
+  // captures as well, drop the two PNGs into
+  // public/streaming-shots/stream-audio/ (see the README in that folder) and
+  // uncomment this entry.
+  //
+  // "stream-audio": [
+  //   {
+  //     src: "/streaming-shots/stream-audio/01-tablet-home.png",
+  //     alt: "The booth tablet home screen, with the Mixing Station app",
+  //   },
+  //   {
+  //     src: "/streaming-shots/stream-audio/02-mixing-station-streaming.png",
+  //     alt: "Mixing Station on the Streaming custom layout, showing every channel's send to the stream mix",
+  //   },
+  // ],
+};

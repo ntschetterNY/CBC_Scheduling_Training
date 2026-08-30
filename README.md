@@ -8,7 +8,9 @@ first look at the board to confidently mixing a Sunday service on the
   with EQ/compression charts and diagrams for visual learners
 - **Live Streaming track** (`/streaming`) — running a Sunday on Ecamm Live and
   the Stream Deck: the scene list, our two cameras and the slides source, audio
-  from the SQ-6, and calm fixes when something breaks
+  from the SQ-6, the booth tablet we run that audio from (Mixing Station on the
+  “Streaming” custom layout, and switching the audio monitor to external
+  headphones), and calm fixes when something breaks
 - **Interactive SQ-6 Guide** — learn the console surface region by region, with
   a jump straight to the module that covers each part
 - **Searchable knowledge base** — type a live problem ("blue mic static", "no
