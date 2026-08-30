@@ -6,6 +6,7 @@ import { isSuperAdmin } from "@/lib/access";
 import { curriculum } from "@/lib/curriculum";
 import { safetyCurriculum } from "@/lib/safety-curriculum";
 import { streamingCurriculum } from "@/lib/streaming-curriculum";
+import { financeCurriculum } from "@/lib/finance-curriculum";
 import { programs, STATUS_LABEL, type ProgramStatus } from "@/lib/programs";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +34,7 @@ export default async function Home() {
     "sound-tech": programMeta(curriculum),
     "physical-security": programMeta(safetyCurriculum),
     "live-streaming": programMeta(streamingCurriculum),
+    "personal-finance": programMeta(financeCurriculum),
   };
 
   return (

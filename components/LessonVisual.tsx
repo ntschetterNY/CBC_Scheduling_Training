@@ -17,8 +17,10 @@
  *   Processing   — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
  *                  | "comp-limiter"
  *   Streaming    — any "stream-…" key, drawn by components/StreamingVisual.tsx
+ *   Finance      — any "money-…" key, drawn by components/FinanceVisual.tsx
  */
 
+import { FinanceVisual } from "./FinanceVisual";
 import { StreamingVisual } from "./StreamingVisual";
 
 const GOLD = "#d8a23c";
@@ -1449,6 +1451,8 @@ export function LessonVisual({ name }: { name: string }) {
   // The Live Streaming track's diagrams live in their own file — keys there are
   // all prefixed "stream-", so hand them straight over.
   if (name.startsWith("stream-")) return <StreamingVisual name={name} />;
+  // Same arrangement for the Personal Finance track, prefixed "money-".
+  if (name.startsWith("money-")) return <FinanceVisual name={name} />;
 
   switch (name) {
     /* ---- signal flow ---- */

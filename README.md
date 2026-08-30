@@ -9,6 +9,12 @@ first look at the board to confidently mixing a Sunday service on the
 - **Live Streaming track** (`/streaming`) — running a Sunday on Ecamm Live and
   the Stream Deck: the scene list, our two cameras and the slides source, audio
   from the SQ-6, and calm fixes when something breaks
+- **Personal Finance track** (`/finance`) — seven steps out of debt and into
+  generosity: the zero-based budget, the debt snowball, the emergency fund,
+  investing, insurance, wills, scams, and giving. Modeled on the baby-steps
+  structure with two deliberate CrossBridge changes — *if you use credit, treat
+  it as cash*, and build a **mix** of Roth and traditional accounts rather than
+  Roth-for-everything (RMDs are the reason)
 - **Interactive SQ-6 Guide** — learn the console surface region by region, with
   a jump straight to the module that covers each part
 - **Searchable knowledge base** — type a live problem ("blue mic static", "no
@@ -268,6 +274,8 @@ app/
   safety/[slug]/        A single Safety & Security module (lessons + quiz)
   streaming/            Live Streaming module list (Ecamm / Stream Deck)
   streaming/[slug]/     A single Live Streaming module (lessons + quiz)
+  finance/              Personal Finance module list (draft track)
+  finance/[slug]/       A single Personal Finance module (lessons + quiz)
   feature-requests/     Feedback page: file a request → opens a GitHub issue
   api/feature-requests/ Route handler that creates the GitHub issue
   schedule/             Serve schedule (all teams + "my assignments")
@@ -294,6 +302,7 @@ lib/
   safety-curriculum.ts  Safety & Security track content (draft)
   streaming-curriculum.ts  Live Streaming (Ecamm / Stream Deck) track (draft)
   streaming-shots.ts    Optional booth screenshots per streaming module
+  finance-curriculum.ts Personal Finance track content (draft)
   access.ts             Super-admin list + time formatting helpers
   progress.ts           Progress fetch helpers
   github.ts             Server-only GitHub issue helpers (feature tracker)
