@@ -6,15 +6,18 @@
  * is inline SVG — no external assets — so the diagrams stay crisp at any size
  * and readable in both light and dark mode.
  *
- * Two of them are deliberate recreations of the booth screenshots:
- *   "stream-ecamm-window" — the Ecamm Live main window and its panels
- *   "stream-deck-grid"    — the 15-key Stream Deck service profile
+ * Several are deliberate recreations of the booth screenshots:
+ *   "stream-ecamm-window"   — the Ecamm Live main window and its panels
+ *   "stream-deck-grid"      — the 15-key Stream Deck service profile
+ *   "stream-tablet-home"    — the sound-control tablet's home screen
+ *   "stream-mixing-station" — the Mixing Station "Streaming" custom layout
  * Redraw those from a fresh screenshot whenever the booth layout changes.
  *
  * Keys:
  *   "stream-signal-map" | "stream-startup" | "stream-ecamm-window"
  *   "stream-scene-matrix" | "stream-deck-grid" | "stream-camera-switcher"
  *   "stream-no-signal" | "stream-audio-path" | "stream-service-timeline"
+ *   "stream-tablet-home" | "stream-mixing-station" | "stream-monitor-out"
  */
 
 const GOLD = "#d8a23c";
@@ -1116,6 +1119,446 @@ function ServiceTimeline() {
 }
 
 /* ------------------------------------------------------------------ */
+/* 10 · The booth tablet — home screen                                 */
+/* ------------------------------------------------------------------ */
+
+/** The Mixing Station launcher icon: a dark tile with four little faders. */
+function MsIcon({ x, y, s }: { x: number; y: number; s: number }) {
+  return (
+    <g>
+      <rect x={x} y={y} width={s} height={s} rx={s * 0.22} fill="#0d1116" stroke="#39454c" strokeWidth="1" />
+      <rect x={x + s * 0.1} y={y + s * 0.12} width={s * 0.8} height={s * 0.17} rx={s * 0.05} fill="#39b6e8" />
+      <text
+        x={x + s / 2}
+        y={y + s * 0.255}
+        textAnchor="middle"
+        fontSize={s * 0.12}
+        fontWeight="700"
+        fill="#08121a"
+        fontFamily={FONT}
+        textLength={s * 0.72}
+        lengthAdjust="spacingAndGlyphs"
+      >
+        Mixing Station
+      </text>
+      {[0, 1, 2, 3].map((i) => {
+        const fx = x + s * (0.16 + i * 0.2);
+        return (
+          <g key={i}>
+            <rect x={fx} y={y + s * 0.36} width={s * 0.11} height={s * 0.5} rx={s * 0.03} fill="#20272c" />
+            <rect
+              x={fx - s * 0.02}
+              y={y + s * (0.44 + (i % 2) * 0.16)}
+              width={s * 0.15}
+              height={s * 0.07}
+              rx={s * 0.02}
+              fill="#c9d1d4"
+            />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function TabletHome() {
+  return (
+    <Board w={700} h={452} label="The sound-control tablet home screen, with the Mixing Station app">
+      {/* tablet shell */}
+      <rect x={12} y={12} width={676} height={400} rx="20" fill="#181c22" />
+      <rect x={24} y={24} width={652} height={376} rx="10" fill="#8f7fd0" />
+
+      {/* wallpaper — soft folds, suggested rather than copied */}
+      <path d="M24 320 C 140 210 210 330 300 250 C 390 170 470 300 560 220 C 620 168 660 250 676 226 L676 400 L24 400 Z" fill="#c98bbf" opacity="0.85" />
+      <path d="M24 356 C 130 280 230 372 330 306 C 430 240 520 348 620 292 L676 268 L676 400 L24 400 Z" fill="#b8607f" opacity="0.8" />
+      <path d="M24 26 C 120 90 190 40 280 96 C 360 146 430 70 520 120 C 590 158 640 110 676 132 L676 26 Z" fill="#8fa9ea" opacity="0.7" />
+
+      {/* status bar */}
+      <rect x={24} y={24} width={652} height={26} rx="10" fill="#000000" opacity="0.18" />
+      <rect x={24} y={40} width={652} height={10} fill="#000000" opacity="0.18" />
+      <Label x={38} y={42} size={11} color="#ffffff" weight={700}>
+        11:16 AM
+      </Label>
+      <Label x={604} y={42} size={10} color="#ffffff" weight={700}>
+        ᯤ  58%
+      </Label>
+      <Badge x={584} y={37} n={1} />
+
+      {/* clock widget */}
+      <text x={116} y={130} fontSize="46" fontWeight="300" fill="#ffffff" fontFamily={FONT}>
+        11:16
+      </text>
+      <Label x={118} y={152} size={11} color="#ffffff">
+        Sun, Aug 30
+      </Label>
+      <rect x={112} y={164} width={112} height={24} rx="12" fill="#ffffff" opacity="0.28" />
+      <Label x={126} y={180} size={10} color="#ffffff" weight={600}>
+        ⛈  Salisbury 77°
+      </Label>
+
+      {/* app folder */}
+      <rect x={126} y={236} width={44} height={44} rx="10" fill="#ffffff" opacity="0.92" />
+      {[0, 1, 2].map((r) =>
+        [0, 1, 2].map((c) => (
+          <rect
+            key={`${r}-${c}`}
+            x={133 + c * 11}
+            y={243 + r * 11}
+            width={8}
+            height={8}
+            rx="2"
+            fill={["#3f78c4", "#3d8b6b", "#d8a23c", "#bf4640"][(r + c) % 4]}
+          />
+        )),
+      )}
+      <Label x={148} y={294} size={9.5} color="#ffffff" anchor="middle">
+        Google
+      </Label>
+
+      {/* Mixing Station on the desktop */}
+      <MsIcon x={548} y={88} s={54} />
+      <Label x={575} y={158} size={9.5} color="#ffffff" anchor="middle" weight={600}>
+        Mixing Station
+      </Label>
+      <Badge x={542} y={84} n={2} />
+
+      {/* dock */}
+      <rect x={244} y={330} width={212} height={54} rx="14" fill="#ffffff" opacity="0.22" />
+      <MsIcon x={256} y={340} s={34} />
+      <circle cx={324} cy={357} r="17" fill="#ffffff" />
+      <text x={324} y={363} textAnchor="middle" fontSize="17" fontWeight="700" fill="#4285f4" fontFamily={FONT}>
+        G
+      </text>
+      <rect x={358} y={340} width={34} height={34} rx="9" fill="#12161c" />
+      <path d="M366 358 l8 -8 M372 364 l8 -8" stroke="#c26be0" strokeWidth="3" strokeLinecap="round" />
+      <rect x={404} y={340} width={34} height={34} rx="9" fill="#ffffff" />
+      {[0, 1].map((r) =>
+        [0, 1].map((c) => (
+          <rect key={`d${r}${c}`} x={411 + c * 11} y={347 + r * 11} width={8} height={8} rx="2" fill="#1e272b" />
+        )),
+      )}
+      <Badge x={244} y={330} n={3} />
+
+      {/* caption strip under the tablet */}
+      <Label x={24} y={432} size={10.5} color={MUTED}>
+        Landscape, on its stand in the booth. One tap on Mixing Station and you are on the console.
+      </Label>
+    </Board>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 11 · Mixing Station — the Streaming custom layout                   */
+/* ------------------------------------------------------------------ */
+
+const MS_STRIPS: {
+  name: string;
+  color: string;
+  /** false = the strip has no ON button (a DCA), "mute" = muted */
+  state: "on" | "mute" | "none";
+  send: string;
+  db: string;
+  ch: string;
+  /** fader position, 0 (bottom) … 1 (top) */
+  pos: number;
+  /** meter height, 0 … 1 */
+  meter: number;
+}[] = [
+  { name: "Pstr 1", color: "#3d8b6b", state: "on", send: "Stream", db: "+0.6", ch: "Ch 1", pos: 0.62, meter: 0 },
+  { name: "Pstr 2", color: "#3d8b6b", state: "on", send: "Stream", db: "-1.7", ch: "Ch 2", pos: 0.56, meter: 0 },
+  { name: "Blue", color: "#3f78c4", state: "on", send: "Stream", db: "-2.2", ch: "Ch 3", pos: 0.52, meter: 0.34 },
+  { name: "KbrdV", color: "#bf4640", state: "on", send: "Stream", db: "+0.9", ch: "Ch 8", pos: 0.62, meter: 0.12 },
+  { name: "Yellow", color: "#bf4640", state: "on", send: "Stream", db: "-4.6", ch: "Ch 4", pos: 0.44, meter: 0.62 },
+  { name: "Orange", color: "#bf4640", state: "on", send: "Stream", db: "+3.9", ch: "Ch 5", pos: 0.74, meter: 0.5 },
+  { name: "White", color: "#bf4640", state: "on", send: "Stream", db: "-4.6", ch: "Ch 7", pos: 0.44, meter: 0.78 },
+  { name: "KbrdLR", color: "#a24f96", state: "on", send: "Stream", db: "-0.9", ch: "Ch 9", pos: 0.58, meter: 0 },
+  { name: "SynLR", color: "#a24f96", state: "on", send: "Stream", db: "-0.7", ch: "Ch 11", pos: 0.58, meter: 0 },
+  { name: "GPiano", color: "#a24f96", state: "on", send: "Stream", db: "-7.0", ch: "Ch 33", pos: 0.36, meter: 0.4 },
+  { name: "Drums", color: "#37a0ad", state: "none", send: "Stream", db: "0.0", ch: "DCA 5", pos: 0.3, meter: 0 },
+  { name: "FxRet 1", color: "#3d8b6b", state: "on", send: "Stream", db: "-5.5", ch: "FxRet 1", pos: 0.46, meter: 0.28 },
+  { name: "Green", color: "#e8ebec", state: "mute", send: "Main 1", db: "-∞", ch: "Ch 6", pos: 0.16, meter: 0 },
+  { name: "CompLR", color: "#e8ebec", state: "on", send: "Stream", db: "+7.6", ch: "Ch 41", pos: 0.86, meter: 0 },
+];
+
+const MS_TABS = ["Streaming", "Main Page", "Vocals", "Instr", "FxSnd/Mtx", "Main", "DCA"];
+const MS_MIXES: { label: string; color: string }[] = [
+  { label: "Stream", color: "#e8ebec" },
+  { label: "DrmMix", color: "#37a0ad" },
+  { label: "Comms", color: "#e8ebec" },
+  { label: "FX Rtn", color: "#3d8b6b" },
+  { label: "Mix 5", color: "#3d8b6b" },
+  { label: "Mix 6", color: "#3d8b6b" },
+  { label: "GPstr", color: "#3d8b6b" },
+  { label: "GVcl", color: "#bf4640" },
+  { label: "GInstr", color: "#d8a23c" },
+];
+
+function MixingStationLayout() {
+  const SW = 44; // strip width
+  const GAP = 3;
+  const X0 = 26; // leaves a gutter down the left for the callout badges
+  const TOP = 30;
+  const FAD_TOP = 150;
+  const FAD_H = 200;
+  const W = 760;
+  const H = 470;
+  const masterX = X0 + MS_STRIPS.length * (SW + GAP) + 18;
+
+  const strip = (
+    s: (typeof MS_STRIPS)[number],
+    x: number,
+  ) => {
+    const muted = s.state === "mute";
+    const light = s.color === "#e8ebec";
+    const faderY = FAD_TOP + FAD_H - 22 - s.pos * (FAD_H - 44);
+    return (
+      <g key={s.name + s.ch}>
+        {/* name button */}
+        <rect x={x} y={TOP} width={SW} height={22} rx="3" fill={s.color} stroke={light ? "#9aa2a6" : s.color} />
+        <text
+          x={x + SW / 2}
+          y={TOP + 14.5}
+          textAnchor="middle"
+          fontSize={s.name.length > 6 ? 7.5 : 8.5}
+          fontWeight="700"
+          fill={light || s.color === "#d8a23c" ? "#12171a" : "#ffffff"}
+          fontFamily={FONT}
+        >
+          {s.name}
+        </text>
+
+        {/* pan */}
+        <rect x={x} y={TOP + 25} width={SW} height={20} rx="3" fill="#222b31" />
+        <circle cx={x + SW / 2} cy={TOP + 35} r="5" fill="#e9edee" />
+        <line x1={x + SW / 2} y1={TOP + 27} x2={x + SW / 2} y2={TOP + 43} stroke="#5b6a72" strokeWidth="1" />
+
+        {/* ON / MUTE */}
+        {s.state === "none" ? (
+          <rect x={x} y={TOP + 48} width={SW} height={26} rx="3" fill="#141a1e" />
+        ) : (
+          <>
+            <rect
+              x={x}
+              y={TOP + 48}
+              width={SW}
+              height={26}
+              rx="3"
+              fill={muted ? "#d0453c" : "#232c31"}
+              stroke={muted ? "#f0837a" : SUCCESS}
+              strokeWidth="1.4"
+            />
+            <text
+              x={x + SW / 2}
+              y={TOP + 65}
+              textAnchor="middle"
+              fontSize="8.5"
+              fontWeight="700"
+              fill={muted ? "#ffffff" : SCREEN_TEXT}
+              fontFamily={FONT}
+            >
+              {muted ? "MUTE" : "ON"}
+            </text>
+          </>
+        )}
+
+        {/* send destination */}
+        <rect
+          x={x}
+          y={TOP + 77}
+          width={SW}
+          height={20}
+          rx="3"
+          fill={s.send === "Stream" ? "#f2f4f4" : "#e3b23c"}
+        />
+        <text x={x + SW / 2} y={TOP + 90.5} textAnchor="middle" fontSize="7" fill="#1a2226" fontFamily={FONT}>
+          {`-> ${s.send}`}
+        </text>
+
+        {/* send level readout */}
+        <text
+          x={x + SW / 2}
+          y={TOP + 112}
+          textAnchor="middle"
+          fontSize="8.5"
+          fontWeight="700"
+          fill={muted ? "#f0837a" : SCREEN_TEXT}
+          fontFamily={FONT}
+        >
+          {s.db}
+        </text>
+
+        {/* fader track + cap */}
+        <rect x={x + 9} y={FAD_TOP} width={4} height={FAD_H} rx="2" fill="#0c1013" />
+        <rect x={x + 2} y={faderY} width={18} height={22} rx="3" fill="#9aa3a8" stroke="#5d666b" />
+        <line x1={x + 2} y1={faderY + 11} x2={x + 20} y2={faderY + 11} stroke="#ffffff" strokeWidth="1.6" />
+
+        {/* meter */}
+        <rect x={x + 26} y={FAD_TOP} width={9} height={FAD_H} rx="2" fill="#0c1013" />
+        {s.meter > 0 && (
+          <rect
+            x={x + 26}
+            y={FAD_TOP + FAD_H - s.meter * FAD_H}
+            width={9}
+            height={s.meter * FAD_H}
+            rx="2"
+            fill={s.meter > 0.75 ? "#e3b23c" : "#5fd166"}
+          />
+        )}
+
+        {/* channel label */}
+        <text x={x + SW / 2} y={FAD_TOP + FAD_H + 13} textAnchor="middle" fontSize="7.5" fill="#9fb0b6" fontFamily={FONT}>
+          {s.ch}
+        </text>
+      </g>
+    );
+  };
+
+  return (
+    <Board w={W} h={H} label="The Mixing Station Streaming custom layout on the booth tablet">
+      <rect x={0} y={0} width={W} height={H} rx="10" fill="#0a0d10" />
+
+      {/* header */}
+      <Label x={16} y={16} size={9} color="#9fb0b6">
+        ‹ Custom Layout
+      </Label>
+      <Label x={124} y={16} size={9} color={SCREEN_TEXT} weight={700}>
+        Streaming
+      </Label>
+      <Badge x={112} y={12} n={1} />
+
+      {MS_STRIPS.map((s, i) => strip(s, X0 + i * (SW + GAP)))}
+
+      {/* master (Stream) strip, separated as it is on the tablet */}
+      <line x1={masterX - 10} y1={TOP} x2={masterX - 10} y2={FAD_TOP + FAD_H + 6} stroke="#2a343a" strokeWidth="1.5" />
+      {strip(
+        { name: "Stream", color: "#e8ebec", state: "mute", send: "Main 1", db: "-1.8", ch: "Mix 1", pos: 0.56, meter: 0.36 },
+        masterX,
+      )}
+      <Badge x={masterX + SW / 2} y={FAD_TOP + FAD_H + 26} n={6} />
+
+      {/* callout badges, in the gutter to the left of the first strip */}
+      <Badge x={X0 - 12} y={TOP + 11} n={2} />
+      <Badge x={X0 - 12} y={TOP + 61} n={3} />
+      <Badge x={X0 - 12} y={TOP + 87} n={4} />
+
+      {/* the muted Green strip gets its own badge */}
+      <Badge x={X0 + 12 * (SW + GAP) + SW / 2} y={FAD_TOP + FAD_H + 26} n={5} />
+
+      {/* bottom bar — layout tabs */}
+      {MS_TABS.map((t, i) => (
+        <g key={t}>
+          <rect
+            x={14 + i * 60}
+            y={H - 46}
+            width={56}
+            height={32}
+            rx="4"
+            fill="#1a2228"
+            stroke={i === 0 ? SUCCESS : "#2c363c"}
+            strokeWidth={i === 0 ? 1.8 : 1}
+          />
+          <text
+            x={42 + i * 60}
+            y={H - 26}
+            textAnchor="middle"
+            fontSize={t.length > 7 ? 7 : 8}
+            fill={SCREEN_TEXT}
+            fontFamily={FONT}
+          >
+            {t}
+          </text>
+        </g>
+      ))}
+      <Badge x={26} y={H - 58} n={7} />
+
+      {/* bottom bar — fine / mute enable */}
+      <rect x={452} y={H - 46} width={44} height={32} rx="4" fill="#1a2228" stroke={SUCCESS} strokeWidth="1.6" />
+      <text x={474} y={H - 26} textAnchor="middle" fontSize="8" fill={SCREEN_TEXT} fontFamily={FONT}>
+        Fine
+      </text>
+      <rect x={500} y={H - 46} width={62} height={32} rx="4" fill="#d0453c" />
+      <text x={531} y={H - 26} textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#ffffff" fontFamily={FONT}>
+        Mute Enable
+      </text>
+      <Badge x={512} y={H - 58} n={8} />
+
+      {/* bottom bar — mix selects */}
+      {MS_MIXES.map((m, i) => (
+        <g key={m.label}>
+          <rect x={568 + i * 21} y={H - 46} width={18} height={32} rx="3" fill="#1a2228" stroke={m.color} strokeWidth="1.4" />
+          <text
+            x={577 + i * 21}
+            y={H - 30}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize="7"
+            fill={SCREEN_TEXT}
+            fontFamily={FONT}
+            transform={`rotate(-90 ${577 + i * 21} ${H - 30})`}
+          >
+            {m.label}
+          </text>
+        </g>
+      ))}
+      <Badge x={580} y={H - 58} n={9} />
+    </Board>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 12 · Monitoring the stream on headphones                            */
+/* ------------------------------------------------------------------ */
+
+function MonitorRouting() {
+  return (
+    <Board w={700} h={280} label="Switching the audio monitor to external headphones">
+      <Label x={16} y={22} weight={700} size={11} color={TEAL}>
+        MONITORING THE STREAM
+      </Label>
+
+      <Box x={20} y={44} w={150} h={54} title="Stream mix" sub="AUX 1 on the SQ-6" color={TEAL} />
+      <Arrow x1={170} y1={71} x2={214} y2={71} color={TEAL2} />
+      <Box x={214} y={44} w={150} h={54} title="Audio monitor" sub="output selector" color={GOLD} fill="#fdf7ec" />
+
+      {/* the two destinations */}
+      <Arrow x1={364} y1={60} x2={430} y2={44} color={SUCCESS} />
+      <Arrow x1={364} y1={84} x2={430} y2={110} color={MUTED} dashed />
+
+      <rect x={430} y={22} width={246} height={50} rx="8" fill="#eef7f2" stroke={SUCCESS} strokeWidth="2" />
+      <Label x={444} y={42} size={11.5} weight={800} color={INK}>
+        🎧 EXTERNAL HEADPHONES
+      </Label>
+      <Label x={444} y={58} size={9.5} color={MUTED}>
+        select this whenever you listen on headphones
+      </Label>
+
+      <rect x={430} y={88} width={246} height={50} rx="8" fill="#f4f5f5" stroke={GRID} strokeWidth="1.5" strokeDasharray="4 4" />
+      <Label x={444} y={108} size={11.5} weight={700} color={MUTED}>
+        🔈 Built-in / booth output
+      </Label>
+      <Label x={444} y={124} size={9.5} color={MUTED}>
+        the default — leave it here when you are not listening
+      </Label>
+
+      {/* the rule */}
+      <rect x={20} y={166} width={656} height={96} rx="8" fill="#fdf7ec" stroke={GOLD} strokeWidth="1.5" />
+      <Label x={36} y={188} size={11} weight={800} color={INK}>
+        The rule
+      </Label>
+      <Label x={36} y={208} size={10.5} color={INK}>
+        Plugging headphones in does not move the monitor by itself. Switch the audio monitor to
+      </Label>
+      <Label x={36} y={225} size={10.5} color={INK}>
+        EXTERNAL HEADPHONES before you rely on what you hear — otherwise you are listening to the
+      </Label>
+      <Label x={36} y={242} size={10.5} color={INK}>
+        room, not the stream, and a silent stream sounds perfectly fine. Switch it back when you unplug.
+      </Label>
+    </Board>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Registry                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -1212,6 +1655,49 @@ export function StreamingVisual({ name }: { name: string }) {
           caption="A plan, not a script — the rule underneath it is that the stream should show what a person in the room would be looking at."
         >
           <ServiceTimeline />
+        </Frame>
+      );
+    case "stream-tablet-home":
+      return (
+        <Frame
+          title="The sound-control tablet, as it sits in the booth"
+          legend={[
+            { n: 1, label: "Status bar", text: "clock, Wi-Fi, battery. The tablet reaches the SQ-6 over the booth network — no Wi-Fi, no control." },
+            { n: 2, label: "Mixing Station", text: "the app that drives the console. One tap and you are on the faders." },
+            { n: 3, label: "Dock", text: "Mixing Station is pinned here too, so it is one tap from any home screen." },
+          ]}
+          caption="A schematic of the tablet home screen rather than a pixel copy. If the icon is not where this shows it, look in the dock or the app drawer — it is on the tablet."
+        >
+          <TabletHome />
+        </Frame>
+      );
+    case "stream-mixing-station":
+      return (
+        <Frame
+          title="Mixing Station — the “Streaming” custom layout"
+          legend={[
+            { n: 1, label: "Layout name", text: "“Custom Layout / Streaming”. If this does not say Streaming, you are on the wrong page." },
+            { n: 2, label: "Channel button", text: "the name and its family colour — the same colour code as the board." },
+            { n: 3, label: "ON / MUTE", text: "green outline ON = feeding the stream; red MUTE = silent on this mix." },
+            { n: 4, label: "Send destination", text: "“-> Stream” means the fader below sets that channel's level INTO the stream mix." },
+            { n: 5, label: "Green, muted", text: "Green sits muted and off the Stream send — see the green-mic rule in the Sound Tech track." },
+            { n: 6, label: "Stream master", text: "Mix 1, the whole stream feed. This is the one fader that moves everything at once." },
+            { n: 7, label: "Layout tabs", text: "Streaming, Main Page, Vocals, Instr, FxSnd/Mtx, Main, DCA. Stay on Streaming." },
+            { n: 8, label: "Fine / Mute Enable", text: "Fine slows fader moves. Mute Enable arms the mute buttons so you cannot fat-finger one." },
+            { n: 9, label: "Mix select", text: "which mix the faders are showing — Stream, DrmMix, Comms, FX Rtn, and the groups." },
+          ]}
+          caption="Levels and mutes in this drawing are the ones captured in the booth — treat them as an example of a working state, not a target to dial in."
+        >
+          <MixingStationLayout />
+        </Frame>
+      );
+    case "stream-monitor-out":
+      return (
+        <Frame
+          title="Monitoring the stream on headphones"
+          caption="Switch the audio monitor to external headphones before you trust what you hear, and switch it back when you unplug."
+        >
+          <MonitorRouting />
         </Frame>
       );
     default:

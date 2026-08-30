@@ -14,6 +14,9 @@ To add real screen grabs to a module:
 They then render under the lessons in the same slide viewer the Safety track
 uses — prev/next, a thumbnail strip, and click to enlarge.
 
+`stream-audio/` is already set up this way for the booth tablet we run the
+stream's audio from — see the README in that folder.
+
 Module slugs: `stream-overview`, `stream-ecamm-tour`, `stream-scenes`,
 `stream-streamdeck`, `stream-cameras`, `stream-audio`, `stream-run-a-service`,
 `stream-troubleshooting`.
