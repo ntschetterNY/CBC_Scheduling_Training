@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { isSuperAdmin } from "@/lib/access";
 import { curriculum } from "@/lib/curriculum";
 import { safetyCurriculum } from "@/lib/safety-curriculum";
+import { streamingCurriculum } from "@/lib/streaming-curriculum";
 import { programs, STATUS_LABEL, type ProgramStatus } from "@/lib/programs";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,6 +32,7 @@ export default async function Home() {
   const metaBySlug: Record<string, string> = {
     "sound-tech": programMeta(curriculum),
     "physical-security": programMeta(safetyCurriculum),
+    "live-streaming": programMeta(streamingCurriculum),
   };
 
   return (

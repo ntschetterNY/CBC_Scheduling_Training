@@ -3,9 +3,11 @@
  * on the public home page (app/page.tsx).
  *
  * "Sound Tech Training" links into the SQ-6 curriculum (resolved at render to
- * /dashboard or /login) and "Physical Security" links into the Safety &
- * Security curriculum at /safety. The rest are placeholders that render as
- * "Coming soon" / "In progress" cards until their curriculum is built. To add
+ * /dashboard or /login), "Physical Security" links into the Safety &
+ * Security curriculum at /safety, and "Live Streaming" links into the Ecamm
+ * Live / Stream Deck curriculum at /streaming. The rest are placeholders that
+ * render as "Coming soon" / "In progress" cards until their curriculum is
+ * built. To add
  * a real program later: build its lessons, then flip `status` to "available"
  * and point `href` at its entry route.
  */
@@ -48,6 +50,16 @@ export const programs: Program[] = [
       "Situational awareness, access control, de-escalation, and emergency response for the CrossBridge safety team — so every gathering stays safe and welcoming.",
     status: "available",
     href: "/safety",
+  },
+  {
+    slug: "live-streaming",
+    name: "Live Streaming",
+    category: "Tech · Booth",
+    icon: "🎥",
+    description:
+      "Run the Sunday stream on Ecamm Live and the Stream Deck — the scene list, our two cameras and the slides, audio from the SQ-6, and calm fixes when something breaks.",
+    status: "available",
+    href: "/streaming",
   },
   {
     slug: "bible-teaching",

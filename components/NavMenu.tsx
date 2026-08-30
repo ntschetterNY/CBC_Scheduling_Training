@@ -66,6 +66,7 @@ export function NavMenu({
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/learn", label: "Sound Tech Modules", icon: "🎚️" },
         { href: "/safety", label: "Safety & Security Modules", icon: "🛡️" },
+        { href: "/streaming", label: "Live Streaming Modules", icon: "🎥" },
       ],
     },
     {
