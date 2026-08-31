@@ -4,8 +4,9 @@
  *
  * "Sound Tech Training" links into the SQ-6 curriculum (resolved at render to
  * /dashboard or /login), "Physical Security" links into the Safety &
- * Security curriculum at /safety, and "Live Streaming" links into the Ecamm
- * Live / Stream Deck curriculum at /streaming. The rest are placeholders that
+ * Security curriculum at /safety, "Live Streaming" links into the Ecamm
+ * Live / Stream Deck curriculum at /streaming, and "Personal Finance" links
+ * into the money curriculum at /finance. The rest are placeholders that
  * render as "Coming soon" / "In progress" cards until their curriculum is
  * built. To add
  * a real program later: build its lessons, then flip `status` to "available"
@@ -60,6 +61,16 @@ export const programs: Program[] = [
       "Run the Sunday stream on Ecamm Live and the Stream Deck — the scene list, our two cameras and the slides, audio from the SQ-6, and calm fixes when something breaks.",
     status: "available",
     href: "/streaming",
+  },
+  {
+    slug: "personal-finance",
+    name: "Personal Finance",
+    category: "Life & Stewardship",
+    icon: "💵",
+    description:
+      "Get out of debt and stay out — a budget that works, the debt snowball, an emergency fund, investing, and generosity. Modeled on the baby-steps approach, with our own take on credit and retirement accounts.",
+    status: "available",
+    href: "/finance",
   },
   {
     slug: "bible-teaching",

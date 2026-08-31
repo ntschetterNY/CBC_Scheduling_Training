@@ -50,6 +50,7 @@ export async function updateSession(request: NextRequest) {
     "/learn",
     "/safety",
     "/streaming",
+    "/finance",
     "/admin",
     "/feature-requests",
     "/schedule",
