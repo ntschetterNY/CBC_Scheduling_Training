@@ -517,11 +517,13 @@ const streamingCurriculumBase: Module[] = [
     slug: "stream-audio",
     order: 6,
     title: "Audio on the Stream",
-    subtitle: "Where the stream's sound comes from, the three faders, and the silent-stream drill.",
+    subtitle: "Where the stream's sound comes from, the booth tablet that controls it, and the silent-stream drill.",
     icon: "🔊",
-    estMinutes: 10,
+    estMinutes: 16,
     objectives: [
       "Trace the stream's audio from the SQ-6 to Ecamm",
+      "Open Mixing Station on the booth tablet and read the Streaming layout",
+      "Switch the audio monitor to external headphones before monitoring the stream",
       "Set and check levels in the Sound Levels window",
       "Work the 'room sounds fine, stream is silent' problem in the right order",
     ],
@@ -529,6 +531,31 @@ const streamingCurriculumBase: Module[] = [
       {
         heading: "Where the sound comes from",
         body: "The stream's audio is not picked up in the booth. It is a mix built by the sound tech on the Allen and Heath SQ-6 and sent to you.\n\nIn the sound curriculum that mix is AUX 1 — 'Stream' — and it leaves the console on local outputs 11 and 12. It arrives at the streaming Mac through a Focusrite Scarlett 2i2 USB audio interface, which is the device you see named in Ecamm's Sound Levels window.\n\nThat division of labor matters: the CONTENT of the mix (who is up, how loud the band is against the pastor) belongs to the sound tech. The PRESENCE and LEVEL of that mix in Ecamm belongs to you. If the balance is wrong, talk to the sound booth. If the stream is silent while the room is fine, start on your side.\n\nThe exact console outputs are documented in the house Sound Manual — worth confirming in the booth so you can describe a problem precisely when you hand it over.",
+      },
+      {
+        heading: "The booth tablet — our remote for the console",
+        body: "Next to the Mac mini there is a TABLET on a stand, and it is not a second monitor. It is a remote control for the SQ-6. It runs an app called MIXING STATION, which talks to the console over the booth network and puts the stream's faders and mutes in your hands without walking to the board.\n\nTwo things follow from that, and they matter more than anything else in this module:\n\n- IT IS THE REAL CONSOLE. A fader you move in Mixing Station moves on the SQ-6. There is no practice mode and there is no undo. If you would not reach across the board and do it, do not do it on the tablet.\n- IT NEEDS THE NETWORK. Mixing Station reaches the console over Wi-Fi. If the tablet drops off the network the app goes disconnected and nothing you touch does anything — which looks exactly like a broken app until you glance at the Wi-Fi icon.\n\nStart it the same way every week: wake the tablet, check Wi-Fi and battery in the status bar, tap MIXING STATION (it is on the home screen and pinned in the dock), and wait for it to actually connect to the console before you touch a fader.",
+        visual: "stream-tablet-home",
+        tip: "Three things in one glance before a service: Wi-Fi up, battery healthy, Mixing Station connected. A tablet at 8% with no Wi-Fi is not a control surface.",
+      },
+      {
+        heading: "Reading the Streaming layout",
+        body: "Mixing Station keeps a row of CUSTOM LAYOUTS along the bottom — Streaming, Main Page, Vocals, Instr, FxSnd/Mtx, Main, DCA. For the stream you live on STREAMING and you leave the rest alone. The header at the top left says which one you are on; if it does not say Streaming, you are on the wrong page.\n\nRead one strip from the top down:\n\n- THE NAME BUTTON, coloured by family — Pstr 1 and Pstr 2 green, Blue blue, the vocals (Yellow, Orange, White, KbrdV) red, keys and piano magenta, drums cyan. The same colour code as the board, so what you already know transfers.\n- PAN, the little knob underneath.\n- ON / MUTE. A green-outlined ON means that channel is feeding this mix; a red MUTE means it is silent on it.\n- THE SEND DESTINATION — the pale strip reading '-> Stream'. This is the one to read first. It tells you the fader below sets that channel's level INTO THE STREAM MIX, not into the house. A strip showing '-> Main 1' in gold is pointed somewhere else entirely.\n- THE LEVEL READOUT, THE FADER AND THE METER, with the console channel named at the bottom (Ch 1, Ch 4, DCA 5, FxRet 1, and so on).\n\nPast a gap on the right sits STREAM itself — Mix 1, the master for the whole stream feed. That single fader moves everything going out at once, which makes it both the most useful and the most dangerous control on the page.\n\nTwo buttons at the bottom earn their keep: FINE slows fader moves down so a fingertip is worth half a decibel instead of three, and MUTE ENABLE arms the mute buttons so a stray thumb cannot mute a live channel.",
+        visual: "stream-mixing-station",
+        control: "Mixing Station — Streaming layout",
+        tip: "Read the '-> Stream' strip before you move anything. It is the difference between changing what people at home hear and changing what the room hears.",
+      },
+      {
+        heading: "Why Green sits muted",
+        body: "In the Streaming layout you will usually find GREEN muted, and pointed at Main 1 rather than Stream. That is not a fault someone forgot to clear.\n\nGreen is the handheld with no squelch filter. If it is powered off while still live, its receiver passes open-air noise straight through — a burst of static into the house and out to everyone watching. So Green is muted whenever it is not actively in someone's hand, and its own MUTE switch on the mic stays on as well.\n\nWhat that means for you on the tablet: A MUTED GREEN IS NORMAL. Do not unmute it because it looks out of place next to the others. If Green is genuinely being used and is not coming through, that is a conversation with the sound tech, not a button you press. The full rule lives in the Sound Tech track, in 'Mics & the Color System'.",
+        tip: "Muted strips in the Streaming layout are usually deliberate. Ask before you unmute — especially Green.",
+      },
+      {
+        heading: "Monitoring the stream on headphones",
+        body: "You cannot judge the stream mix off the room. The room is the room; the stream is whatever the console actually sent. So when you want to know what the people at home are hearing, you listen to the stream itself — on headphones.\n\nWhen you do, SWITCH THE AUDIO MONITOR TO EXTERNAL HEADPHONES. Plugging headphones in does not move the monitor feed to them on its own. Until you switch the monitor output over, you can sit there wearing headphones, hearing the room, and conclude that everything is fine while the stream goes out silent. That is the single most convincing way to miss a dead stream.\n\nThe drill:\n\n1. Plug the headphones in.\n2. Switch the audio monitor output to EXTERNAL HEADPHONES.\n3. Listen. You should be hearing the STREAM mix — pastor, band, and nothing of the room that is not in the mix. If it sounds like the room, the monitor did not switch.\n4. Start with the level low and bring it up. A monitor left hot from last week is unpleasant and it will make you distrust a perfectly good mix.\n5. When you are done, switch the monitor back and unplug.\n\nThe selector sits with the monitoring gear in the booth — a lead will show you exactly which control it is on your first Sunday. Wherever the switch lives, the rule is the same: monitor set to external headphones, or you are not monitoring the stream.",
+        visual: "stream-monitor-out",
+        control: "Audio monitor — external headphones",
+        tip: "Headphones on is not the same as monitor switched. If what you hear sounds like the room rather than the mix, you are still on the built-in output.",
       },
       {
         heading: "The three faders",
@@ -561,6 +588,54 @@ const streamingCurriculumBase: Module[] = [
         answer: 1,
         explanation:
           "The stream mix is built on the console and delivered to the streaming Mac. Your job is to confirm it is present and at a sane level, not to remix it.",
+      },
+      {
+        question: "What is the tablet in the booth for?",
+        options: [
+          "It is a second monitor mirroring the Mac mini",
+          "It runs Mixing Station — a remote control for the SQ-6, so a fader you move on it moves on the console",
+          "It shows the YouTube chat",
+          "It is a spare machine in case the Mac fails",
+        ],
+        answer: 1,
+        explanation:
+          "Mixing Station talks to the SQ-6 over the booth network. It is the real console — no practice mode, no undo — and it needs Wi-Fi to do anything at all.",
+      },
+      {
+        question: "In the Streaming layout, a strip's send destination reads '-> Stream'. What does the fader under it do?",
+        options: [
+          "Sets that channel's level in the house mix",
+          "Sets that channel's level into the stream mix",
+          "Sets the singer's in-ear level",
+          "Nothing until you press Go Live",
+        ],
+        answer: 1,
+        explanation:
+          "The send destination tells you which mix the fader is editing. '-> Stream' is the stream mix; a gold '-> Main 1' strip is pointed somewhere else.",
+      },
+      {
+        question: "You put headphones on to check the stream mix. What has to happen before you can trust what you hear?",
+        options: [
+          "Nothing — plugging in switches the monitor automatically",
+          "Switch the audio monitor to external headphones; otherwise you are hearing the room, not the stream",
+          "Turn the Ecamm fader up",
+          "Ask the sound tech to solo each channel",
+        ],
+        answer: 1,
+        explanation:
+          "Plugging headphones in does not move the monitor feed. Until you switch the monitor output to external headphones you can hear a healthy room over a completely silent stream.",
+      },
+      {
+        question: "Green is showing MUTE in the Streaming layout. What should you do?",
+        options: [
+          "Unmute it — every vocal should be feeding the stream",
+          "Leave it. Green has no squelch filter and stays muted when it is not in use; raise it with the sound tech if it is genuinely needed",
+          "Pull its fader down as well",
+          "Switch to the Vocals layout and unmute it there",
+        ],
+        answer: 1,
+        explanation:
+          "A muted Green is normal, not an oversight. Unmuting a mic that is about to be switched off is exactly how the static burst reaches the stream.",
       },
       {
         question: "The stream is silent but the room sounds fine. What do you check FIRST?",

@@ -14,6 +14,7 @@
  *   Workflow     — "startup-sequence" | "service-timeline" | "shutdown-sequence"
  *                  | "scene-recall" | "recall-timing" | "db-targets"
  *   Mics / color — "mic-colors" | "mic-tuning" | "color-families"
+ *                  | "green-mic"
  *   Processing   — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
  *                  | "comp-limiter"
  *   Streaming    — any "stream-…" key, drawn by components/StreamingVisual.tsx
@@ -1444,6 +1445,128 @@ function CompLimiter() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Green mic — no squelch, so mute before you power it off             */
+/* ------------------------------------------------------------------ */
+
+function GreenMic() {
+  const W = 800;
+  const H = 392;
+  const MGREEN = "#4f9e63";
+  const cx = 86; // centre line of the handheld
+  const steps: { n: number; t: string; s: string }[] = [
+    { n: 1, t: "Mute the channel at the board", s: "Green's channel and DCA down and muted first" },
+    { n: 2, t: "Slide the mic's own switch to MUTE", s: "on the handheld — the switch that must stay put" },
+    { n: 3, t: "Only now press power OFF", s: "the receiver never hears the carrier drop" },
+  ];
+  const callouts = [
+    { y: 124, t: "Green ID band", s: "the colour is the channel — Ch 6 on the board" },
+    { y: 159, t: "Display", s: "shows MUTE and the battery — check both first" },
+    { y: 215, t: "MUTE switch", s: "leave it here whenever the mic is not in use" },
+    { y: 306, t: "Power button", s: "last thing off, first thing on — never unmuted" },
+  ];
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="h-auto w-full"
+      role="img"
+      aria-label="The Green wireless handheld: its MUTE switch, its power button, and the mute-before-off order"
+    >
+      <text x={W / 2} y={22} textAnchor="middle" fontSize="11.5" fontWeight="700" fill={INK} fontFamily={FONT}>
+        Green has no squelch filter — an unmuted power-off puts static in the house AND the stream
+      </text>
+
+      {/* ── the handheld ──────────────────────────────────────────── */}
+      <circle cx={cx} cy={82} r="30" fill="#b9c0c3" stroke="#8d9599" strokeWidth="1.5" />
+      {[-18, -9, 0, 9, 18].map((d) => (
+        <line key={`h${d}`} x1={cx - 28} y1={82 + d} x2={cx + 28} y2={82 + d} stroke="#98a1a5" strokeWidth="1" />
+      ))}
+      {[-18, -9, 0, 9, 18].map((d) => (
+        <line key={`v${d}`} x1={cx + d} y1={54} x2={cx + d} y2={110} stroke="#98a1a5" strokeWidth="1" />
+      ))}
+      <rect x={cx - 20} y={106} width={40} height={12} fill="#8d9599" />
+      <rect x={cx - 19} y={118} width={38} height={214} rx="13" fill="#2f373b" stroke="#1c2225" strokeWidth="1.5" />
+      {/* the colour band that makes it "the Green mic" */}
+      <rect x={cx - 19} y={118} width={38} height={16} rx="6" fill={MGREEN} />
+      <rect x={cx - 19} y={128} width={38} height={6} fill={MGREEN} />
+      {/* display */}
+      <rect x={cx - 14} y={144} width={28} height={30} rx="3" fill="#0f1416" stroke="#4a565b" />
+      <text x={cx} y={158} textAnchor="middle" fontSize="7" fontWeight="700" fill="#f0837a" fontFamily={FONT}>
+        MUTE
+      </text>
+      <rect x={cx - 9} y={162} width={18} height={7} rx="1.5" fill="none" stroke="#8fd39c" strokeWidth="1" />
+      <rect x={cx - 8} y={163} width={16} height={5} fill="#8fd39c" />
+      {/* mute switch, drawn in the MUTE position */}
+      <rect x={cx - 13} y={196} width={26} height={38} rx="5" fill="#151b1e" stroke="#59666c" />
+      <rect x={cx - 10} y={199} width={20} height={15} rx="3" fill="#d0453c" />
+      <text x={cx} y={210} textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#ffffff" fontFamily={FONT}>
+        MUTE
+      </text>
+      <text x={cx} y={229} textAnchor="middle" fontSize="6.5" fill="#7d8a90" fontFamily={FONT}>
+        ON
+      </text>
+      {/* power button */}
+      <circle cx={cx} cy={306} r="9.5" fill="#c03a30" stroke="#7d2620" strokeWidth="1.5" />
+      <path d={`M${cx} 300 v6`} stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx={cx} cy={304} r="4.5" fill="none" stroke="#ffffff" strokeWidth="1.4" strokeDasharray="12 5" />
+
+      {/* ── callout lines ─────────────────────────────────────────── */}
+      {callouts.map((c) => (
+        <g key={c.t}>
+          <line x1={cx + 22} y1={c.y} x2={160} y2={c.y} stroke={GRID} strokeWidth="1.5" />
+          <circle cx={160} cy={c.y} r="2.5" fill={TEAL} />
+          <text x={168} y={c.y - 2} fontSize="10.5" fontWeight="800" fill={INK} fontFamily={FONT}>
+            {c.t}
+          </text>
+          <text x={168} y={c.y + 11} fontSize="8.8" fill={MUTED} fontFamily={FONT}>
+            {c.s}
+          </text>
+        </g>
+      ))}
+
+      {/* ── the order ─────────────────────────────────────────────── */}
+      <rect x={440} y={40} width={344} height={204} rx="10" fill="#f6faf7" stroke={SUCCESS} strokeWidth="1.8" />
+      <text x={458} y={64} fontSize="11" fontWeight="800" fill={SUCCESS} fontFamily={FONT}>
+        POWERING GREEN DOWN — IN THIS ORDER
+      </text>
+      {steps.map((st, i) => (
+        <g key={st.n}>
+          <circle cx={472} cy={94 + i * 46} r="11" fill={SUCCESS} />
+          <text x={472} y={98 + i * 46} textAnchor="middle" fontSize="11" fontWeight="700" fill="#ffffff" fontFamily={FONT}>
+            {st.n}
+          </text>
+          <text x={492} y={91 + i * 46} fontSize="10.5" fontWeight="700" fill={INK} fontFamily={FONT}>
+            {st.t}
+          </text>
+          <text x={492} y={104 + i * 46} fontSize="8.8" fill={MUTED} fontFamily={FONT}>
+            {st.s}
+          </text>
+        </g>
+      ))}
+      <text x={458} y={232} fontSize="9" fill={MUTED} fontFamily={FONT}>
+        Powering up runs the same list backwards: on, then unmute.
+      </text>
+
+      {/* ── the wrong order ───────────────────────────────────────── */}
+      <rect x={440} y={256} width={344} height={120} rx="10" fill="#fdf3f2" stroke={DANGER} strokeWidth="1.8" />
+      <text x={458} y={278} fontSize="11" fontWeight="800" fill={DANGER} fontFamily={FONT}>
+        WHAT GOES WRONG WITHOUT IT
+      </text>
+      {[
+        "A squelch filter mutes a receiver when its transmitter",
+        "stops. Green's does not. Power the handheld off while",
+        "it is live and the receiver passes open-air RF hash — a",
+        "loud burst of static into the house speakers and out to",
+        "everyone watching the stream.",
+      ].map((line, i) => (
+        <text key={i} x={458} y={298 + i * 15} fontSize="9.3" fill={INK} fontFamily={FONT}>
+          {line}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Public component                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -1676,6 +1799,15 @@ export function LessonVisual({ name }: { name: string }) {
           caption="Each color maps to a fixed channel, group, and DCA. The singer changes week to week, but 'Yellow' is always the same on the board."
         >
           <MicColors />
+        </Frame>
+      );
+    case "green-mic":
+      return (
+        <Frame
+          title="The Green mic — mute before you power it off"
+          caption="Green's receiver has no squelch filter, so it cannot silence itself when the handheld stops transmitting. The mic's own MUTE switch is the filter — that is why it goes on before the power comes off, and stays on until the mic is back in someone's hand."
+        >
+          <GreenMic />
         </Frame>
       );
     case "mic-tuning":

@@ -28,7 +28,7 @@ export type LessonSection = {
    *   surface     — "layers-stack" | "mute-groups" | "group-vs-dca" | "aux-map"
    *   workflow    — "startup-sequence" | "service-timeline" | "shutdown-sequence"
    *     | "scene-recall" | "recall-timing" | "db-targets"
-   *   mics/color  — "mic-colors" | "mic-tuning" | "color-families"
+   *   mics/color  — "mic-colors" | "mic-tuning" | "color-families" | "green-mic"
    *   processing  — "eq-vocal" | "eq-bass" | "comp-transfer" | "comp-controls"
    *     | "comp-limiter"
    */
@@ -423,18 +423,19 @@ export const curriculum: Module[] = [
     slug: "mics-colors",
     order: 5,
     title: "Mics & the Color System",
-    subtitle: "Our color-coded wireless mics and how singers are assigned in the Scheduling App.",
+    subtitle: "Our color-coded wireless mics, the Green mic's mute rule, and how singers are assigned in the Scheduling App.",
     icon: "🎤",
-    estMinutes: 12,
+    estMinutes: 15,
     objectives: [
       "Identify our color-coded wireless mics and what each is for",
       "Use the Scheduling App to assign the right mic to each singer",
       "Power mics on/off and check batteries correctly",
+      "Follow the Green mic's mute-before-off rule and keep it muted when idle",
     ],
     sections: [
       {
         heading: "The color system",
-        body: "Our wireless handheld mics are color-coded so you can find any channel instantly under service pressure. The colors and their roles:\n\n- PASTOR 1 and PASTOR 2 — the preaching mics (their own group and DCA).\n- BLUE — the ANNOUNCEMENT mic. It is its own wireless handheld, separate from the computer input (the computer audio is a different channel entirely). Blue also creates static if it's unmuted while still turned off, so always turn the mic on before you unmute it.\n- YELLOW, ORANGE, GREEN, WHITE — worship vocalists.\n\nEach color maps to a fixed mute group and DCA on the board, so muting or leveling 'the vocals' is one move. Learn the colors cold — during a service you'll reach for 'Orange' faster than for a channel number.",
+        body: "Our wireless handheld mics are color-coded so you can find any channel instantly under service pressure. The colors and their roles:\n\n- PASTOR 1 and PASTOR 2 — the preaching mics (their own group and DCA).\n- BLUE — the ANNOUNCEMENT mic. It is its own wireless handheld, separate from the computer input (the computer audio is a different channel entirely). Blue also creates static if it's unmuted while still turned off, so always turn the mic on before you unmute it.\n- YELLOW, ORANGE, GREEN, WHITE — worship vocalists. GREEN carries a rule of its own: it has no squelch filter, so it must be muted before it is switched off and must stay muted on the mic whenever it is not in use. That rule gets its own section below.\n\nEach color maps to a fixed mute group and DCA on the board, so muting or leveling 'the vocals' is one move. Learn the colors cold — during a service you'll reach for 'Orange' faster than for a channel number.",
         tip: "The Blue mic is the announcement mic and creates static if the mic is unmuted without being on — be sure to turn the mic on before unmuting it. It is separate from the computer input.",
         control: "Wireless handhelds",
         visual: "mic-colors",
@@ -454,8 +455,15 @@ export const curriculum: Module[] = [
       },
       {
         heading: "Powering and checking mics",
-        body: "For each mic in use:\n\n1. Turn it ON with the red button on the bottom of the handheld.\n2. Check the battery — full is 3 bars; if it's at 1 bar, change the batteries (2 AA).\n3. Confirm it shows up and passes signal at the board on the matching color channel.\n\nAt the end of the service, ensure every mic is turned OFF, then mute all groups. (The wireless receivers live in the booth: Shure SLXD4 for Pastor 1 & 2, Sennheiser EW 100 for Yellow, Orange, and White, and Sennheiser XS Wireless 2 for Green and Blue — all fed by the antenna distribution system. A lead can show you which receiver belongs to which color.)",
-        tip: "Turn mics on with the red button on the bottom and always verify signal at the board before rehearsal — don't assume 'on' means 'working.'",
+        body: "For each mic in use:\n\n1. Turn it ON with the red button on the bottom of the handheld.\n2. Check the battery — full is 3 bars; if it's at 1 bar, change the batteries (2 AA).\n3. Confirm it shows up and passes signal at the board on the matching color channel.\n\nAt the end of the service, ensure every mic is turned OFF, then mute all groups — and take Green last, in its own order: muted at the board, muted on the mic, then off. (The wireless receivers live in the booth: Shure SLXD4 for Pastor 1 & 2, Sennheiser EW 100 for Yellow, Orange, and White, and Sennheiser XS Wireless 2 for Green and Blue — all fed by the antenna distribution system. A lead can show you which receiver belongs to which color.)",
+        tip: "Turn mics on with the red button on the bottom and always verify signal at the board before rehearsal — don't assume 'on' means 'working.' Green is the exception to the order: it gets muted before it gets switched off.",
+      },
+      {
+        heading: "The GREEN mic — mute before you power it off",
+        body: "Green is the one handheld with a rule of its own, and it is not optional.\n\nGreen has NO SQUELCH FILTER on it. Squelch is what lets a wireless receiver notice that its transmitter has stopped and go quiet by itself. Green's cannot do that. So the moment the handheld is switched off while it is still live, the receiver keeps listening to empty air and passes what it finds straight through — a loud burst of static into the house speakers and out to everyone watching the stream.\n\nSo Green comes down in this order, every time:\n\n1. MUTE IT AT THE BOARD — pull Green's channel down and mute it (Ch 6 and its vocal DCA).\n2. MUTE IT ON THE MIC — slide the handheld's own MUTE switch to MUTE.\n3. NOW POWER IT OFF with the button on the bottom.\n\nPowering up is the same list backwards: power on, confirm it is showing up at the board, then unmute. Never unmute a mic that is still switched off — that is the same static, in the other direction.\n\nAnd between all of that: WHEN GREEN IS NOT IN USE, IT STAYS MUTED WITH THE SWITCH ON THE MIC. On the shelf, in the case, on the stand during the sermon, handed back after the last song — the mic's own switch sits on MUTE. Muting it at the board is not a substitute, because the board is not what protects you when someone picks the mic up and thumbs the power button.",
+        tip: "Green has no squelch filter: mute at the board, mute on the mic, THEN power off. And any time Green is not in someone's hand, its own MUTE switch stays on — a board mute does not cover you here.",
+        control: "Green handheld — MUTE switch",
+        visual: "green-mic",
       },
     ],
     quiz: [
@@ -494,6 +502,30 @@ export const curriculum: Module[] = [
         answer: 1,
         explanation:
           "Assignments change weekly. The Scheduling App shows who's singing and which color mic each gets (e.g., Erin → Yellow, Val → Orange).",
+      },
+      {
+        question: "Why must the GREEN mic be muted before it is turned off?",
+        options: [
+          "To save the battery",
+          "It has no squelch filter, so switching it off while live sends a burst of static to the house and the stream",
+          "Because the receiver needs time to reset",
+          "It doesn't — Green is the same as every other mic",
+        ],
+        answer: 1,
+        explanation:
+          "Squelch is what lets a receiver go quiet when its transmitter stops. Green's has none, so an unmuted power-off passes open-air noise straight through. Mute at the board, mute on the mic, then power off.",
+      },
+      {
+        question: "The last song is over and Green is going back on the shelf. Where should its MUTE switch be?",
+        options: [
+          "Wherever it is — the board mute covers it",
+          "On MUTE, and it stays there until the mic is back in a singer's hand",
+          "Off MUTE, so it is ready for next week",
+          "It only matters while the mic is powered on",
+        ],
+        answer: 1,
+        explanation:
+          "Green stays muted with the switch on the mic whenever it is not in use. A board mute doesn't protect you when someone picks the mic up and hits the power button.",
       },
       {
         question: "Why does the color system work even though singers change each week?",
@@ -1103,7 +1135,7 @@ export const curriculum: Module[] = [
     sections: [
       {
         heading: "The shutdown sequence",
-        body: "After the service and teardown, power down in order:\n\n1. Ensure all MICS are turned OFF (including the Blue announcement mic).\n2. MUTE ALL groups.\n3. Turn the COMPUTER audio path OFF.\n4. LIGHTS off.\n5. BREAKERS off.\n6. SYSTEM off (console and stage boxes).\n7. Put the COVER on the board.\n8. Turn the KEY SWITCH off.\n\nThis reverses the startup and leaves everything safe and protected until next week. You never store or overwrite the 'Singing R1' baseline at shutdown — leave it exactly as it is.",
+        body: "After the service and teardown, power down in order:\n\n1. Ensure all MICS are turned OFF (including the Blue announcement mic). GREEN goes off in its own order — muted at the board, then its own MUTE switch on, THEN power off — and its switch stays on MUTE in storage.\n2. MUTE ALL groups.\n3. Turn the COMPUTER audio path OFF.\n4. LIGHTS off.\n5. BREAKERS off.\n6. SYSTEM off (console and stage boxes).\n7. Put the COVER on the board.\n8. Turn the KEY SWITCH off.\n\nThis reverses the startup and leaves everything safe and protected until next week. You never store or overwrite the 'Singing R1' baseline at shutdown — leave it exactly as it is.",
         tip: "Mics off and all groups muted BEFORE you start switching things off — that prevents any pops or noise as the system powers down.",
         control: "Key switch",
         visual: "shutdown-sequence",
