@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AttachmentZone } from "@/components/AttachmentZone";
-import { uploadPhotos } from "@/lib/fr-upload";
+import { uploadAttachments } from "@/lib/fr-upload";
 import {
   formatFrNumber,
   FR_PRIORITIES,
@@ -13,6 +13,8 @@ import {
   type FrPriority,
   type FrStatus,
   type FrType,
+  attachmentNameFromUrl,
+  isImageAttachmentUrl,
 } from "@/lib/feature-requests";
 import type { FeatureRequest, FrComment } from "@/lib/github";
 
@@ -110,7 +112,7 @@ export function FeatureRequestDetail({
     setPosting(true);
     setActionErr("");
     try {
-      const photoUrls = await uploadPhotos(files);
+      const photoUrls = await uploadAttachments(files);
       const res = await fetch(
         `/api/feature-requests/${request.number}/comments`,
         {
@@ -232,18 +234,33 @@ export function FeatureRequestDetail({
             </Section>
           )}
           {request.photoUrls.length > 0 && (
-            <Section title="Screenshots">
+            <Section title="Attachments">
               <div className="flex flex-wrap gap-2">
-                {request.photoUrls.map((u) => (
-                  <a key={u} href={u} target="_blank" rel="noopener noreferrer">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={u}
-                      alt="screenshot"
-                      className="h-24 w-24 rounded-lg border border-brand-border object-cover"
-                    />
-                  </a>
-                ))}
+                {request.photoUrls.map((u) =>
+                  isImageAttachmentUrl(u) ? (
+                    <a key={u} href={u} target="_blank" rel="noopener noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={u}
+                        alt="attachment"
+                        className="h-24 w-24 rounded-lg border border-brand-border object-cover"
+                      />
+                    </a>
+                  ) : (
+                    <a
+                      key={u}
+                      href={u}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-card px-2.5 py-1.5 font-sans text-xs text-brand-text hover:border-brand-accent/50"
+                    >
+                      <span aria-hidden>📎</span>
+                      <span className="max-w-[12rem] truncate">
+                        {attachmentNameFromUrl(u)}
+                      </span>
+                    </a>
+                  )
+                )}
               </div>
             </Section>
           )}
@@ -278,16 +295,31 @@ export function FeatureRequestDetail({
                     )}
                     {c.photoUrls.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {c.photoUrls.map((u) => (
-                          <a key={u} href={u} target="_blank" rel="noopener noreferrer">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={u}
-                              alt="attachment"
-                              className="h-16 w-16 rounded-md border border-brand-border object-cover"
-                            />
-                          </a>
-                        ))}
+                        {c.photoUrls.map((u) =>
+                          isImageAttachmentUrl(u) ? (
+                            <a key={u} href={u} target="_blank" rel="noopener noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={u}
+                                alt="attachment"
+                                className="h-16 w-16 rounded-md border border-brand-border object-cover"
+                              />
+                            </a>
+                          ) : (
+                            <a
+                              key={u}
+                              href={u}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 rounded-md border border-brand-border bg-brand-card px-2 py-1 font-sans text-[11px] text-brand-text hover:border-brand-accent/50"
+                            >
+                              <span aria-hidden>📎</span>
+                              <span className="max-w-[10rem] truncate">
+                                {attachmentNameFromUrl(u)}
+                              </span>
+                            </a>
+                          )
+                        )}
                       </div>
                     )}
                   </li>

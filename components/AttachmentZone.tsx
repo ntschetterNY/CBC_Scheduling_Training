@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState, type ClipboardEvent, type DragEvent } from "react";
-import { MAX_PHOTOS } from "@/lib/feature-requests";
-import { isAcceptableImage } from "@/lib/fr-upload";
+import { MAX_ATTACHMENTS } from "@/lib/feature-requests";
+import { isAcceptableAttachment } from "@/lib/fr-upload";
 
 /**
- * A reusable attachment picker: paste a screenshot, drag-and-drop, or browse.
+ * A reusable attachment picker: paste, drag-and-drop, or browse. Any file type
+ * is accepted (FR-017); images preview as thumbnails, other files as chips.
  * It's a controlled component — the parent owns the `files` array and uploads
  * them on submit. Used by both the request form and the comment composer.
  */
@@ -13,8 +14,8 @@ export function AttachmentZone({
   files,
   onChange,
   disabled = false,
-  max = MAX_PHOTOS,
-  hint = `Paste, drop, or browse — up to ${MAX_PHOTOS} images, 10 MB each.`,
+  max = MAX_ATTACHMENTS,
+  hint = `Paste, drop, or browse — up to ${MAX_ATTACHMENTS} files, 10 MB each. Any file type.`,
   compact = false,
 }: {
   files: File[];
@@ -30,16 +31,15 @@ export function AttachmentZone({
 
   function addFiles(incoming: File[]) {
     setError("");
-    const images = incoming.filter((f) => f.type.startsWith("image/"));
-    if (images.length === 0) return;
-    const bad = images.find((f) => !isAcceptableImage(f));
+    if (incoming.length === 0) return;
+    const bad = incoming.find((f) => !isAcceptableAttachment(f));
     if (bad) {
-      setError(`"${bad.name}" must be a PNG/JPG/GIF/WebP under 10 MB.`);
+      setError(`"${bad.name}" must be a non-empty file under 10 MB.`);
       return;
     }
-    const combined = [...files, ...images].slice(0, max);
-    if (files.length + images.length > max) {
-      setError(`At most ${max} images.`);
+    const combined = [...files, ...incoming].slice(0, max);
+    if (files.length + incoming.length > max) {
+      setError(`At most ${max} files.`);
     }
     onChange(combined);
   }
@@ -92,13 +92,12 @@ export function AttachmentZone({
         } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       >
         <p className="font-sans text-sm font-medium text-brand-text">
-          {compact ? "Attach a screenshot" : "Drop or paste a screenshot"}
+          {compact ? "Attach files" : "Drop or paste files"}
         </p>
         {!compact && <p className="mt-0.5 text-[11px] text-brand-muted">{hint}</p>}
         <input
           ref={inputRef}
           type="file"
-          accept="image/png,image/jpeg,image/gif,image/webp"
           multiple
           disabled={disabled}
           className="hidden"
@@ -113,30 +112,53 @@ export function AttachmentZone({
 
       {files.length > 0 && (
         <ul className="mt-2 flex flex-wrap gap-2">
-          {files.map((f, i) => (
-            <li
-              key={`${f.name}-${i}`}
-              className="group relative h-16 w-16 overflow-hidden rounded-lg border border-brand-border bg-brand-card"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={URL.createObjectURL(f)}
-                alt={f.name}
-                className="h-full w-full object-cover"
-              />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeAt(i);
-                }}
-                aria-label={`Remove ${f.name}`}
-                className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+          {files.map((f, i) =>
+            f.type.startsWith("image/") ? (
+              <li
+                key={`${f.name}-${i}`}
+                className="group relative h-16 w-16 overflow-hidden rounded-lg border border-brand-border bg-brand-card"
               >
-                ×
-              </button>
-            </li>
-          ))}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={URL.createObjectURL(f)}
+                  alt={f.name}
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeAt(i);
+                  }}
+                  aria-label={`Remove ${f.name}`}
+                  className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  ×
+                </button>
+              </li>
+            ) : (
+              <li
+                key={`${f.name}-${i}`}
+                className="flex max-w-full items-center gap-1.5 rounded-lg border border-brand-border bg-brand-card px-2.5 py-1.5"
+              >
+                <span aria-hidden>📎</span>
+                <span className="max-w-[10rem] truncate font-sans text-xs text-brand-text">
+                  {f.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeAt(i);
+                  }}
+                  aria-label={`Remove ${f.name}`}
+                  className="grid h-4 w-4 place-items-center rounded-full text-xs text-brand-muted hover:text-brand-danger"
+                >
+                  ×
+                </button>
+              </li>
+            )
+          )}
         </ul>
       )}
     </div>

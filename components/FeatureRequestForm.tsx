@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AttachmentZone } from "@/components/AttachmentZone";
-import { uploadPhotos } from "@/lib/fr-upload";
+import { uploadAttachments } from "@/lib/fr-upload";
 import {
   FR_PRIORITIES,
   FR_TYPES,
@@ -16,7 +16,7 @@ import {
 type Status = "idle" | "submitting" | "done" | "error";
 
 /**
- * Form for filing a feature request / bug report. Screenshots upload to
+ * Form for filing a feature request / bug report. Attachments upload to
  * Supabase Storage first; the resulting URLs are sent to
  * /api/feature-requests, which files the ticket and embeds them.
  */
@@ -53,7 +53,7 @@ export function FeatureRequestForm({
     setMessage("");
 
     try {
-      const photoUrls = await uploadPhotos(files);
+      const photoUrls = await uploadAttachments(files);
 
       const res = await fetch("/api/feature-requests", {
         method: "POST",
@@ -94,7 +94,7 @@ export function FeatureRequestForm({
         File a new request
       </h3>
       <p className="mt-0.5 text-xs text-brand-muted">
-        Describe the idea or bug. Screenshots help a lot.
+        Describe the idea or bug. Screenshots and files help a lot.
       </p>
 
       <div className="mt-4 space-y-4">
@@ -208,10 +208,10 @@ export function FeatureRequestForm({
           />
         </div>
 
-        {/* Screenshots */}
+        {/* Attachments */}
         <div>
           <span className="mb-1.5 block text-sm font-medium text-brand-text">
-            Screenshots <span className="text-brand-muted">(optional)</span>
+            Attachments <span className="text-brand-muted">(optional)</span>
           </span>
           <AttachmentZone
             files={files}

@@ -7,22 +7,38 @@
  * source of truth for the vocabulary and how each value is presented in the UI.
  */
 
-/** Supabase Storage bucket that holds screenshots attached to requests. */
+/** Supabase Storage bucket that holds files attached to requests. (The id
+ *  predates FR-017 widening attachments beyond screenshots.) */
 export const FEATURE_PHOTO_BUCKET = "feature-request-photos";
 
-/** How many screenshots a single request (or comment) may include. */
-export const MAX_PHOTOS = 6;
+/** How many attachments a single request (or comment) may include. */
+export const MAX_ATTACHMENTS = 6;
 
 /** Per-file size cap (10 MB). */
-export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
-/** Image types we accept as attachments. */
-export const ACCEPTED_IMAGE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/gif",
-  "image/webp",
-];
+/** Extensions rendered inline as images (everything else shows as a file link). */
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg", "avif"];
+
+/** True when an attachment URL points at an image we can render inline. */
+export function isImageAttachmentUrl(url: string): boolean {
+  const ext = url.split("?")[0].split(".").pop()?.toLowerCase() ?? "";
+  return IMAGE_EXTENSIONS.includes(ext);
+}
+
+/**
+ * Human-readable file name for an attachment URL. Upload paths are
+ * `<uuid>-<original name>`, so strip the uuid prefix; fall back to the last
+ * path segment for legacy `<uuid>.<ext>` screenshot uploads.
+ */
+export function attachmentNameFromUrl(url: string): string {
+  const last = decodeURIComponent(url.split("?")[0].split("/").pop() ?? "");
+  const dashed = last.replace(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i,
+    ""
+  );
+  return dashed || last || "attachment";
+}
 
 /**
  * Human-facing request id, derived from the GitHub issue number so it's stable
