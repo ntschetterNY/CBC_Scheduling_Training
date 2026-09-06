@@ -29,6 +29,37 @@ export default async function Home() {
 
   const primaryHref = user ? "/dashboard" : "/login";
   const primaryLabel = user ? "Go to dashboard" : "Start training";
+  // Route app destinations through /login (preserving the target) when the
+  // visitor isn't signed in, matching the program cards below.
+  const appLink = (dest: string) =>
+    user ? dest : `/login?redirectedFrom=${encodeURIComponent(dest)}`;
+  const isAdmin = profile?.role === "admin" || isSuperAdmin(user?.email);
+  const quickLinks = [
+    {
+      href: appLink("/schedule"),
+      icon: "🗓️",
+      title: "Scheduling",
+      body: "See who's serving and confirm your assignments.",
+    },
+    // The roster lives behind the admin area today, so the People link only
+    // shows for admins until a member-facing directory exists (issue #48).
+    ...(isAdmin
+      ? [
+          {
+            href: "/admin/users",
+            icon: "👥",
+            title: "People",
+            body: "The team roster, accounts, and approvals.",
+          },
+        ]
+      : []),
+    {
+      href: user ? "/dashboard" : "#programs",
+      icon: "📚",
+      title: "Training",
+      body: "Every equipping track, with your progress saved.",
+    },
+  ];
   const metaBySlug: Record<string, string> = {
     "sound-tech": programMeta(curriculum),
     "physical-security": programMeta(safetyCurriculum),
@@ -93,6 +124,24 @@ export default async function Home() {
             >
               Browse all trainings
             </a>
+          </div>
+
+          {/* Quick links out to the app's main areas */}
+          <div className="mx-auto mt-10 grid max-w-2xl gap-3 text-left sm:grid-cols-3">
+            {quickLinks.map((l) => (
+              <Link
+                key={l.title}
+                href={l.href}
+                className="rounded-xl border border-white/25 bg-white/10 p-4 transition-colors hover:bg-white/15"
+              >
+                <p className="font-sans text-sm font-semibold text-white">
+                  {l.icon} {l.title}
+                </p>
+                <p className="mt-1 font-serif text-[13px] leading-snug text-white/75">
+                  {l.body}
+                </p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
