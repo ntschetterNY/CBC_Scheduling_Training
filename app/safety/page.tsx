@@ -32,18 +32,7 @@ export default async function SafetyIndexPage() {
         description="Work through the chapters in order — each builds on the one before it. Observe, support, report, escalate."
       />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        {/* Draft banner — this curriculum is a first pass pending review */}
-        <div className="rounded-xl border border-brand-accent/30 bg-brand-accent/10 p-4">
-          <p className="text-sm text-brand-text/90">
-            <span className="font-semibold">Draft curriculum.</span> This track
-            is a first pass drawn from the Safety &amp; Security lessons and the
-            church Security Book. Procedures, names, and contacts should be
-            verified with the Safety Team lead before it&rsquo;s treated as
-            final.
-          </p>
-        </div>
-
-        <div className="mt-10 flex items-end justify-between gap-4">
+        <div className="flex items-end justify-between gap-4">
           <h2 className="section-title">All modules</h2>
           <p className="hidden font-sans text-xs text-brand-muted sm:block">
             {phases.length} chapters · work them top to bottom, in order
