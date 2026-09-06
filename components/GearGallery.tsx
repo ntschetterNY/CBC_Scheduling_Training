@@ -235,24 +235,39 @@ export function GearGallery({ title = "Our gear — the real hardware" }: { titl
           booth, the rack room off the stage, and the stage itself.
         </p>
       </div>
-      <div className="space-y-6 p-4">
-        {LOCATIONS.map((loc) => {
+      <div className="space-y-3 p-4">
+        {LOCATIONS.map((loc, i) => {
           const items = GEAR.filter((g) => g.where === loc.key);
           if (items.length === 0) return null;
           return (
-            <div key={loc.key}>
-              <div className="mb-3 flex items-center gap-2">
+            <details
+              key={loc.key}
+              open={i === 0}
+              className="group rounded-xl border border-brand-border bg-brand-surface/30"
+            >
+              <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 rounded-xl px-3 py-3 [&::-webkit-details-marker]:hidden">
+                <span
+                  aria-hidden
+                  className="text-xs text-brand-muted transition-transform group-open:rotate-90"
+                >
+                  ▶
+                </span>
                 <span className="rounded-full bg-brand-teal/90 px-2.5 py-0.5 text-[11px] font-bold text-white">
                   {loc.title}
                 </span>
-                <span className="text-xs text-brand-muted">{loc.note}</span>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <span className="hidden text-xs text-brand-muted sm:inline">
+                  {loc.note}
+                </span>
+                <span className="ml-auto font-sans text-[11px] font-semibold text-brand-muted">
+                  {items.length} {items.length === 1 ? "item" : "items"}
+                </span>
+              </summary>
+              <div className="grid gap-4 p-3 pt-0 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((g) => (
                   <GearCard key={g.name} g={g} />
                 ))}
               </div>
-            </div>
+            </details>
           );
         })}
       </div>

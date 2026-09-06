@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { BoardExplorer } from "@/components/BoardExplorer";
-import { GearGallery } from "@/components/GearGallery";
 import { KnowledgeSearch } from "@/components/KnowledgeSearch";
 import { PageHero } from "@/components/PageHero";
 import { getTrainingPhases } from "@/lib/curriculum";
@@ -45,10 +44,27 @@ export default async function LearnIndexPage() {
           <BoardExplorer />
         </div>
 
-        {/* Real-gear photo gallery */}
-        <div className="mt-6">
-          <GearGallery />
-        </div>
+        {/* Real-gear photo gallery moved to its own page (issue #25) */}
+        <Link
+          href="/gear"
+          className="card group mt-6 flex items-center gap-3 p-4 transition-colors hover:border-brand-accent/40"
+        >
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-surface text-xl">
+            🎛️
+          </span>
+          <div>
+            <p className="font-semibold text-brand-text">
+              Our gear — the real hardware
+            </p>
+            <p className="text-xs text-brand-muted">
+              Photos of every piece of the sound system, grouped by where it
+              lives. Worth a look before you start the modules.
+            </p>
+          </div>
+          <span className="ml-auto text-brand-muted group-hover:text-brand-accent">
+            →
+          </span>
+        </Link>
 
         <div className="mt-10 flex items-end justify-between gap-4">
           <h2 className="section-title">All modules</h2>
