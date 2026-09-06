@@ -20,11 +20,24 @@ import {
   FR_PRIORITIES,
   FR_STATUSES,
   FR_TYPES,
+  attachmentNameFromUrl,
+  isImageAttachmentUrl,
   type FrPriority,
   type FrStatus,
   type FrType,
 } from "./feature-requests";
 import type { MarkupNote } from "./markup";
+
+/** Images embed inline; every other file type becomes a named link. */
+function renderAttachmentMarkdown(urls: string[]): string {
+  return urls
+    .map((u, i) =>
+      isImageAttachmentUrl(u)
+        ? `![attachment ${i + 1}](${u})`
+        : `📎 [${attachmentNameFromUrl(u)}](${u})`
+    )
+    .join("\n");
+}
 
 const GITHUB_API = "https://api.github.com";
 
@@ -195,10 +208,7 @@ export function buildIssueBody(input: {
   }
 
   if (input.photoUrls.length > 0) {
-    parts.push(
-      "### Screenshots\n" +
-        input.photoUrls.map((u, i) => `![screenshot ${i + 1}](${u})`).join("\n")
-    );
+    parts.push("### Attachments\n" + renderAttachmentMarkdown(input.photoUrls));
   }
 
   parts.push(
@@ -219,9 +229,7 @@ export function buildCommentBody(input: {
 }): string {
   const parts = [requesterMarker(input.author), input.body.trim()];
   if (input.photoUrls.length > 0) {
-    parts.push(
-      input.photoUrls.map((u, i) => `![attachment ${i + 1}](${u})`).join("\n")
-    );
+    parts.push(renderAttachmentMarkdown(input.photoUrls));
   }
   return parts.join("\n\n");
 }

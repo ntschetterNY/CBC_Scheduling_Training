@@ -9,18 +9,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { listFeatureRequests, type FeatureRequest } from "@/lib/github";
-import { FEATURE_PHOTO_BUCKET, MAX_PHOTOS } from "@/lib/feature-requests";
+import { FEATURE_PHOTO_BUCKET, MAX_ATTACHMENTS } from "@/lib/feature-requests";
 
 /** Only accept photo URLs that point at our own public storage bucket. */
 export const ALLOWED_PHOTO_PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${FEATURE_PHOTO_BUCKET}/`;
 
-/** Keep only well-formed URLs from our bucket, capped at MAX_PHOTOS. */
+/** Keep only well-formed URLs from our bucket, capped at MAX_ATTACHMENTS. */
 export function sanitizePhotoUrls(input: unknown): string[] {
   return Array.isArray(input)
     ? input
         .filter((u): u is string => typeof u === "string")
         .filter((u) => u.startsWith(ALLOWED_PHOTO_PREFIX))
-        .slice(0, MAX_PHOTOS)
+        .slice(0, MAX_ATTACHMENTS)
     : [];
 }
 
