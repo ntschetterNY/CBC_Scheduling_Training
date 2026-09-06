@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { PageHero } from "@/components/PageHero";
-import { curriculum } from "@/lib/curriculum";
+import { ADMIN_PROGRAMS, adminProgram } from "@/lib/admin-programs";
 import { isSuperAdmin } from "@/lib/access";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,7 +16,14 @@ type ProgRow = {
   quiz_score: number | null;
 };
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ program?: string }>;
+}) {
+  const { program } = await searchParams;
+  const prog = adminProgram(program);
+  const mods = prog.modules;
   const supabase = await createClient();
   const {
     data: { user },
@@ -59,7 +66,7 @@ export default async function AdminPage() {
         width="6xl"
         eyebrow="Admin"
         title="Team Progress"
-        description={`Completion across all ${curriculum.length} modules. A checkmark shows a completed module and its quiz score.`}
+        description={`Completion across every training program. A checkmark shows a completed module and its quiz score; click a name for the full detail.`}
       />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {superAdmin && (
@@ -135,15 +142,35 @@ export default async function AdminPage() {
           </div>
         )}
 
-        <div className="mt-6 overflow-x-auto">
+        {/* One tab per training program (issue #49) */}
+        <div className="mt-6 flex flex-wrap gap-2">
+          {ADMIN_PROGRAMS.map((t) => (
+            <Link
+              key={t.key}
+              href={t.key === ADMIN_PROGRAMS[0].key ? "/admin" : `/admin?program=${t.key}`}
+              className={
+                t.key === prog.key
+                  ? "btn bg-brand-teal text-white hover:bg-brand-tealDark"
+                  : "btn-secondary"
+              }
+            >
+              <span aria-hidden>{t.icon}</span> {t.label}
+              <span className="font-normal opacity-70">
+                · {t.modules.length}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
           <div className="card min-w-[720px] overflow-hidden">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-brand-border bg-brand-surface/60 text-left">
                   <th className="sticky left-0 z-10 bg-brand-surface/60 px-4 py-3 font-semibold">
-                    Tech
+                    Person
                   </th>
-                  {curriculum.map((m) => (
+                  {mods.map((m) => (
                     <th
                       key={m.slug}
                       className="px-2 py-3 text-center font-semibold"
@@ -162,16 +189,16 @@ export default async function AdminPage() {
                 {trainees.length === 0 && (
                   <tr>
                     <td
-                      colSpan={curriculum.length + 2}
+                      colSpan={mods.length + 2}
                       className="px-4 py-8 text-center text-brand-muted"
                     >
-                      No trainees yet. Once techs sign up, they’ll appear here.
+                      No trainees yet. Once volunteers sign up, they’ll appear here.
                     </td>
                   </tr>
                 )}
                 {trainees.map((p) => {
                   const prog = byUser[p.id] ?? {};
-                  const completed = curriculum.filter(
+                  const completed = mods.filter(
                     (m) => prog[m.slug]?.status === "completed"
                   ).length;
                   return (
@@ -180,16 +207,19 @@ export default async function AdminPage() {
                       className="border-b border-brand-border/60 last:border-0"
                     >
                       <td className="sticky left-0 z-10 bg-brand-card px-4 py-3">
-                        <span className="font-medium text-brand-text">
-                          {p.full_name || "Unnamed tech"}
-                        </span>
+                        <Link
+                          href={`/admin/person/${p.id}`}
+                          className="font-medium text-brand-text underline-offset-2 hover:text-brand-accentDark hover:underline"
+                        >
+                          {p.full_name || "Unnamed trainee"}
+                        </Link>
                         {p.role === "admin" && (
                           <span className="ml-2 rounded bg-brand-accent/15 px-1.5 py-0.5 text-[10px] font-bold text-brand-accent">
                             admin
                           </span>
                         )}
                       </td>
-                      {curriculum.map((m) => {
+                      {mods.map((m) => {
                         const c = prog[m.slug];
                         const done = c?.status === "completed";
                         const started = !!c;
@@ -220,12 +250,12 @@ export default async function AdminPage() {
                       <td className="px-4 py-3 text-center font-semibold">
                         <span
                           className={
-                            completed === curriculum.length
+                            completed === mods.length
                               ? "text-brand-success"
                               : "text-brand-text"
                           }
                         >
-                          {completed}/{curriculum.length}
+                          {completed}/{mods.length}
                         </span>
                       </td>
                     </tr>
